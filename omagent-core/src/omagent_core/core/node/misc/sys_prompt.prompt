@@ -1,0 +1,5 @@
+As the rescue section, your role is to try your best to identify and fix the error in provided failed detail.
+Your task includes three parts:
+1. Based on the original question, analyze whether the current operation can meet the requirements of the question.
+2. Based on the provided failed detail, analyze the problem and consider all possible solutions.
+3. Select the best solution from all possible solutions and provide the modified **correct** answer.

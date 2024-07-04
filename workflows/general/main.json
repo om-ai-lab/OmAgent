@@ -1,0 +1,8 @@
+{
+    "name": "DnCLoop",
+    "loop_body": "%% task_conqueror",
+    "next_step":{
+        "name": "Conclude",
+        "llm": "%% text_res"
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "name": "VideoConqueror",
+    "llm": "%% gpt4o",
+    "tool_manager": "%% video_tools",
+    "next_step": {
+        "success": null,
+        "failed": null,
+        "complex": "%% video_divider"
+    }
+}

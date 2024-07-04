@@ -1,0 +1,15 @@
+{
+    "llm": "%% text_res",
+    "tools": [
+        "Calculator",
+        "CodeInterpreter",
+        "ReadFileContent",
+        "WriteFileContent",
+        "ShellTool",
+        {
+            "name": "WebSearch",
+            "bing_api_key": "$<bing_api_key::microsoft_bing_api_key>",
+            "llm": "%% text_res"
+        }
+    ]
+}

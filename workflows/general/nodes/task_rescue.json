@@ -1,0 +1,5 @@
+{
+    "name": "TaskRescue",
+    "llm": "%% text_res",
+    "tool_manager": "%% all_tools"
+}

@@ -1,0 +1,9 @@
+{
+    "name": "TaskDivider",
+    "llm": "%% json_res",
+    "tool_manager": "%% all_tools",
+    "next_step": {
+        "success": null,
+        "failed": null
+    }
+}
