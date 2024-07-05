@@ -99,7 +99,6 @@ class TaskConqueror(BaseLLMBackend, BaseDecider):
         content = chat_complete_res["choices"][0]["message"].get("content")
         content = self._extract_from_result(content)
 
-        # todo: 修改prompt，保证只会输出一个
         first_key = next(iter(content))
         new_data = {first_key: content[first_key]}
         content = new_data

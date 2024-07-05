@@ -1,4 +1,3 @@
-# TODO: 获取报错的node name
 class VQLError(Exception):
     def __init__(self, code, msg=None, detail=""):
         """

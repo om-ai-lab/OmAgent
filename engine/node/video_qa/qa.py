@@ -41,7 +41,6 @@ class VideoQA(BaseProcessor, BaseLLMBackend):
         end_time = (
             None if content.get("end_time", -1) == -1 else content.get("end_time")
         )
-        # todo: handler alias
         related_information = ltm.VideoHandler.text_match(
             video_md5, question, 0.5, start_time, end_time
         )

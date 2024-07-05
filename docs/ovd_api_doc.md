@@ -3,7 +3,7 @@ from typing import List, Dict, Union
 from pydantic import BaseModel
 from fastapi import FastAPI
 import time
-from omdet.infernece.det_engine import DetEngine
+from omdet.inferenece.det_engine import DetEngine
 import uvicorn
 
 

@@ -32,8 +32,7 @@ class ObjectDetection(BaseModelTool):
     description: str = ("Object detection tool, which can detect any objects and add visual prompting(bounding box and label) to the image."
                         "Tasks like object counting, specific object detection, etc. must use this tool.")
     ovd_endpoint: str
-    # todo: 替换为开源model_id
-    model_id: str = 'OmDetV2T_base_CXT_B_n104'
+    model_id: str = 'OmDet-Turbo_tiny_SWIN_T'
 
     def _run(
             self, timestamps: str, labels: str
@@ -52,7 +51,7 @@ class ObjectDetection(BaseModelTool):
                 imgs_pil = [each_frame for each_frame in frames]
             else:
                 imgs_pil.append(self.stm.image_cache[f'<image_timestamp-{float(each_time_stamp)}>'])
-        # imgs_pil = [self.stm.image_cache[each] for each in img_names]
+
         infer_targets = self.infer(imgs_pil, {"labels": labels.split(',')})
         for img_name, img, infer_target in zip(timestamps, imgs_pil, infer_targets):
             self.stm.image_cache[f'<image_timestamp-{img_name}>'] = self.visual_prompting(img, infer_target)
@@ -72,7 +71,7 @@ class ObjectDetection(BaseModelTool):
                 encode_image(img) for img in images
             ],
             "src_type": "base64",
-            "task": [f"Detect {','.join(labels)}."],
+            "task": f"Detect {','.join(labels)}.",
             "labels": labels,
             "threshold": 0.3,
         }

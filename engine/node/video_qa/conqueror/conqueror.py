@@ -173,7 +173,6 @@ class VideoConqueror(TaskConqueror):
                 self.callback.send_block(toolcall_success_output_structure)
                 return args, "success"
             else:
-                # todo: retry if tool call failed, read failed reason from execution_results
                 task.result = execution_results
                 task.status = TaskStatus.FAILED
                 self.stm.former_results["failed_detail"] = task.result

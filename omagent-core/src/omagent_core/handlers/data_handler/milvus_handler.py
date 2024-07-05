@@ -12,9 +12,8 @@ from ..error_handler.error import VQLError
 
 @registry.register_handler()
 class MilvusHandler(BaseModel):
-    # todo: host_url, port, alias configuration use config json
     host_url: str
-    port: str
+    port: int
     alias: str
     primary_field: Any = None
     vector_field: Any = None
@@ -243,9 +242,6 @@ class MilvusHandler(BaseModel):
             loaded_collection.delete(expr)
         else:
             raise VQLError(500, detail=f"{collection_name} collection does not exist")
-
-
-# todo: 根据其他信息找primary key
 
 
 if __name__ == "__main__":

@@ -25,7 +25,12 @@ class Scene(BaseModel):
 
     @property
     def conversation(self):
-        return "\n".join([f"{item.get('text', None)}" for item in self.stt_res])
+        # for self deployed whisper
+        if isinstance(self.stt_res, list):
+            output_conversation = "\n".join([f"{item.get('text', None)}" for item in self.stt_res])
+        else:
+            output_conversation = self.stt_res
+        return output_conversation
 
 
 class VideoScenes(BaseModel):

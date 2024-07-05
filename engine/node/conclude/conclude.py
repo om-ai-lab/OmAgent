@@ -38,6 +38,7 @@ class Conclude(BaseLLMBackend, BaseProcessor):
         args.stm = self.token_usage.items()
         for key, value in self.token_usage.items():
             print(f"Usage of {key}: {value}")
+        return args
 
     async def _arun(self, args: DnCInterface, ltm: LTM) -> DnCInterface:
         chat_complete_res = await self.simple_ainfer(
