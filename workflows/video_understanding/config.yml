@@ -1,0 +1,8 @@
+custom_openai_endpoint: http://xxx.com/v1
+# custom_openai_key: your_custom_openai_key
+bing_api_key: your_bing_api_key
+milvus_host_url: your_milvus_host_url
+milvus_port: 19530
+milvus_alias: default
+ovd_endpoint: http://xxx/inf_predict
+ovd_model_id: OmDet-Turbo_tiny_SWIN_T
