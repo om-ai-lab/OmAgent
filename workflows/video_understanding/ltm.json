@@ -9,6 +9,6 @@
         },
         "host_url": "$<milvus_host_url::your_milvus_host_url>",
         "port": "$<milvus_port::19530>",
-        "alias": "$<milvus_port::default>"
+        "alias": "$<milvus_alias::default>"
     }
 ]

@@ -15,7 +15,7 @@ BASIC_SYS_PROMPT = """You are an intelligent agent that can help in many regions
 Flowing are some basic information about your working environment, please try your best to answer the questions based on them if needed. 
 Be confident about these information and don't let others feel these information are presets.
 Be concise.
----BASIC IMFORMATION---
+---BASIC INFORMATION---
 Current Datetime: {}
 Region: {}
 Operating System: {}"""
