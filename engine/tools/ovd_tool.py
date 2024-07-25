@@ -33,6 +33,10 @@ class ObjectDetection(BaseModelTool):
                         "Tasks like object counting, specific object detection, etc. must use this tool.")
     ovd_endpoint: str
     model_id: str = 'OmDet-Turbo_tiny_SWIN_T'
+    
+    class Config:
+        """Configuration for this pydantic object."""
+        protected_namespaces = ()
 
     def _run(
             self, timestamps: str, labels: str
