@@ -1,27 +1,38 @@
-from uuid import uuid4
 from typing import Any
-import numpy as np
-from pymilvus import Collection, DataType, connections, utility
-from pymilvus.client import types
-from pydantic import BaseModel
+from uuid import uuid4
 
-from ...utils.env import EnvVar
+import numpy as np
+from pydantic import BaseModel
+from pymilvus import Collection, DataType, MilvusClient, connections, utility
+from pymilvus.client import types
+
 from ...utils.registry import registry
 from ..error_handler.error import VQLError
 
 
 @registry.register_handler()
 class MilvusHandler(BaseModel):
-    host_url: str
-    port: int
-    alias: str
+    host_url: str = "./memory.db"
+    user: str = ""
+    password: str = ""
+    db_name: str = "default"
     primary_field: Any = None
     vector_field: Any = None
-    index_id: str
+
+    class Config:
+        """Configuration for this pydantic object."""
+
+        extra = "allow"
+        arbitrary_types_allowed = True
 
     def __init__(self, **data: Any):
         super().__init__(**data)
-        connections.connect(host=self.host_url, port=self.port, alias=self.alias)
+        self.milvus_client = MilvusClient(
+            uri=self.host_url,
+            user=self.user,
+            password=self.password,
+            db_name=self.db_name,
+        )
 
     def is_collection_in(self, collection_name):
         """
@@ -33,7 +44,7 @@ class MilvusHandler(BaseModel):
         Returns:
             bool: True if the collection exists, False otherwise.
         """
-        return utility.has_collection(collection_name)
+        return self.milvus_client.has_collection(collection_name)
 
     def make_collection(self, collection_name, schema):
         """
@@ -51,23 +62,28 @@ class MilvusHandler(BaseModel):
         Raises:
             VQLError: If the schema does not have exactly one primary key.
         """
-        self.vector_field = [
-            each.name
-            for each in schema.fields
-            if each.dtype == DataType.FLOAT_VECTOR
-            or each.dtype == DataType.BINARY_VECTOR
-        ]
-        primary_candidate = [each.name for each in schema.fields if each.is_primary]
-        if len(primary_candidate) > 0:
-            self.primary_field = primary_candidate[0]
-        else:
-            raise VQLError(500, detail="The number of primary key is not one!")
+
+        index_params = self.milvus_client.prepare_index_params()
+        for field in schema.fields:
+            if (
+                field.dtype == DataType.FLOAT_VECTOR
+                or field.dtype == DataType.BINARY_VECTOR
+            ):
+                index_params.add_index(
+                    field_name=field.name,
+                    index_name=field.name,
+                    index_type="FLAT",
+                    metric_type="COSINE",
+                    params={"nlist": 128},
+                )
+                print(f"{field.name} of {collection_name} index created")
 
         if self.is_collection_in(collection_name):
             print(f"{collection_name} collection already exists")
         else:
-            Collection(name=collection_name, schema=schema, using=self.alias)
-            self.create_index(collection_name, self.vector_field)
+            self.milvus_client.create_collection(
+                collection_name, schema=schema, index_params=index_params
+            )
             print(f"Create collection {collection_name} successfully")
 
     def drop_collection(self, collection_name):
@@ -82,8 +98,7 @@ class MilvusHandler(BaseModel):
             collection_name (str): The name of the collection to drop.
         """
         if self.is_collection_in(collection_name):
-            collection = Collection(name=collection_name, using=self.alias)
-            collection.drop()
+            self.milvus_client.drop_collection(collection_name)
             print(f"Drop collection {collection_name} successfully")
         else:
             print(f"{collection_name} collection does not exist")
@@ -107,38 +122,10 @@ class MilvusHandler(BaseModel):
             VQLError: If the collection does not exist.
         """
         if self.is_collection_in(collection_name):
-            loaded_collection = Collection(collection_name)
-            ids = loaded_collection.insert(vectors)
-            loaded_collection.flush()
-            return ids
-        else:
-            raise VQLError(500, detail=f"{collection_name} collection does not exist")
-
-    def create_index(self, collection_name, vector_fields):
-        """
-        Create an index for the specified vector fields in a collection in Milvus.
-
-        This method will first check if a collection with the given name exists.
-        If it does, it will create an index for each of the specified vector fields in the collection.
-        If it doesn't, it will raise a VQLError.
-
-        Args:
-            collection_name (str): The name of the collection to create an index in.
-            vector_fields (list): The list of vector fields to create an index for.
-
-        Raises:
-            VQLError: If the collection does not exist.
-        """
-        if self.is_collection_in(collection_name):
-            loaded_collection = Collection(collection_name)
-            for vector_field in vector_fields:
-                index = {
-                    "index_type": "IVF_FLAT",
-                    "metric_type": "COSINE",
-                    "params": {"nlist": 128},
-                }
-                loaded_collection.create_index(vector_field, index)
-                print(f"{vector_field} of {collection_name} index created")
+            res = self.milvus_client.insert(
+                collection_name=collection_name, data=vectors
+            )
+            return res["ids"]
         else:
             raise VQLError(500, detail=f"{collection_name} collection does not exist")
 
@@ -147,10 +134,10 @@ class MilvusHandler(BaseModel):
         collection_name,
         query_vectors: list,
         query_field,
-        output_fields: list,
-        res_size,
-        filter_expr,
-        threshold,
+        output_fields: list = None,
+        res_size=10,
+        filter_expr="",
+        threshold=0,
     ):
         """
         Perform a vector similarity search in a specified collection in Milvus.
@@ -176,9 +163,6 @@ class MilvusHandler(BaseModel):
             VQLError: If the collection does not exist.
         """
         if self.is_collection_in(collection_name):
-            loaded_collection = Collection(collection_name)
-            if utility.load_state(collection_name) != types.LoadState.Loaded:
-                loaded_collection.load()
             search_params = {
                 "metric_type": "COSINE",
                 "ignore_growing": False,
@@ -188,14 +172,16 @@ class MilvusHandler(BaseModel):
                     "range_filter": 1,
                 },
             }
-            hits = loaded_collection.search(
+            hits = self.milvus_client.search(
+                collection_name=collection_name,
                 data=query_vectors,
                 anns_field=query_field,
-                param=search_params,
+                search_params=search_params,
                 limit=res_size,
                 output_fields=output_fields,
-                expr=filter_expr,
+                filter=filter_expr,
             )
+
             return hits
         else:
             raise VQLError(500, detail=f"{collection_name} collection does not exist")
@@ -216,9 +202,11 @@ class MilvusHandler(BaseModel):
             VQLError: If the collection does not exist.
         """
         if self.is_collection_in(collection_name):
-            loaded_collection = Collection(collection_name)
             delete_expr = f"{self.primary_field} in {ids}"
-            loaded_collection.delete(delete_expr)
+            res = self.milvus_client.delete(
+                collection_name=collection_name, filter=delete_expr
+            )
+            return res
         else:
             raise VQLError(500, detail=f"{collection_name} collection does not exist")
 
@@ -238,8 +226,7 @@ class MilvusHandler(BaseModel):
             VQLError: If the collection does not exist.
         """
         if self.is_collection_in(collection_name):
-            loaded_collection = Collection(collection_name)
-            loaded_collection.delete(expr)
+            self.milvus_client.delete(collection_name=collection_name, filter=expr)
         else:
             raise VQLError(500, detail=f"{collection_name} collection does not exist")
 
@@ -264,17 +251,22 @@ if __name__ == "__main__":
     )
 
     data = [
-        [str(uuid4())] * 1,
-        [str(uuid4())] * 1,
-        # rng.random((1, 512))
-        [[1, 2] * 256],
+        {
+            "pk": str(uuid4()),
+            "bot_id": str(uuid4()),
+            # rng.random((1, 512))
+            "vector": [1.0, 2.0] * 256,
+        }
     ]
-    # milvus_handler.drop_collection('test1')
-    # milvus_handler.make_collection('test1', schema)
+    milvus_handler.drop_collection("test1")
+    milvus_handler.make_collection("test1", schema)
     add_detail = milvus_handler.do_add("test1", data)
     print(add_detail)
-    # test_data =
-    # match_result = milvus_handler.match('test1', [test_data], 'vector', ['pk'], 10, '', 0.65)
-    # print(match_result)
-    milvus_handler.primary_field = "pk"
-    milvus_handler.delete_doc_by_ids("test1", "5b50a621-7745-41fc-87d8-726f7e1e51cf")
+    print(milvus_handler.milvus_client.describe_index("test1", "vector"))
+    test_data = [[1.0, 2.0] * 256, [100, 400] * 256]
+    match_result = milvus_handler.match(
+        "test1", test_data, "vector", ["pk"], 10, "", 0.65
+    )
+    print(match_result)
+    # milvus_handler.primary_field = "pk"
+    # milvus_handler.delete_doc_by_ids("test1", ["1f764837-b80b-4788-ad8c-7a89924e343b"])

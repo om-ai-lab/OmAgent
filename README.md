@@ -77,13 +77,15 @@ For more details, check out our paper **[OmAgent: A Multi-modal Agent Framework 
 
 ### Video Understanding Task
 #### Environment Preparation
-- Deploy [milvus vector database](https://milvus.io/docs/install_standalone-docker.md) using docker. The vector database is used to store video feature vectors and retrieve relevant vectors based on queries to reduce MLLM computation. Not installed docker? Refer to [docker installation guide](https://docs.docker.com/get-docker/).
+- **```Optional```** OmAgent uses Milvus Lite as a vector database to store vector data by default. If you wish to use the full Milvus service, you can deploy it [milvus vector database](https://milvus.io/docs/install_standalone-docker.md) using docker. The vector database is used to store video feature vectors and retrieve relevant vectors based on queries to reduce MLLM computation. Not installed docker? Refer to [docker installation guide](https://docs.docker.com/get-docker/).
     ```shell
        # Download milvus startup script
        curl -sfL https://raw.githubusercontent.com/milvus-io/milvus/master/scripts/standalone_embed.sh -o standalone_embed.sh
        # Start milvus in standalone mode
        bash standalone_embed.sh start
     ```
+    Fill in the relevant configuration information after the deployment ```workflows/video_understanding/config.yml```  
+    
 - **```Optional```** Configure the face recognition algorithm. The face recognition algorithm can be called as a tool by the agent, but it is optional. You can disable this feature by modifying the ```workflows/video_understanding/tools/video_tools.json``` configuration file and removing the FaceRecognition section. The default face recognition database is stored in the ```data/face_db``` directory, with different folders corresponding to different individuals.
 - **```Optional```** Open Vocabulary Detection (ovd) service, used to enhance OmAgent's ability to recognize various objects. The ovd tools depend on this service, but it is optional. You can disable ovd tools by following these steps. Remove the following from ```workflows/video_understanding/tools/video_tools.json```
     ```json 

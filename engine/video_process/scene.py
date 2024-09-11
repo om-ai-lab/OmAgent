@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Tuple, Union
 
 from PIL import Image
+import cv2
 from pydantic import BaseModel
 from pydub import AudioSegment
 from pydub.effects import normalize
@@ -118,6 +119,8 @@ class VideoScenes(BaseModel):
         for index in range(scene_len):
             if index % interval == 0:
                 f = self.stream.read()
+                if f is False: continue
+                f = cv2.cvtColor(f, cv2.COLOR_BGR2RGB)
                 frames.append(Image.fromarray(f))
                 time_stamps.append(self.stream.position.get_seconds())
             else:

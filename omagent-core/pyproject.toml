@@ -25,7 +25,7 @@ dependencies = [
   "tenacity>=8.2.3",
   "pyyaml>=6.0.1",
   "requests",
-  "pymilvus>=2.3.3",
+  "pymilvus>=2.4.6",
   "networkx>=3.2.1",
   "duckduckgo_search>=3.9.9",
   "bs4>=0.0.1",

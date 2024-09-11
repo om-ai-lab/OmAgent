@@ -1,6 +1,6 @@
 {
     "name": "VideoPreprocessor",
-    "next_step": "%% video_qa",
+    "next_step": "%% inf_qa_loop",
     "llm": "%% gpt4o",
     "stt": {
         "endpoint": "$<custom_openai_endpoint::https://api.openai.com/v1>",

@@ -1,14 +1,15 @@
 [
     {
         "name": "VideoHandler",
-        "index_id": "video_understanding_openai_encoder",
+        "collection_name": "video_understanding_openai_encoder",
         "text_encoder": {
             "name": "OpenaiTextEmbeddingV3",
             "endpoint": "$<custom_openai_endpoint::https://api.openai.com/v1>",
             "api_key": "$<custom_openai_key::openai_api_key>"
         },
-        "host_url": "$<milvus_host_url::your_milvus_host_url>",
-        "port": "$<milvus_port::19530>",
-        "alias": "$<milvus_alias::default>"
+        "host_url": "$<milvus_host_url::./memory.db>",
+        "user": "$<milvus_user::test",
+        "password": "$<milvus_password::test",
+        "db_name": "$<milvus_db_name::default"
     }
 ]

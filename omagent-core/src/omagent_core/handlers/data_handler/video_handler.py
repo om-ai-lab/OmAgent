@@ -11,6 +11,7 @@ from .milvus_handler import MilvusHandler
 
 @registry.register_handler()
 class VideoHandler(MilvusHandler):
+    collection_name: str
     text_encoder: Optional[EncoderBase] = None
     dim: int = None
 
@@ -20,7 +21,6 @@ class VideoHandler(MilvusHandler):
         extra = "allow"
         arbitrary_types_allowed = True
 
-
     @field_validator("text_encoder", mode="before")
     @classmethod
     def init_encoder(cls, text_encoder):
@@ -29,12 +29,10 @@ class VideoHandler(MilvusHandler):
         elif isinstance(text_encoder, dict):
             return registry.get_encoder(text_encoder.get("name"))(**text_encoder)
         else:
-            raise ValueError("index_id must be EncoderBase or Dict")
+            raise ValueError("text_encoder must be EncoderBase or Dict")
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
-        self.fields = []
-        self.vector_fields = []
 
         self.dim = self.text_encoder.dim
 
@@ -56,20 +54,12 @@ class VideoHandler(MilvusHandler):
             name="end_time",
             dtype=DataType.FLOAT,
         )
-        self.schema = CollectionSchema(
+        schema = CollectionSchema(
             fields=[_uid, video_md5, content, content_vector, start_time, end_time],
             description="video summary vector DB",
             enable_dynamic_field=True,
         )
-        for each_field in self.schema.fields:
-            self.fields.append(each_field.name)
-            if (
-                each_field.dtype == DataType.FLOAT_VECTOR
-                or each_field.dtype == DataType.BINARY_VECTOR
-            ):
-                self.vector_fields.append(each_field.name)
-        self.collection_name = self.index_id
-        self.make_collection(self.collection_name, self.schema)
+        self.make_collection(self.collection_name, schema)
 
     def text_add(self, video_md5, content, start_time, end_time):
 
@@ -77,15 +67,24 @@ class VideoHandler(MilvusHandler):
             raise VQLError(500, detail="Missing text_encoder")
         content_vector = self.text_encoder.infer([content])[0]
 
+        # upload_data = [
+        #     [video_md5],
+        #     [content],
+        #     [content_vector],
+        #     [start_time],
+        #     [end_time],
+        # ]
         upload_data = [
-            [video_md5],
-            [content],
-            [content_vector],
-            [start_time],
-            [end_time],
+            {
+                "video_md5": video_md5,
+                "content": content,
+                "content_vector": content_vector,
+                "start_time": start_time,
+                "end_time": end_time,
+            }
         ]
 
-        add_detail = self.do_add(self.index_id, upload_data)
+        add_detail = self.do_add(self.collection_name, upload_data)
         # assert add_detail.succ_count == len(upload_data)
 
     def text_match(
@@ -114,7 +113,7 @@ class VideoHandler(MilvusHandler):
             collection_name=self.collection_name,
             query_vectors=[content_vector],
             query_field="content_vector",
-            output_fields=self.fields,
+            output_fields=["content", "start_time", "end_time"],
             res_size=res_size,
             threshold=threshold,
             filter_expr=filter_expr,
@@ -122,6 +121,7 @@ class VideoHandler(MilvusHandler):
 
         output = []
         for match in match_res[0]:
-            output.append(match.fields)
+            print(match)
+            output.append(match["entity"])
 
         return output

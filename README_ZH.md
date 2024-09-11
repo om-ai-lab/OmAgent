@@ -76,13 +76,15 @@ OmAgent包括三个核心组成部分:
 
 ### 视频理解任务
 #### 相关环境准备
-- 使用docker部署[milvus向量数据库](https://milvus.io/docs/install_standalone-docker.md)。向量数据库用于储存视频特征向量，以根据问题检索相关向量，减少MLLM的计算量。未安装docker？请参考[docker安装指南](https://docs.docker.com/get-docker/)。
+- **```可选```** OmAgent默认使用Milvus Lite作为向量数据库存储向量数据。如果你希望使用完整的Milvus服务，可以使用docker部署[milvus向量数据库](https://milvus.io/docs/install_standalone-docker.md)。向量数据库用于储存视频特征向量，以根据问题检索相关向量，减少MLLM的计算量。未安装docker？请参考[docker安装指南](https://docs.docker.com/get-docker/)。
     ```shell
        # 下载milvus启动脚本
        curl -sfL https://raw.githubusercontent.com/milvus-io/milvus/master/scripts/standalone_embed.sh -o standalone_embed.sh
        # 以standalone模式启动milvus
        bash standalone_embed.sh start
     ```
+    部署完成后填写相关配置信息```workflows/video_understanding/config.yml```  
+    
 - **```可选```** 配置人脸识别算法。人脸识别算法可以作为智能体的工具进行调用，当然这是可选的。你可以通过修改```workflows/video_understanding/tools/video_tools.json```配置文件，删除其中关于FaceRecognition的部分对该功能进行禁用。默认的人脸识别底库存储在```data/face_db```目录下，不同文件夹对应不同人物。
 - **```可选```** Open Vocabulary Detection(ovd)服务，开放词表检测，用于增强OmAgent对于各种目标物体的识别能力，ovd tools依赖于此，当然这是可选的。你可以按如下步骤对ovd tools进行禁用。 删除```workflows/video_understanding/tools/video_tools.json```中的
     ```json 
