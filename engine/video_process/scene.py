@@ -1,12 +1,18 @@
 from typing import Dict, List, Optional, Tuple, Union
 
-from PIL import Image
 import cv2
+from omagent_core.handlers.log_handler.logger import logging
+from PIL import Image
 from pydantic import BaseModel
 from pydub import AudioSegment
 from pydub.effects import normalize
-from scenedetect import (ContentDetector, FrameTimecode, SceneManager,
-                         VideoStream, open_video)
+from scenedetect import (
+    ContentDetector,
+    FrameTimecode,
+    SceneManager,
+    VideoStream,
+    open_video,
+)
 
 
 class Scene(BaseModel):
@@ -28,7 +34,9 @@ class Scene(BaseModel):
     def conversation(self):
         # for self deployed whisper
         if isinstance(self.stt_res, list):
-            output_conversation = "\n".join([f"{item.get('text', None)}" for item in self.stt_res])
+            output_conversation = "\n".join(
+                [f"{item.get('text', None)}" for item in self.stt_res]
+            )
         else:
             output_conversation = self.stt_res
         return output_conversation
@@ -36,7 +44,7 @@ class Scene(BaseModel):
 
 class VideoScenes(BaseModel):
     stream: VideoStream
-    audio: AudioSegment
+    audio: Union[AudioSegment, None]
     scenes: List[Scene]
     frame_extraction_interval: int
 
@@ -74,8 +82,12 @@ class VideoScenes(BaseModel):
         scene_manager.detect_scenes(video, show_progress=show_progress)
         scenes = scene_manager.get_scene_list(start_in_scene=True)
 
-        audio = AudioSegment.from_file(video_path)
-        audio = normalize(audio)
+        try:
+            audio = AudioSegment.from_file(video_path)
+            audio = normalize(audio)
+        except Exception as e:
+            logging.warning(f"Failed to load audio from {video_path}: {e}")
+            audio = None
         return cls(
             stream=video,
             scenes=[Scene.init(*scene) for scene in scenes],
@@ -119,7 +131,8 @@ class VideoScenes(BaseModel):
         for index in range(scene_len):
             if index % interval == 0:
                 f = self.stream.read()
-                if f is False: continue
+                if f is False:
+                    continue
                 f = cv2.cvtColor(f, cv2.COLOR_BGR2RGB)
                 frames.append(Image.fromarray(f))
                 time_stamps.append(self.stream.position.get_seconds())
@@ -142,6 +155,8 @@ class VideoScenes(BaseModel):
         Returns:
             AudioSegment: The audio clip of the scene.
         """
+        if self.audio is None:
+            return None
         if isinstance(scene, int):
             scene = self.scenes[scene]
             start, end = scene.start, scene.end

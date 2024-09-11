@@ -13,6 +13,7 @@ from omagent_core.schemas.base import BaseInterface
 from omagent_core.utils.registry import registry
 from pydantic import Field, field_validator
 from pydub import AudioSegment
+from pydub.effects import normalize
 from scenedetect import open_video
 
 from engine.video_process.stt import STT
@@ -42,7 +43,7 @@ class VideoPreprocessor(BaseLLMBackend, BaseProcessor):
     frame_extraction_interval: int = 5
     show_progress: bool = True
 
-    use_cache: bool = False
+    use_cache: bool = True
     cache_dir: str = "./running_logs/video_cache"
 
     @field_validator("stt", mode="before")
@@ -77,9 +78,15 @@ class VideoPreprocessor(BaseLLMBackend, BaseProcessor):
         if self.use_cache and cache_path.exists():
             with open(cache_path, "rb") as f:
                 loaded_scene = pickle.load(f)
+                try:
+                    audio = AudioSegment.from_file(video_path)
+                    audio = normalize(audio)
+                except Exception as e:
+                    logging.warning(f"Failed to load audio from {video_path}: {e}")
+                    audio = None
                 video = VideoScenes(
                     stream=open_video(video_path),
-                    audio=AudioSegment.from_file(video_path),
+                    audio=audio,
                     scenes=loaded_scene,
                     frame_extraction_interval=self.frame_extraction_interval,
                 )
@@ -122,7 +129,9 @@ class VideoPreprocessor(BaseLLMBackend, BaseProcessor):
                                 f"Scene: {scene_info}\n"
                                 f"Summary: {scene.summary.get('summary', '')}"
                             )
-                            ltm.VideoHandler.text_add(video_md5, content, start_time, end_time)
+                            ltm.VideoHandler.text_add(
+                                video_md5, content, start_time, end_time
+                            )
                         except Exception as e:
                             logging.error(
                                 f"Failed to resume scene {index}: {e}. Set to default."
@@ -153,7 +162,10 @@ class VideoPreprocessor(BaseLLMBackend, BaseProcessor):
             for index, scene in enumerate(video.scenes):
                 print(f"Processing scene {index} / {len(video.scenes)}...")
                 audio_clip = video.get_audio_clip(scene)
-                scene.stt_res = self.stt.infer(audio_clip)
+                if audio_clip is None:
+                    scene.stt_res = {"text": ""}
+                else:
+                    scene.stt_res = self.stt.infer(audio_clip)
                 video_frames, time_stamps = video.get_video_frames(scene)
                 try:
                     face_rec = registry.get_tool("FaceRecognition")
@@ -258,7 +270,9 @@ class VideoPreprocessor(BaseLLMBackend, BaseProcessor):
                                 f"Scene: {scene_info}\n"
                                 f"Summary: {scene.summary.get('summary', '')}"
                             )
-                            ltm.VideoHandler.text_add(video_md5, content, start_time, end_time)
+                            ltm.VideoHandler.text_add(
+                                video_md5, content, start_time, end_time
+                            )
                         except Exception as e:
                             logging.error(
                                 f"Failed to resume scene {index}: {e}. Set to default."
@@ -289,7 +303,10 @@ class VideoPreprocessor(BaseLLMBackend, BaseProcessor):
             for index, scene in enumerate(video.scenes):
                 print(f"Processing scene {index} / {len(video.scenes)}...")
                 audio_clip = video.get_audio_clip(scene)
-                scene.stt_res = self.stt.ainfer(audio_clip)
+                if audio_clip is None:
+                    scene.stt_res = {"text": ""}
+                else:
+                    scene.stt_res = await self.stt.ainfer(audio_clip)
                 video_frames, time_stamps = video.get_video_frames(scene)
                 try:
                     face_rec = registry.get_tool("FaceRecognition")
