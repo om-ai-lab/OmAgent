@@ -5,8 +5,12 @@ from typing import List, Tuple
 from colorama import Fore, Style
 from omagent_core.core.node.dnc.schemas import TaskStatus
 from pydantic import Field
-from tenacity import (retry, retry_if_exception_message, stop_after_attempt,
-                      stop_after_delay)
+from tenacity import (
+    retry,
+    retry_if_exception_message,
+    stop_after_attempt,
+    stop_after_delay,
+)
 
 from ....core.llm.base import BaseLLMBackend
 from ....core.node.base import BaseDecider

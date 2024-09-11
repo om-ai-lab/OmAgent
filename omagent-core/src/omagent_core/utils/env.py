@@ -1,6 +1,7 @@
 import os
 from distutils.util import strtobool
 
+
 class EnvVar(object):
     APP_NAME = "OmAgent"
 

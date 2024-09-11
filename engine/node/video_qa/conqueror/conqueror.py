@@ -13,8 +13,12 @@ from omagent_core.schemas.base import BaseInterface
 from omagent_core.utils.env import EnvVar
 from omagent_core.utils.registry import registry
 from pydantic import Field
-from tenacity import (retry, retry_if_exception_message, stop_after_attempt,
-                      stop_after_delay)
+from tenacity import (
+    retry,
+    retry_if_exception_message,
+    stop_after_attempt,
+    stop_after_delay,
+)
 
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -66,7 +70,10 @@ class VideoConqueror(TaskConqueror):
         }
         self.callback.send_block(chat_structure)
         chat_complete_body = {
-            "video_meta": {"video_duration_seconds(s)": self.stm.video.stream.duration.get_seconds(), "frame_rate": self.stm.video.stream.frame_rate},
+            "video_meta": {
+                "video_duration_seconds(s)": self.stm.video.stream.duration.get_seconds(),
+                "frame_rate": self.stm.video.stream.frame_rate,
+            },
             "video_summary": self.stm.video_summary,
             "task": task.task,
             "tools": self.tool_manager.generate_prompt(),
@@ -293,8 +300,8 @@ class VideoConqueror(TaskConqueror):
 
     def _extract_from_result(self, result: str) -> dict:
         try:
-            pattern = r'```json\s*(\{(?:.|\s)*?\})\s*```'
-            result = result.replace('\n', '')
+            pattern = r"```json\s*(\{(?:.|\s)*?\})\s*```"
+            result = result.replace("\n", "")
             match = re.search(pattern, result, re.DOTALL)
             if match:
                 return json.loads(match.group(1))

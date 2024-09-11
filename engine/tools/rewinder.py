@@ -83,7 +83,9 @@ class FrameExtraction(BaseTool, BaseLLMBackend):
             end = FrameTimecode(timecode=end_time, fps=video.stream.frame_rate)
 
         if start_time == end_time:
-            frames, time_stamps = video.get_video_frames((start, end + 1), video.stream.frame_rate)
+            frames, time_stamps = video.get_video_frames(
+                (start, end + 1), video.stream.frame_rate
+            )
         else:
             interval = int((end.get_frames() - start.get_frames()) / number)
             frames, time_stamps = video.get_video_frames((start, end), interval)
@@ -95,7 +97,11 @@ class FrameExtraction(BaseTool, BaseLLMBackend):
             extracted_frames.append(time_stamp)
             if self.stm.image_cache.get(f"<{img_index}>", None) is None:
                 self.stm.image_cache[f"<{img_index}>"] = frame
-        res = self.simple_infer(image_placeholders=''.join([f'<image_timestamp-{each}>' for each in extracted_frames]))['choices'][0]['message']['content']
+        res = self.simple_infer(
+            image_placeholders="".join(
+                [f"<image_timestamp-{each}>" for each in extracted_frames]
+            )
+        )["choices"][0]["message"]["content"]
         image_contents = self._extract_from_result(res)
         return f"{extracted_frames} described as: {image_contents}."
 

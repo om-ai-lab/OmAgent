@@ -114,7 +114,7 @@ class Message(BaseModel):
                         for each in re.findall(r"<image_([^_]+)>", each_content.text)
                     ]
                     # set max_num to 20
-                    image_patterns = image_patterns[-min(20, len(image_patterns)):]
+                    image_patterns = image_patterns[-min(20, len(image_patterns)) :]
                 else:
                     image_patterns = []
                 if image_patterns:
@@ -147,7 +147,7 @@ class Message(BaseModel):
                 for each in re.findall(r"<image_([^_]+)>", self.content.text)
             ]
             # set max_num to 20
-            image_patterns = image_patterns[-min(20, len(image_patterns)):]
+            image_patterns = image_patterns[-min(20, len(image_patterns)) :]
             if image_patterns:
                 image_cache = kwargs.get("image_cache")
                 if len(image_cache) < len(image_patterns):

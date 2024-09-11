@@ -356,4 +356,3 @@ class ToolManager(BaseLLMBackend):
                 }
                 self.callback.send_block(toolcall_failed_structure)
                 return "failed", str(error)
-

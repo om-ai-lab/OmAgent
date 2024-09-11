@@ -1,7 +1,7 @@
 import os
 import sysconfig
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 import geocoder
 from openai import AsyncAzureOpenAI, AzureOpenAI
@@ -32,13 +32,13 @@ class AzureGPTLLM(BaseLLM):
     max_tokens: int = 2048
     use_default_sys_prompt: bool = True
     response_format: str = "text"
-    
+
     class Config:
         """Configuration for this pydantic object."""
 
         protected_namespaces = ()
         extra = "allow"
-    
+
     def __init__(self, /, **data: Any) -> None:
         super().__init__(**data)
         self.client = AzureOpenAI(

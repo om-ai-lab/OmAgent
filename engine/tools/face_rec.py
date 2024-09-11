@@ -98,6 +98,6 @@ class FaceRecognition(BaseModelTool):
             names.update([item.label for item in anno])
 
         return f"Recognized {len(names)} faces: {', '.join(names)}"
-    
+
     async def _arun(self):
         return self._run()

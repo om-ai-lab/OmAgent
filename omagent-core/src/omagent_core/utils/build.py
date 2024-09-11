@@ -12,8 +12,8 @@ from ..core.node.base import BaseDecider, BaseLoop, BaseProcessor
 from ..core.node.base.base import Node
 from ..handlers.data_handler.ltm import LTM
 from ..schemas import BaseInterface
-from .registry import registry
 from .env import EnvVar
+from .registry import registry
 
 
 class Builder:
@@ -118,8 +118,8 @@ class Builder:
 
     @classmethod
     def from_dict(cls, config: dict):
-        if 'config' in config:
-            for k, v in config['config'].items():
+        if "config" in config:
+            for k, v in config["config"].items():
                 EnvVar.update(k, v)
         if "ltm" not in config:
             config["ltm"] = []
@@ -127,7 +127,7 @@ class Builder:
             config["ltm"] = [config["ltm"]]
         if isinstance(config["ltm"], list):
             for index, ltm_config in enumerate(config["ltm"]):
-                cls.prep_config(ltm_config, config['ltm'][index], ["ltm"])
+                cls.prep_config(ltm_config, config["ltm"][index], ["ltm"])
         else:
             cls.prep_config(config["ltm"], config, ["ltm"])
         if "main" not in config:

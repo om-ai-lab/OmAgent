@@ -4,8 +4,12 @@ from pathlib import Path
 from typing import List, Tuple
 
 from pydantic import Field
-from tenacity import (retry, retry_if_exception_message, stop_after_attempt,
-                      stop_after_delay)
+from tenacity import (
+    retry,
+    retry_if_exception_message,
+    stop_after_attempt,
+    stop_after_delay,
+)
 
 from .....handlers.data_handler.ltm import LTM
 from .....utils.env import EnvVar
@@ -57,7 +61,7 @@ class TaskDivider(BaseLLMBackend, BaseDecider):
             parent_task=task.task,
             uplevel_tasks=task.parent.sibling_info() if task.parent else [],
             former_results=args.last_output,
-            tools=self.tool_manager.generate_prompt()
+            tools=self.tool_manager.generate_prompt(),
         )
         chat_complete_res = self._extract_from_result(chat_complete_res)
         if chat_complete_res.get("tasks"):

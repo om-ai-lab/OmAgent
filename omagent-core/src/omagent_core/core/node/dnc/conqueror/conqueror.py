@@ -5,8 +5,12 @@ from typing import List, Tuple
 
 from colorama import Fore, Style
 from pydantic import Field
-from tenacity import (retry, retry_if_exception_message, stop_after_attempt,
-                      stop_after_delay)
+from tenacity import (
+    retry,
+    retry_if_exception_message,
+    stop_after_attempt,
+    stop_after_delay,
+)
 
 from .....handlers.data_handler.ltm import LTM
 from .....schemas.base import BaseInterface

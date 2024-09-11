@@ -1,4 +1,5 @@
 from abc import ABC
+
 # from sqlalchemy import Column, Text
 from datetime import datetime
 from typing import Any, Dict, Optional
