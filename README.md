@@ -12,6 +12,7 @@
 
 
 ## 🗓️ Updates
+* 09/20/2024: Our paper has been accepted by EMNLP 2024. See you in Miami!🏝
 * 07/04/2024: The OmAgent open-source project has been unveiled. 🎉
 * 06/24/2024: [The OmAgent research paper has been published.](https://arxiv.org/abs/2406.16620)
 
