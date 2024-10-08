@@ -139,7 +139,7 @@ OmAgentは3つの主要なコンポーネントで構成されています：
         input = DnCInterface(bot_id="1", task=AgentTask(id=0, task=task))
     
         bot_builder.run_bot(input)
-        return input.last_output
+        return input last_output
     
     
     if __name__ == "__main__":
