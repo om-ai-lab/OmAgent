@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-    <a>English</a> | <a href="README_ZH.md">中文</a>
+    <a>English</a> | <a href="README_ZH.md">中文</a> | <a href="README_JP.md">日本語</a>
 </p>
 
 
@@ -139,7 +139,7 @@ For more details, check out our paper **[OmAgent: A Multi-modal Agent Framework 
         input = DnCInterface(bot_id="1", task=AgentTask(id=0, task=task))
     
         bot_builder.run_bot(input)
-        return input.last_output
+        return input last_output
     
     
     if __name__ == "__main__":
