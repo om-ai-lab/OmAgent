@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-    <a>English</a> | <a href="README_ZH.md">中文</a> | <a href="README_JP.md">日本語</a>
+    <a>English</a> | <a href="README_ZH.md">中文</a> | <a href="README_JP.md">日本語</a> | <a href="README_FR.md">français</a>
 </p>
 
 
