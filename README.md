@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-    <a>English</a> | <a href="README_ZH.md">中文</a> | <a href="README_JP.md">日本語</a>
+    <a>English</a> | <a href="README_ZH.md">中文</a> | <a href="README_JP.md">日本語</a> | <a href="README_FR.md">Français</a>
 </p>
 
 
@@ -78,7 +78,7 @@ For more details, check out our paper **[OmAgent: A Multi-modal Agent Framework 
 
 ### Video Understanding Task
 #### Environment Preparation
-- **```Optional```** OmAgent uses Milvus Lite as a vector database to store vector data by default. If you wish to use the full Milvus service, you can deploy it [milvus vector database](https://milvus.io/docs/install_standalone-docker.md) using docker. The vector database is used to store video feature vectors and retrieve relevant vectors based on queries to reduce MLLM computation. Not installed docker? Refer to [docker installation guide](https://docs.docker.com/get-docker/).
+- **```Optional```** OmAgent, uses Milvus Lite as a vector database to store vector data by default. If you wish to use the full Milvus service, you can deploy it [milvus vector database](https://milvus.io/docs/install_standalone-docker.md) using docker. The vector database is used to store video feature vectors and retrieve relevant vectors based on queries to reduce MLLM computation. Not installed docker? Refer to [docker installation guide](https://docs.docker.com/get-docker/).
     ```shell
        # Download milvus startup script
        curl -sfL https://raw.githubusercontent.com/milvus-io/milvus/master/scripts/standalone_embed.sh -o standalone_embed.sh
@@ -88,7 +88,7 @@ For more details, check out our paper **[OmAgent: A Multi-modal Agent Framework 
     Fill in the relevant configuration information after the deployment ```workflows/video_understanding/config.yml```  
     
 - **```Optional```** Configure the face recognition algorithm. The face recognition algorithm can be called as a tool by the agent, but it is optional. You can disable this feature by modifying the ```workflows/video_understanding/tools/video_tools.json``` configuration file and removing the FaceRecognition section. The default face recognition database is stored in the ```data/face_db``` directory, with different folders corresponding to different individuals.
-- **```Optional```** Open Vocabulary Detection (ovd) service, used to enhance OmAgent's ability to recognize various objects. The ovd tools depend on this service, but it is optional. You can disable ovd tools by following these steps. Remove the following from ```workflows/video_understanding/tools/video_tools.json```
+- **```Optional```** Open Vocabulary Detection (OVD) service, used to enhance OmAgent's ability to recognize various objects. The OVD tools depend on this service, but it is optional. You can disable OVD tools by following these steps. Remove the following from ```workflows/video_understanding/tools/video_tools.json```
     ```json 
        {
             "name": "ObjectDetection",
@@ -149,10 +149,10 @@ For more details, check out our paper **[OmAgent: A Multi-modal Agent Framework 
 
 ## 🔗 Related works
 If you are intrigued by multimodal algorithms, large language models, and agent technologies, we invite you to delve deeper into our research endeavors:  
-🔆 [How to Evaluate the Generalization of Detection? A Benchmark for Comprehensive Open-Vocabulary Detection](https://arxiv.org/abs/2308.13177)(AAAI24)   
-🏠 [Github Repository](https://github.com/om-ai-lab/OVDEval/tree/main)
+🔆 [How to Evaluate the Generalization of Detection? A Benchmark for Comprehensive Open-Vocabulary Detection](https://arxiv.org/abs/2308.13177) (AAAI24)   
+🏠 [GitHub Repository](https://github.com/om-ai-lab/OVDEval/tree/main)
 
-🔆 [OmDet: Large-scale vision-language multi-dataset pre-training with multimodal detection network](https://ietresearch.onlinelibrary.wiley.com/doi/full/10.1049/cvi2.12268)(IET Computer Vision)  
+🔆 [OmDet: Large-scale vision-language multi-dataset pre-training with multimodal detection network](https://ietresearch.onlinelibrary.wiley.com/doi/full/10.1049/cvi2.12268) (IET Computer Vision)  
 🏠 [Github Repository](https://github.com/om-ai-lab/OmDet)
 
 ## ⭐️ Citation
