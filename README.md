@@ -22,7 +22,7 @@
 ## 📖 Introduction
 OmAgent is a sophisticated multimodal intelligent agent system, dedicated to harnessing the power of multimodal large language models and other multimodal algorithms to accomplish intriguing tasks. The OmAgent project encompasses a lightweight intelligent agent framework, omagent_core, meticulously designed to address multimodal challenges. With this framework, we have constructed an intricate long-form video comprehension system—OmAgent. Naturally, you have the liberty to employ it to realize any of your innovative ideas.  
 OmAgent comprises three core components:  
-- **Video2RAG**: The concept behind this component is to transform the comprehension of long videos into a multimodal RAG task. The advantage of this approach is that it transcends the limitations imposed by video length; however, the downside is that such preprocessing may lead to the loss of substantial video detail.  
+- **Video2RAG**: The concept behind this component is to transform the comprehension of long videos into a multimodal RAG task. The advantage of this approach is that it overcomes the limitations imposed by video length; however, the downside is that such preprocessing may result in the loss of significant video detail.
 - **DnCLoop**: Inspired by the classical algorithmic paradigm of Divide and Conquer, we devised a recursive general-task processing logic. This method iteratively refines complex problems into a task tree, ultimately transforming intricate tasks into a series of solvable, simpler tasks.  
 - **Rewinder Tool**: To address the issue of information loss in the Video2RAG process, we have designed a "progress bar" tool named Rewinder that can be autonomously used by agents. This enables the agents to revisit any video details, allowing them to seek out the necessary information.  
 
@@ -47,7 +47,7 @@ For more details, check out our paper **[OmAgent: A Multi-modal Agent Framework 
 ## 🚀 Quick Start
 
 ### General Task Processing
-1. Create a configuration file and set some necessary variables
+1. Create a configuration file and set the necessary variables.
    ```shell
    cd workflows/general && vim config.yaml
    ```
@@ -115,7 +115,7 @@ For more details, check out our paper **[OmAgent: A Multi-modal Agent Framework 
 - Download some interesting videos
 
 #### Running Preparation
-1. Create a configuration file and set some necessary environment variables
+1. Create a configuration file and set the required environment variables.
    ```shell
    cd workflows/video_understanding && vim config.yaml
    ```
@@ -145,10 +145,10 @@ For more details, check out our paper **[OmAgent: A Multi-modal Agent Framework 
     if __name__ == "__main__":
         run_agent("") # You will be prompted to enter the query in the console
     ```
-3. Start OmAgent by running ```python run.py```. Enter the path of the video you want to process, wait a moment, then enter your query, and OmAgent will answer based on the query.
+3. Start OmAgent by running ```python run.py```. Provide the path of the video you wish to process, wait briefly, then enter your query, and OmAgent will respond accordingly.
 
 ## 🔗 Related works
-If you are intrigued by multimodal algorithms, large language models, and agent technologies, we invite you to delve deeper into our research endeavors:  
+If you are interested in multimodal algorithms, large language models, and agent technologies, we encourage you to explore our research endeavors:  
 🔆 [How to Evaluate the Generalization of Detection? A Benchmark for Comprehensive Open-Vocabulary Detection](https://arxiv.org/abs/2308.13177) (AAAI24)   
 🏠 [GitHub Repository](https://github.com/om-ai-lab/OVDEval/tree/main)
 
