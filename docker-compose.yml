@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  omagent:
+    build: .
+    container_name: omagent_app
+    ports:
+      - "8000:8000"  # Expose app's default port
+    volumes:
+      - .:/app  # Mount the project directory
+    environment:
+      custom_openai_endpoint: "your_openai_endpoint"
+      custom_openai_key: "your_openai_key"
+      bing_api_key: "your_bing_key"
+      ovd_endpoint: "http://milvus:8000/inf_predict"  # Point to the Milvus service
+      ovd_model_id: "OmDet-Turbo_tiny_SWIN_T"
+    depends_on:
+      - milvus
+    command: python run.py  # Run the main script
+
+  milvus:
+    image: milvusdb/milvus:v2.3.0
+    container_name: milvus
+    ports:
+      - "19530:19530"  # Milvus default port for vector database communication
+    environment:
+      MILVUS_MODE: "standalone"
+    volumes:
+      - milvus_data:/var/lib/milvus
+
+volumes:
+  milvus_data: {}
