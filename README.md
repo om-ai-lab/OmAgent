@@ -7,11 +7,20 @@
 </p>
 
 <p align="center">
+  <a href="https://twitter.com/intent/follow?screen_name=OmAI_lab" target="_blank">
+    <img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/OmAI_lab">
+  </a>
+  <a href="https://discord.gg/9JfTJ7bk" target="_blank">
+    <img alt="Discord" src="https://img.shields.io/discord/1296666215548321822?style=flat&logo=discord">
+  </a>
+</p>
+
+<p align="center">
     <a>English</a> | <a href="README_ZH.md">中文</a> | <a href="README_JP.md">日本語</a> | <a href="README_FR.md">Français</a>
 </p>
 
-
 ## 🗓️ Updates
+* 10/20/2024: We are actively engaged in developing version 2.0.0 🚧 Exciting new features are underway! You are welcome to join us on X and Discord~
 * 09/20/2024: Our paper has been accepted by EMNLP 2024. See you in Miami!🏝
 * 07/04/2024: The OmAgent open-source project has been unveiled. 🎉
 * 06/24/2024: [The OmAgent research paper has been published.](https://arxiv.org/abs/2406.16620)
