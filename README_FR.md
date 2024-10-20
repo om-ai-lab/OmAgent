@@ -22,7 +22,7 @@
 ---
 
 ## 🗓️ Mises à jour récentes
-* **20/10/2024** : Nous nous engageons activement à développer la version 2.0.0 🚧 De nouvelles fonctionnalités passionnantes sont en cours ! Vous êtes invités à nous rejoindre sur X et Discord~
+* **20/10/2024** : Nous nous engageons activement à développer la v0.2.0 🚧 De nouvelles fonctionnalités passionnantes sont en cours ! Vous êtes invités à nous rejoindre sur X et Discord~
 * **20/09/2024** : Notre article a été accepté par EMNLP 2024 ! Rejoignez-nous à Miami ! 🏝
 * **04/07/2024** : Le projet open-source OmAgent est officiellement lancé ! 🎉
 * **24/06/2024** : [Publication de l'article de recherche OmAgent](https://arxiv.org/abs/2406.16620).

@@ -20,7 +20,7 @@
 </p>
 
 ## 🗓️ Updates
-* 10/20/2024: We are actively engaged in developing version 2.0.0 🚧 Exciting new features are underway! You are welcome to join us on X and Discord~
+* 10/20/2024: We are actively engaged in developing v0.2.0 🚧 Exciting new features are underway! You are welcome to join us on X and Discord~
 * 09/20/2024: Our paper has been accepted by EMNLP 2024. See you in Miami!🏝
 * 07/04/2024: The OmAgent open-source project has been unveiled. 🎉
 * 06/24/2024: [The OmAgent research paper has been published.](https://arxiv.org/abs/2406.16620)
