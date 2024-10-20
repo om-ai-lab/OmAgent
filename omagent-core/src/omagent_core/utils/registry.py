@@ -71,12 +71,11 @@ class Registry:
     def import_module(self, project_root: str = None, custom: List[str] = []):
         root_path = Path(__file__).parents[1]
         default_path = [
-            root_path.joinpath("core/prompt"),
-            root_path.joinpath("core/llm"),
-            root_path.joinpath("core/node"),
-            root_path.joinpath("core/encoder"),
-            root_path.joinpath("core/tool_system/tools"),
+            root_path.joinpath("models"),
+            root_path.joinpath("engine/node"),
+            root_path.joinpath("tool_system/tools"),
             root_path.joinpath("handlers"),
+            root_path.joinpath("advanced_components"),
         ]
         for path in default_path:
             for module in path.rglob("*.[ps][yo]"):

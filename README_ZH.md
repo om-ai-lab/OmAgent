@@ -74,7 +74,7 @@ OmAgent包括三个核心组成部分:
         logging.init_logger("omagent", "omagent", level="INFO")
         registry.import_module(project_root=Path(__file__).parent, custom=["./engine"])
         bot_builder = Builder.from_file("workflows/general") # 通用任务处理workflow配置目录
-        input = DnCInterface(bot_id="1", task=AgentTask(id=0, task=task))
+        input = BaseWorkflowContext(bot_id="1", task=AgentTask(id=0, task=task))
     
         bot_builder.run_bot(input)
         return input.last_output
@@ -146,7 +146,7 @@ OmAgent包括三个核心组成部分:
         logging.init_logger("omagent", "omagent", level="INFO")
         registry.import_module(project_root=Path(__file__).parent, custom=["./engine"])
         bot_builder = Builder.from_file("workflows/video_understanding") # 视频理解任务workflow配置目录
-        input = DnCInterface(bot_id="1", task=AgentTask(id=0, task=task))
+        input = BaseWorkflowContext(bot_id="1", task=AgentTask(id=0, task=task))
     
         bot_builder.run_bot(input)
         return input.last_output

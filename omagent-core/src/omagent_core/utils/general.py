@@ -2,16 +2,11 @@ import base64
 from collections import OrderedDict
 from io import BytesIO
 from typing import Sequence
-
-import httpx
-import requests
-
-from ..handlers.error_handler.error import VQLError
-from ..handlers.log_handler.logger import logging
+import platform
 
 
 class LRUCache:
-    # initialising capacity
+    # initializing capacity
     def __init__(self, capacity: int):
         self.cache = OrderedDict()
         self.capacity = capacity
@@ -46,68 +41,6 @@ class LRUCache:
         self.cache.pop(key, None)
 
 
-def request(
-    json: dict,
-    url: str,
-    headers: dict | None = None,
-) -> dict:
-    try:
-        res = requests.post(url=url, json=json, headers=headers)
-    except Exception as error:
-        logging.error(
-            "Request URL: {} | Request body: {} | Error: {}".format(url, json, error)
-        )
-        raise VQLError(511, detail=str(error))
-    if res.status_code < 299:
-        return res.json()
-    elif res.status_code == 404:
-        logging.error("Request URL: {} | Error[404]: 请求错误: 错误的地址".format(url))
-        raise VQLError(516)
-    elif res.status_code == 422:
-        logging.error(
-            "Request URL: {} | Request body: {} | Error[422]: 请求错误: 错误的请求格式".format(
-                url, json
-            )
-        )
-        raise VQLError(517)
-    else:
-        info = res.json()
-        logging.error(
-            "Request URL: {} | Request body: {} | Error: {}".format(url, json, info)
-        )
-        raise VQLError(511, detail=info)
-
-
-async def arequest(url: str, json: dict, headers: dict | None = None) -> dict:
-    try:
-        async with httpx.AsyncClient() as client:
-            res = await client.post(url=url, json=json, headers=headers, timeout=30)
-    except Exception as error:
-        logging.error(
-            "Request URL: {} | Request body: {} | Error: {}".format(url, json, error)
-        )
-        raise VQLError(511, detail=str(error))
-
-    if res.status_code < 299:
-        return res.json()
-    elif res.status_code == 404:
-        logging.error("Request URL: {} | Error[404]: 请求错误: 错误的地址".format(url))
-        raise VQLError(516)
-    elif res.status_code == 422:
-        logging.error(
-            "Request URL: {} | Request body: {} | Error[422]: 请求错误: 错误的请求格式".format(
-                url, json
-            )
-        )
-        raise VQLError(517)
-    else:
-        info = res.json()
-        logging.error(
-            "Request URL: {} | Request body: {} | Error: {}".format(url, json, info)
-        )
-        raise VQLError(511, detail=info)
-
-
 def chunks(l: Sequence, win_len: int, stride_len: int):
     s_id = 0
     e_id = min(len(l), win_len)
@@ -139,3 +72,11 @@ def encode_image(input):
         return res
     else:
         return _encode(input)
+
+
+def get_platform() -> str:
+    """Get platform."""
+    system = platform.system()
+    if system == "Darwin":
+        return "MacOS"
+    return system
