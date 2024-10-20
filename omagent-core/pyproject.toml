@@ -8,7 +8,7 @@ version = "0.0.1"
 authors = [
     { name = "panregedit", email = "panregedit@gmail.com" },
 ]
-description = "Core package for OMbots"
+description = "Core package for OmAgent"
 readme = "README.md"
 requires-python = ">=3.10, <3.12"
 classifiers = [
@@ -40,4 +40,4 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://git.linker.cc/research/misc/ombot_utils.git"
+"Homepage" = "https://github.com/om-ai-lab/OmAgent"

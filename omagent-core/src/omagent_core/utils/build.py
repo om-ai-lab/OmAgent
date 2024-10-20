@@ -8,10 +8,9 @@ from uuid import uuid4
 
 import yaml
 
-from ..core.node.base import BaseDecider, BaseLoop, BaseProcessor
-from ..core.node.base.base import Node
-from ..handlers.data_handler.ltm import LTM
-from ..schemas import BaseInterface
+from ..engine.node import Node, BaseDecider, BaseLoop, BaseProcessor
+from ..memories.ltms.ltm import LTM
+from ..engine.workflow.context import BaseWorkflowContext
 from .env import EnvVar
 from .registry import registry
 
@@ -25,7 +24,7 @@ class Builder:
                 config["name"], registry.get_handler(config["name"])(**config)
             )
 
-    def run_bot(self, input: BaseInterface):
+    def run_bot(self, input: BaseWorkflowContext):
         self.bot.set_request_id(str(uuid4()))
         self.bot.run(input, self.ltm)
 

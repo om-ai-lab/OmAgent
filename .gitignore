@@ -150,4 +150,4 @@ tests
 data/
 tests/mathvista
 running_logs/
-.db
+*.db

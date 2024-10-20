@@ -65,7 +65,7 @@ For more details, check out our paper **[OmAgent: A Multi-modal Agent Framework 
         logging.init_logger("omagent", "omagent", level="INFO")
         registry.import_module(project_root=Path(__file__).parent, custom=["./engine"])
         bot_builder = Builder.from_file("workflows/general") # General task processing workflow configuration directory
-        input = DnCInterface(bot_id="1", task=AgentTask(id=0, task=task))
+        input = BaseWorkflowContext(bot_id="1", task=AgentTask(id=0, task=task))
     
         bot_builder.run_bot(input)
         return input.last_output
@@ -136,7 +136,7 @@ For more details, check out our paper **[OmAgent: A Multi-modal Agent Framework 
         logging.init_logger("omagent", "omagent", level="INFO")
         registry.import_module(project_root=Path(__file__).parent, custom=["./engine"])
         bot_builder = Builder.from_file("workflows/video_understanding") # Video understanding task workflow configuration directory
-        input = DnCInterface(bot_id="1", task=AgentTask(id=0, task=task))
+        input = BaseWorkflowContext(bot_id="1", task=AgentTask(id=0, task=task))
     
         bot_builder.run_bot(input)
         return input.last_output

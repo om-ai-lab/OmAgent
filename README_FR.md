@@ -75,7 +75,7 @@ Pour plus d'informations, consultez notre article : **[OmAgent : Un cadre d'agen
        logging.init_logger("omagent", "omagent", level="INFO")
        registry.import_module(project_root=Path(__file__).parent, custom=["./engine"])
        bot_builder = Builder.from_file("workflows/general")
-       input = DnCInterface(bot_id="1", task=AgentTask(id=0, task=task))
+       input = BaseWorkflowContext(bot_id="1", task=AgentTask(id=0, task=task))
    
        bot_builder.run_bot(input)
        return input.last_output
