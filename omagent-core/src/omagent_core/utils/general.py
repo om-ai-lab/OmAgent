@@ -45,6 +45,26 @@ class LRUCache:
     def pop(self, key, value):
         self.cache.pop(key, None)
 
+def handle_response(res, json, url):
+    if res.status_code < 299:
+        return res.json()
+    elif res.status_code == 404:
+        logging.error("Request URL: {} | Error[404]: 请求错误: 错误的地址".format(url))
+        raise VQLError(516)
+    elif res.status_code == 422:
+        logging.error(
+            "Request URL: {} | Request body: {} | Error[422]: 请求错误: 错误的请求格式".format(
+                url, json
+            )
+        )
+        raise VQLError(517)
+    else:
+        info = res.json()
+        logging.error(
+            "Request URL: {} | Request body: {} | Error: {}".format(url, json, info)
+        )
+        raise VQLError(511, detail=info)
+        
 
 def request(
     json: dict,
@@ -58,24 +78,8 @@ def request(
             "Request URL: {} | Request body: {} | Error: {}".format(url, json, error)
         )
         raise VQLError(511, detail=str(error))
-    if res.status_code < 299:
-        return res.json()
-    elif res.status_code == 404:
-        logging.error("Request URL: {} | Error[404]: 请求错误: 错误的地址".format(url))
-        raise VQLError(516)
-    elif res.status_code == 422:
-        logging.error(
-            "Request URL: {} | Request body: {} | Error[422]: 请求错误: 错误的请求格式".format(
-                url, json
-            )
-        )
-        raise VQLError(517)
-    else:
-        info = res.json()
-        logging.error(
-            "Request URL: {} | Request body: {} | Error: {}".format(url, json, info)
-        )
-        raise VQLError(511, detail=info)
+    
+    return handle_response(res, json, url)
 
 
 async def arequest(url: str, json: dict, headers: dict | None = None) -> dict:
@@ -88,24 +92,7 @@ async def arequest(url: str, json: dict, headers: dict | None = None) -> dict:
         )
         raise VQLError(511, detail=str(error))
 
-    if res.status_code < 299:
-        return res.json()
-    elif res.status_code == 404:
-        logging.error("Request URL: {} | Error[404]: 请求错误: 错误的地址".format(url))
-        raise VQLError(516)
-    elif res.status_code == 422:
-        logging.error(
-            "Request URL: {} | Request body: {} | Error[422]: 请求错误: 错误的请求格式".format(
-                url, json
-            )
-        )
-        raise VQLError(517)
-    else:
-        info = res.json()
-        logging.error(
-            "Request URL: {} | Request body: {} | Error: {}".format(url, json, info)
-        )
-        raise VQLError(511, detail=info)
+    return handle_response(res, json, url)
 
 
 def chunks(l: Sequence, win_len: int, stride_len: int):
