@@ -13,7 +13,7 @@ from tenacity import (
 )
 
 from ....models.llms.base import BaseLLMBackend
-from ....engine.node.base import BaseDecider
+from ....engine.node.decider import BaseDecider
 from ....engine.workflow.context import BaseWorkflowContext
 from ....models.llms.prompt import PromptTemplate
 from ....memories.ltms.ltm import LTM
