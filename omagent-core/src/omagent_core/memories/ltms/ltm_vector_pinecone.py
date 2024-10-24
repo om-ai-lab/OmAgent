@@ -59,7 +59,6 @@ class VectorPineconeLTM(LTMVecotrBase):
         encode_data: Optional[List[Any]] = None,
         modality: Optional[str] = None,
         target_field: Optional[str] = None,
-        src_type: Optional[str] = None,
         namespace: Optional[str] = None,
     ) -> int:
         """
@@ -70,7 +69,6 @@ class VectorPineconeLTM(LTMVecotrBase):
             encode_data (Optional[List[Any]]): Data to be encoded if not pre-encoded.
             modality (Optional[str]): Modality of the data for encoding.
             target_field (Optional[str]): Field name containing pre-encoded vectors.
-            src_type (Optional[str]): Source type for encoding.
             namespace (Optional[str]): Namespace for the data.
 
         Returns:
@@ -80,7 +78,7 @@ class VectorPineconeLTM(LTMVecotrBase):
             VQLError: If there's a mismatch in data or missing required fields.
         """
         if encode_data:
-            records = self._prepare_encode_data(data, encode_data, modality, src_type)
+            records = self._prepare_encode_data(data, encode_data, modality)
         elif target_field:
             records = self._prepare_target_field_data(data, target_field)
         else:
@@ -106,13 +104,13 @@ class VectorPineconeLTM(LTMVecotrBase):
         )
         return upsert_response['upserted_count']
 
-    def _prepare_encode_data(self, data, encode_data, modality, src_type):
+    def _prepare_encode_data(self, data, encode_data, modality):
         """Prepare data that needs to be encoded."""
         encoder = self.encoders.get(modality)
         if not encoder:
             raise VQLError(500, detail=f'Missing encoder for modality "{modality}"')
 
-        vectors = encoder.infer(encode_data, src_type=src_type)
+        vectors = encoder.infer(encode_data)
         if len(vectors) != len(data):
             raise VQLError(500, detail='Mismatch between data and encoded vectors')
 
@@ -137,14 +135,13 @@ class VectorPineconeLTM(LTMVecotrBase):
         filters: Dict[str, Any] = {},
         threshold: float = -1.0,
         size: int = 10,
-        src_type: Optional[str] = None,
         namespace: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         # Encode query data
         encoder = self.encoders.get(modality)
         if not encoder:
             raise VQLError(500, detail=f'Missing encoder for modality "{modality}"')
-        vector = encoder.infer([query_data], src_type=src_type)[0]
+        vector = encoder.infer([query_data])[0]
 
         # Perform search
         query_response = self.index.query(
