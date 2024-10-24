@@ -1,26 +1,18 @@
 from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel
-from pymilvus import (    
-    MilvusClient    
-)
+
 from omagent_core.memories.ltms.ltm_base import LTMVecotrBase
 from omagent_core.models.encoders.base import EncoderBase
 from omagent_core.utils.error import VQLError
 
 
 class VectorMilvusLTM(LTMVecotrBase):
-    def __init__(self, index_id: str, host_url: str = "http://localhost:19530", token: str = ""):
+    def __init__(self, index_id: str, milvus_client):
         self.encoders: Dict[str, EncoderBase] = {}
         self.dim: Optional[int] = None
         self.index_id: str = index_id
-        self.host_url = host_url
-        self.token = token
-
         # Initialize Milvus client
-        self.milvus_client = MilvusClient(
-            uri=self.host_url,
-            token=self.token
-        )
+        self.milvus_client = milvus_client 
 
     def encoder_register(self, modality: str, encoder: EncoderBase):
         self.encoders[modality] = encoder
@@ -184,7 +176,12 @@ class VectorMilvusLTM(LTMVecotrBase):
 if __name__ == "__main__":
     from omagent_core.models.encoders.openai_encoder import OpenaiTextEmbeddingV3
     import os
-    ltm = VectorMilvusLTM(index_id="test_collection4")
+    from pymilvus import MilvusClient    
+    milvus_client = MilvusClient(
+            uri="http://localhost:19530",
+            token=""
+        )
+    ltm = VectorMilvusLTM(index_id="test_collection4", milvus_client=milvus_client)
     api_key = os.getenv('OPENAI_API_KEY')
     # Register an encoder (ensure your encoder implements EncoderBase)
     
