@@ -60,7 +60,7 @@ class VectorPineconeLTM(LTMVecotrBase):
         modality: Optional[str] = None,
         target_field: Optional[str] = None,
         namespace: Optional[str] = None,
-    ) -> int:
+    ):
         """
         Add data to the Pinecone index.
 
@@ -87,12 +87,14 @@ class VectorPineconeLTM(LTMVecotrBase):
         # Prepare data for Pinecone upsert
         # Each record should be a tuple: (id, vector, metadata)
         vectors = []
+        ids = []
         for idx, record in enumerate(records):
             vector = record.get("vector")
             if vector is None:
                 raise VQLError(500, detail="Missing 'vector' in record")
             # Use provided ID or generate one
             id = record.get("id", str(uuid.uuid4()))
+            ids.append(id)
             # Remove 'vector' and 'id' from metadata
             metadata = {k: v for k, v in record.items() if k not in ["vector", "id"]}
             vectors.append((id, vector, metadata))
@@ -102,7 +104,9 @@ class VectorPineconeLTM(LTMVecotrBase):
             vectors=vectors,
             namespace=namespace
         )
-        return upsert_response['upserted_count']
+        
+        #res = {'insert_count': 3, 'ids': [453417917787420124, 453417917787420125, 453417917787420126]}
+        return {'insert_count': upsert_response['upserted_count'], "ids":ids}
 
     def _prepare_encode_data(self, data, encode_data, modality):
         """Prepare data that needs to be encoded."""
@@ -169,6 +173,7 @@ class VectorPineconeLTM(LTMVecotrBase):
         # Delete data
         delete_response = self.index.delete(ids=ids, namespace=namespace)
         print(f"Deleted IDs: {ids}")
+        
         return delete_response
 
     def fetch_data(self, ids: List[str], namespace: Optional[str] = None):

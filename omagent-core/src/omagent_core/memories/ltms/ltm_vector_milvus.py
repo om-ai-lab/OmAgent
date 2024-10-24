@@ -21,7 +21,7 @@ class VectorMilvusLTM(LTMVecotrBase):
         elif self.dim != encoder.dim:
             raise VQLError(500, detail="All encoders must have the same dimension")
 
-    def init_memory(self, auto_id=True, schema=None, index_params=None) -> None:
+    def init_memory(self, auto_id=False, schema=None, index_params=None) -> None:
         # Create collection
         """
         Initialize the Milvus collection for storing vectors.
@@ -81,7 +81,8 @@ class VectorMilvusLTM(LTMVecotrBase):
             collection_name=self.index_id,
             data=records
         )
-        return res["insert_count"]
+        #res = {'insert_count': 3, 'ids': [453417917787420124, 453417917787420125, 453417917787420126]}
+        return res
 
     def _prepare_encode_data(self, data, encode_data, modality):
         """Prepare data that needs to be encoded."""
@@ -178,7 +179,7 @@ if __name__ == "__main__":
             uri="http://localhost:19530",
             token=""
         )
-    ltm = VectorMilvusLTM(index_id="test_collection4", milvus_client=milvus_client)
+    ltm = VectorMilvusLTM(index_id="test_collection5", milvus_client=milvus_client)
     api_key = os.getenv('OPENAI_API_KEY')
     # Register an encoder (ensure your encoder implements EncoderBase)
     
@@ -190,9 +191,9 @@ if __name__ == "__main__":
 
     # Add data
     data = [
-    {"color": "red", "content":"Hello World"},
-    {"color": "blue",  "content":"Hi there"},
-    {"color": "green",   "content": "Greetings"},
+    {"id":1, "color": "red", "content":"Hello World"},
+    {"id":2, "color": "blue",  "content":"Hi there"},
+    {"id":3, "color": "green",   "content": "Greetings"},
     ]
     encode_data = ["Hello World", "Hi there", "Greetings"]
     ltm.add_data(data=data, encode_data=encode_data, modality="text")
