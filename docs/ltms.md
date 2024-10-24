@@ -58,7 +58,7 @@ def init_memory(self, auto_id=True, schema=None, index_params=None) -> None:
 
 Initializes the Milvus collection.
 
-- `auto_id` (bool, optional): If `True`, Milvus auto-generates IDs. Defaults to `True`.
+- `auto_id` (bool, optional): If `True`, Milvus auto-generates IDs. Defaults to `False`.
 - `schema` (optional): Custom schema for the collection.
 - `index_params` (dict, optional): Parameters for creating an index.
 
@@ -77,7 +77,7 @@ def add_data(
     encode_data: Optional[List[Any]] = None,
     modality: Optional[str] = None,
     target_field: Optional[str] = None,
-) -> int:
+):
 ```
 
 Adds data to the Milvus collection.
@@ -89,7 +89,11 @@ Adds data to the Milvus collection.
 
 **Returns:**
 
-- `int`: Number of records inserted.
+- `dict`: Number of records inserted and ids
+```python
+# Example Return
+{'insert_count': 3, 'ids': [453417917787420124, 453417917787420125, 453417917787420126]}
+```
 
 **Usage:**
 
@@ -190,13 +194,13 @@ encoder = OpenaiTextEmbeddingV3(api_key=api_key, endpoint="https://api.openai.co
 ltm.encoder_register(modality="text", encoder=encoder)
 
 # Initialize the memory (collection)
-ltm.init_memory()
+ltm.init_memory(audo_id=False)
 
-# Add data
+# Add data (When auto_id is set to True, there's no need to include the 'id' field when adding data.)
 data = [
-    {"color": "red", "content": "Hello World"},
-    {"color": "blue", "content": "Hi there"},
-    {"color": "green", "content": "Greetings"},
+    {"id":1, "color": "red", "content": "Hello World"},
+    {"id":2, "color": "blue", "content": "Hi there"},
+    {"id":3, "color": "green", "content": "Greetings"},
 ]
 encode_data = ["Hello World", "Hi there", "Greetings"]
 ltm.add_data(data=data, encode_data=encode_data, modality="text")
@@ -325,7 +329,7 @@ Adds data to the Pinecone index.
 
 **Returns:**
 
-- `int`: Number of records inserted.
+- `dict`: Number of records inserted and inserted ids
 
 **Usage:**
 
@@ -467,9 +471,9 @@ ltm.init_memory(spec=spec)
 
 # Add data
 data = [
-    {"color": "red", "content": "Hello World"},
-    {"color": "blue", "content": "Hi there"},
-    {"color": "green", "content": "Greetings"},
+    {"id":1, "color": "red", "content": "Hello World"},
+    {"id":2, "color": "blue", "content": "Hi there"},
+    {"id":3, "color": "green", "content": "Greetings"},
 ]
 encode_data = ["Hello World", "Hi there", "Greetings"]
 ltm.add_data(data=data, encode_data=encode_data, modality="text")
