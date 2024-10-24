@@ -175,6 +175,7 @@ ltm.delete_data(ids=["1", "2", "3"])
 ## **Usage Example**
 
 ```python
+from omagent_core.memories.ltms.ltm_vector_milvus import VectorMilvusLTM
 from omagent_core.models.encoders.openai_encoder import OpenaiTextEmbeddingV3
 from pymilvus import Milvus
 import os
@@ -185,7 +186,7 @@ ltm = VectorMilvusLTM(index_id="my_collection", milvus_client=milvus_client)
 
 # Register an encoder
 api_key = os.getenv('OPENAI_API_KEY')
-encoder = OpenaiTextEmbeddingV3(api_key=api_key)
+encoder = OpenaiTextEmbeddingV3(api_key=api_key, endpoint="https://api.openai.com/v1/")
 ltm.encoder_register(modality="text", encoder=encoder)
 
 # Initialize the memory (collection)
@@ -443,6 +444,7 @@ ltm.update_data(
 ## **Usage Example**
 
 ```python
+from omagent_core.memories.ltms.ltm_vector_pinecone import VectorPineconeLTM
 from pinecone import Pinecone, ServerlessSpec
 from omagent_core.models.encoders.openai_encoder import OpenaiTextEmbeddingV3
 import os

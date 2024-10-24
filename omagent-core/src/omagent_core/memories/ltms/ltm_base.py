@@ -19,7 +19,6 @@ class LTMVecotrBase(ABC):
         data: List[Dict[str, Any]],
         encode_data: List[Any],
         modality: str,
-        src_type: Optional[str] = None,
     ):
         """
         Add data to the knowledge base with vector representations.
@@ -28,7 +27,6 @@ class LTMVecotrBase(ABC):
             data (List[Dict[str, Any]]): The metadata of the data to add.
             encode_data (List[Any]): The actual data used for encoding.
             modality (str): The modality of the data (e.g., 'text', 'image').
-            src_type (Optional[str]): The source type of the encode_data.
         """
         pass
 
@@ -41,7 +39,6 @@ class LTMVecotrBase(ABC):
         filters: Dict[str, Any] = {},
         threshold: float = 0.0,
         size: int = 1,
-        src_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
         Match query data against the knowledge base.
@@ -86,7 +83,6 @@ class LTMSQLBase(ABC):
         data: List[Dict[str, Any]],
         encode_data: List[Any],
         modality: str,
-        src_type: Optional[str] = None,
     ):
         """
         Add data to the knowledge base with vector representations.
@@ -95,7 +91,6 @@ class LTMSQLBase(ABC):
             data (List[Dict[str, Any]]): The metadata of the data to add.
             encode_data (List[Any]): The actual data used for encoding.
             modality (str): The modality of the data (e.g., 'text', 'image').
-            src_type (Optional[str]): The source type of the encode_data.
         """
         pass
 
@@ -108,7 +103,6 @@ class LTMSQLBase(ABC):
         filters: Dict[str, Any] = {},
         threshold: float = 0.0,
         size: int = 1,
-        src_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
         Match query data against the knowledge base.
@@ -119,7 +113,6 @@ class LTMSQLBase(ABC):
             filters (Dict[str, Any]): Filters to apply during the search.
             threshold (float): The similarity threshold.
             size (int): The number of results to return.
-            src_type (Optional[str]): The source type of the query data.
 
         Returns:
             List[Dict[str, Any]]: A list of matched data with scores and metadata.
