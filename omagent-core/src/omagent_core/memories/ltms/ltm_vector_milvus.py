@@ -21,7 +21,7 @@ class VectorMilvusLTM(LTMVecotrBase):
         elif self.dim != encoder.dim:
             raise VQLError(500, detail="All encoders must have the same dimension")
 
-    def init_memory(self, auto_id=False, schema=None, index_params=None) -> None:
+    def init_memory(self, auto_id=False, schema=None, index_params=None, dim=None) -> None:
         # Create collection
         """
         Initialize the Milvus collection for storing vectors.
@@ -44,7 +44,7 @@ class VectorMilvusLTM(LTMVecotrBase):
             schema=schema,
             index_params=index_params,
             auto_id=auto_id,            
-            dimension=self.dim
+            dimension=self.dim if self.dim else dim
         )
 
     def add_data(
