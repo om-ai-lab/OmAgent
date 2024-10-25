@@ -18,7 +18,7 @@ from .registry import registry
 class Builder:
     def __init__(self, main_conf: dict, ltm_config: list) -> None:
         self.bot = registry.get_node(main_conf["name"])(**main_conf)
-        self.ltm = LTM()
+        self.ltm = LTM(ltm_config)
         for config in ltm_config:
             self.ltm.handler_register(
                 config["name"], registry.get_handler(config["name"])(**config)
@@ -150,6 +150,7 @@ class Builder:
             if key in config:
                 raise Exception("Duplicate module name [{}]".format(key))
             config[key] = sub_conf
+        
         return cls.from_dict(config)
 
     @classmethod

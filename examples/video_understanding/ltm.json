@@ -5,7 +5,8 @@
         "text_encoder": {
             "name": "OpenaiTextEmbeddingV3",
             "endpoint": "$<custom_openai_endpoint::https://api.openai.com/v1>",
-            "api_key": "$<custom_openai_key::openai_api_key>"
+            "api_key": "$<custom_openai_key::openai_api_key>",
+            "dim":3072
         },
         "host_url": "$<milvus_host_url::./memory.db>",
         "user": "$<milvus_user::test",
