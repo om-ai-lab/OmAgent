@@ -33,7 +33,7 @@ class BotBase(BaseModel, ABC):
 
     class Config:
         """Configuration for this pydantic object."""
-
+        extra = "allow"
         arbitrary_types_allowed = True
 
     @field_validator("name", mode="before")
