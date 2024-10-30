@@ -6,18 +6,17 @@ from typing_extensions import Self, Optional
 from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.http.api.metadata_resource_api import MetadataResourceApi
 from omagent_core.engine.http.api.task_resource_api import TaskResourceApi
-from omagent_core.engine.http.api_client import ApiClient
+from omagent_core.engine.http.api_client import conductor_client
 from omagent_core.engine.http.models import *
 from omagent_core.engine.http.models.correlation_ids_search_request import CorrelationIdsSearchRequest
-from omagent_core.engine.orkes.orkes_workflow_client import OrkesWorkflowClient
+from omagent_core.engine.orkes.orkes_workflow_client import workflow_client
 
 
 class WorkflowExecutor:
-    def __init__(self, configuration: Configuration) -> Self:
-        api_client = ApiClient(configuration)
-        self.metadata_client = MetadataResourceApi(api_client)
-        self.task_client = TaskResourceApi(api_client)
-        self.workflow_client = OrkesWorkflowClient(configuration)
+    def __init__(self) -> Self:
+        self.metadata_client = MetadataResourceApi(conductor_client)
+        self.task_client = TaskResourceApi(conductor_client)
+        self.workflow_client = workflow_client
 
     def register_workflow(self, workflow: WorkflowDef, overwrite: bool = None) -> object:
         """Create a new workflow definition"""

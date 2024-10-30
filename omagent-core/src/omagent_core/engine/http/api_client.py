@@ -721,3 +721,5 @@ class ApiClient(object):
             for key, value in encrypted_headers.items():
                 headers[key] = value
         return headers
+
+conductor_client = ApiClient(configuration=Configuration())

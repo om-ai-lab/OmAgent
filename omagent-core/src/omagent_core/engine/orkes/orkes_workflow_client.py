@@ -179,3 +179,5 @@ class OrkesWorkflowClient(OrkesBaseClient, WorkflowClient):
             kwargs['wait_for_seconds'] = wait_for_seconds
 
         return self.workflowResourceApi.update_workflow_and_task_state(update_requesst=update_requesst, workflow_id=workflow_id, **kwargs)
+    
+workflow_client = OrkesWorkflowClient(Configuration())

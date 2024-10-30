@@ -46,11 +46,10 @@ class TaskHandler:
     def __init__(
             self,
             worker_config: dict,
-            configuration: Configuration = None,
             metrics_settings: MetricsSettings = None,
             import_modules: List[str] = None
     ):
-        self.logger_process, self.queue = _setup_logging_queue(configuration)
+        self.logger_process, self.queue = _setup_logging_queue(Configuration())
 
         # imports
         importlib.import_module('omagent_core.engine.http.models.task')
@@ -61,7 +60,7 @@ class TaskHandler:
 
         workers = [item.from_config(worker_config) for item in registry.mapping['worker'].values()]
         
-        self.__create_task_runner_processes(workers, configuration, metrics_settings)
+        self.__create_task_runner_processes(workers, Configuration(), metrics_settings)
         self.__create_metrics_provider_process(metrics_settings)
         logger.info('TaskHandler initialized')
 

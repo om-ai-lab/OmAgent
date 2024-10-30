@@ -1,51 +1,48 @@
 import logging
 import os
 import time
+from typing import Optional
 
-from omagent_core.engine.configuration.settings.authentication_settings import AuthenticationSettings
+from pydantic import Field
+
+from omagent_core.engine.configuration.settings.authentication_settings import (
+    AuthenticationSettings,
+)
+from omagent_core.base import BotBase
 
 
-class Configuration:
-    AUTH_TOKEN = None
+class Configuration(BotBase):
+    base_url: str = Field(
+        default="http://localhost:8080",
+        description="The Conductor Server API endpoint",
+        alias="CONDUCTOR_SERVER_URL",
+    )
+    auth_key: Optional[str] = Field(default=None, description="The authorization key")
+    auth_secret: Optional[str] = Field(
+        default=None,
+        description="The authorization secret",
+        alias="CONDUCTOR_AUTH_SECRET",
+    )
+    auth_token_ttl_min: int = Field(
+        default=45, description="The authorization token refresh interval in minutes."
+    )
+    debug: bool = Field(default=False, description='Debug mode')
 
-    def __init__(
-            self,
-            base_url: str = None,
-            debug: bool = False,
-            authentication_settings: AuthenticationSettings = None,
-            server_api_url: str = None,
-            auth_token_ttl_min: int = 45
-    ):
-        if server_api_url is not None:
-            self.host = server_api_url
-        elif base_url is not None:
-            self.host = base_url + '/api'
-        else:
-            self.host = os.getenv('CONDUCTOR_SERVER_URL')
-
-        if self.host is None or self.host == '':
-            self.host = 'http://localhost:8080/api'
-
+    def model_post_init(self, *args, **kwargs) -> None:
+        self.__log_level = logging.DEBUG if self.debug else logging.INFO
+        self.AUTH_TOKEN = None
         self.temp_folder_path = None
-        self.__ui_host = os.getenv('CONDUCTOR_UI_SERVER_URL')
-        if self.__ui_host is None:
-            self.__ui_host = self.host.replace('8080/api', '5000')
-
-        if authentication_settings is not None:
-            self.authentication_settings = authentication_settings
+        self.host = self.base_url + "/api"
+        self.__ui_host = self.host.replace("8080/api", "5000")
+        if self.auth_key and self.auth_secret:
+            self.authentication_settings = AuthenticationSettings(
+                key_id=self.auth_key, key_secret=self.auth_secret
+            )
         else:
-            key = os.getenv('CONDUCTOR_AUTH_KEY')
-            secret = os.getenv('CONDUCTOR_AUTH_SECRET')
-            if key is not None and secret is not None:
-                self.authentication_settings = AuthenticationSettings(key_id=key, key_secret=secret)
-            else:
-                self.authentication_settings = None
+            self.authentication_settings = None
 
-
-        # Debug switch
-        self.debug = debug
         # Log format
-        self.logger_format = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+        self.logger_format = "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
 
         # SSL/TLS verification
         # Set this to false to skip verifying SSL certificate when calling API
@@ -63,36 +60,14 @@ class Configuration:
         # Proxy URL
         self.proxy = None
         # Safe chars for path_param
-        self.safe_chars_for_path_param = ''
+        self.safe_chars_for_path_param = ""
 
         # Provide an alterative to requests.Session() for HTTP connection.
         self.http_connection = None
 
         # not updated yet
         self.token_update_time = 0
-        self.auth_token_ttl_msec = auth_token_ttl_min * 60 * 1000
-
-    @property
-    def debug(self):
-        """Debug status
-
-        :param value: The debug status, True or False.
-        :type: bool
-        """
-        return self.__debug
-
-    @debug.setter
-    def debug(self, value):
-        """Debug status
-
-        :param value: The debug status, True or False.
-        :type: bool
-        """
-        self.__debug = value
-        if self.__debug:
-            self.__log_level = logging.DEBUG
-        else:
-            self.__log_level = logging.INFO
+        self.auth_token_ttl_msec = self.auth_token_ttl_min * 60 * 1000
 
     @property
     def logger_format(self):
@@ -138,19 +113,16 @@ class Configuration:
         """
         return self.__ui_host
 
-    def apply_logging_config(self, log_format : str = None, level = None):
+    def apply_logging_config(self, log_format: str = None, level=None):
         if log_format is None:
             log_format = self.logger_format
         if level is None:
             level = self.__log_level
-        logging.basicConfig(
-            format=log_format,
-            level=level
-        )
+        logging.basicConfig(format=log_format, level=level)
 
     @staticmethod
     def get_logging_formatted_name(name):
-        return f'[{os.getpid()}] {name}'
+        return f"[{os.getpid()}] {name}"
 
     def update_token(self, token: str) -> None:
         self.AUTH_TOKEN = token
