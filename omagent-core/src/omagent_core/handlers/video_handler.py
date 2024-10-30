@@ -7,6 +7,7 @@ from ..models.encoders.base import EncoderBase
 from ..utils.registry import registry
 from ..utils.error import VQLError
 from .milvus_handler import MilvusHandler
+from ..memories.ltms.ltm_base import LTMVecotrBase
 
 
 @registry.register_handler()

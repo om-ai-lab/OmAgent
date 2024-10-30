@@ -18,7 +18,7 @@ from .registry import registry
 class Builder:
     def __init__(self, main_conf: dict, ltm_config: list) -> None:
         self.bot = registry.get_node(main_conf["name"])(**main_conf)
-        self.ltm = LTM(ltm_config)
+        self.ltm = LTM()
         for config in ltm_config:
             self.ltm.handler_register(
                 config["name"], registry.get_handler(config["name"])(**config)
