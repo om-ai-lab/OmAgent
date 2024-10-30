@@ -1,104 +1,125 @@
 import importlib
 from pathlib import Path
-from typing import List
+from typing import List, Callable, Any, Dict
+from functools import partial
 
+CATEGORIES = ["prompt","llm","node","worker","tool","handler","encoder"]
 
 class Registry:
-    """class for module registration"""
+    """Class for module registration and retrieval."""
 
-    mapping = {
-        "prompt": {},
-        "llm": {},
-        "node": {},
-        "tool": {},
-        "handler": {},
-        "encoder": {},
-    }
+    def __init__(self):
+        # Initializes a mapping for different categories of modules.
+        self.mapping = {key:{} for key in CATEGORIES}
+
+    def __getattr__(self, name: str) -> Callable:
+        if name.startswith(('register_', 'get_')):
+            prefix, category = name.split('_', 1)
+            if category in CATEGORIES:
+                if prefix == 'register':
+                    return partial(self.register, category)
+                elif prefix == 'get':
+                    return partial(self.get, category)
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
     def _register(self, category: str, name: str = None):
-        def wrap(module, name=name):
-            if not name:
-                name = module.__name__
-            if category not in self.mapping:
-                self.mapping[category] = {}
-            self.mapping[category][name] = module
+        """
+        Registers a module under a specific category.
+        
+        :param category: The category to register the module under.
+        :param name: The name to register the module as.
+        """
+        def wrap(module):
+            nonlocal name
+            name = name or module.__name__
+            self.mapping.setdefault(category, {})[name] = module
             return module
 
         return wrap
 
     def _get(self, category: str, name: str):
-        if name in self.mapping[category]:
+        """
+        Retrieves a module from a specified category.
+        
+        :param category: The category to search in.
+        :param name: The name of the module to retrieve.
+        :raises KeyError: If the module is not found.
+        """
+        try:
             return self.mapping[category][name]
-        else:
-            raise Exception(f"Module {name} not found in category {category}")
+        except KeyError:
+            raise KeyError(f"Module {name} not found in category {category}")
 
-    def register_prompt(self, name: str = None):
-        return self._register("prompt", name=name)
+    def register(self, category: str, name: str = None):
+        """
+        Registers a module under a general category.
+        
+        :param category: The category to register the module under.
+        :param name: Optional name to register the module as.
+        """
+        return self._register(category, name)
 
-    def get_prompt(self, name):
-        return self._get("prompt", name)
+    def get(self, category: str, name: str):
+        """
+        Retrieves a module from a general category.
+        
+        :param category: The category to search in.
+        :param name: The name of the module to retrieve.
+        """
+        return self._get(category, name)
 
-    def register_llm(self, name: str = None):
-        return self._register("llm", name=name)
-
-    def get_llm(self, name):
-        return self._get("llm", name)
-
-    def register_node(self, name: str = None):
-        return self._register("node", name=name)
-
-    def get_node(self, name):
-        return self._get("node", name)
-
-    def register_tool(self, name: str = None):
-        return self._register("tool", name=name)
-
-    def get_tool(self, name):
-        return self._get("tool", name)
-
-    def register_handler(self, name: str = None):
-        return self._register("handler", name=name)
-
-    def get_handler(self, name):
-        return self._get("handler", name)
-
-    def register_encoder(self, name: str = None):
-        return self._register("encoder", name=name)
-
-    def get_encoder(self, name):
-        return self._get("encoder", name)
-
-    def import_module(self, project_root: str = None, custom: List[str] = []):
-        root_path = Path(__file__).parents[1]
-        default_path = [
-            root_path.joinpath("models"),
-            root_path.joinpath("engine/node"),
-            root_path.joinpath("tool_system/tools"),
-            root_path.joinpath("handlers"),
-            root_path.joinpath("advanced_components"),
+    def import_module(self, project_root: str = None, custom_paths: List[str] = []):
+        """
+        Imports all modules from default and custom paths, skipping unnecessary files.
+        
+        :param project_root: The root path of the project.
+        :param custom_paths: Custom paths to import modules from.
+        """
+        default_paths = [
+            Path(__file__).parents[1] / "core/prompt",
+            Path(__file__).parents[1] / "core/llm",
+            Path(__file__).parents[1] / "core/node",
+            Path(__file__).parents[1] / "core/encoder",
+            Path(__file__).parents[1] / "core/tool_system/tools",
+            Path(__file__).parents[1] / "handlers",
         ]
-        for path in default_path:
-            for module in path.rglob("*.[ps][yo]"):
-                module = str(module)
-                if "__init__" in module or "base.py" in module or "entry.py" in module:
-                    continue
-                module = "omagent_core" + module.rsplit("omagent_core", 1)[1].rsplit(
-                    ".", 1
-                )[0].replace("/", ".")
-                importlib.import_module(module)
+
+        for path in default_paths:
+            self._import_from_path(path, "omagent_core")
+
         if project_root:
-            for path in custom:
-                path = Path(path).absolute()
-                for module in path.rglob("*.[ps][yo]"):
-                    module = str(module)
-                    if "__init__" in module:
-                        continue
-                    module = (
-                        module.replace(str(project_root) + "/", "")
-                        .rsplit(".", 1)[0]
-                        .replace("/", ".")
-                    )
-                    importlib.import_module(module)
+            for custom_path in custom_paths:
+                custom_path = Path(custom_path).absolute()
+                self._import_from_path(custom_path, str(project_root))
 
+    def _import_from_path(self, path: Path, root: str):
+        """
+        Helper function to import modules from a specific path, skipping specific files.
 
+        :param path: The directory to search for modules.
+        :param root: The root directory to resolve the module name.
+        """
+        if not path.exists():
+            return
+        
+        for module_file in path.rglob("*.py"):
+            if any(skip in module_file.name for skip in ["__init__", "base.py", "entry.py"]):
+                continue
+            try:
+                module_name = (
+                    root + str(module_file.relative_to(path.parent)).rsplit(".", 1)[0].replace("/", ".")
+                )
+                importlib.import_module(module_name)
+            except Exception as e:
+                print(f"Error importing {module_file}: {e}")
+
+# Instantiate registry
 registry = Registry()
+
+
+if __name__ == "__main__":
+    @registry.register_node()
+    class TestNode:
+        name: "TestNode"
+        
+    print(registry.get_node('TestNode'))

@@ -46,7 +46,7 @@ workflow = ConductorWorkflow(name='my_exp', executor=workflow_executor)
 
 task = SimpleTask(task_def_name='SimpleWorker', task_reference_name='ref_name')
 task.input_parameters.update({'my_name': workflow.input('my_name')})
-workflow.add(task)
+workflow >> task
 register_res = workflow.register(True)
 print(3333333333333, register_res)
 
