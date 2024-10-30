@@ -9,6 +9,7 @@ from omagent_core.engine.http.models.start_workflow_request import IdempotencySt
 from omagent_core.engine.workflow.executor.workflow_executor import WorkflowExecutor
 from omagent_core.engine.workflow.task.fork_task import ForkTask
 from omagent_core.engine.workflow.task.join_task import JoinTask
+from omagent_core.engine.workflow.task.switch_task import SwitchTask
 from omagent_core.engine.workflow.task.task import TaskInterface
 from omagent_core.engine.workflow.task.task_type import TaskType
 from omagent_core.engine.workflow.task.timeout_policy import TimeoutPolicy
@@ -324,7 +325,7 @@ class ConductorWorkflow:
         return updated_task_list
 
     def __rshift__(
-        self, task: Union[TaskInterface, List[TaskInterface], List[List[TaskInterface]]]
+        self, task: Union[TaskInterface, List[TaskInterface], Dict[Any, TaskInterface]]
     ) -> Self:
         if isinstance(task, list):
             forked_tasks = []
@@ -335,14 +336,28 @@ class ConductorWorkflow:
                     forked_tasks.append([fork_task])
             self.__add_fork_join_tasks(forked_tasks)
             return self
+        elif isinstance(task, dict):
+            switch_task = SwitchTask(task_ref_name='switch', case_expression=self._tasks[-1].output('switch_case_value'))
+            if 'default' in task:
+                switch_task.default_case(task.pop('default'))
+            for key, value in task.items():
+                switch_task.switch_case(key, value)
+                
+            return self.__add_task(switch_task)
+
         elif isinstance(task, ConductorWorkflow):
             inline = InlineSubWorkflowTask(
                 task_ref_name=task.name + "_" + str(uuid()), workflow=task
             )
             inline.input_parameters.update(task._input_template)
-            self.__add_task(inline)
-            return self
-        return self.__add_task(task)
+            return self.__add_task(inline)
+
+        if isinstance(task, TaskInterface):
+            return self.__add_task(task)
+        
+        else:
+            raise ValueError(f'Invalid task type {type(task)}')
+
 
     # Append task
     def add(self, task: Union[TaskInterface, List[TaskInterface]]) -> Self:
