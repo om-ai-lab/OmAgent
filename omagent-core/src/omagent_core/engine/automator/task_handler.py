@@ -9,8 +9,7 @@ from omagent_core.engine.automator.task_runner import TaskRunner
 from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.configuration.settings.metrics_settings import MetricsSettings
 from omagent_core.engine.telemetry.metrics_collector import MetricsCollector
-from omagent_core.engine.worker.worker import Worker
-from omagent_core.engine.worker.worker_interface import WorkerInterface
+from omagent_core.engine.worker.base import BaseWorker
 
 logger = logging.getLogger(
     Configuration.get_logging_formatted_name(
@@ -45,7 +44,7 @@ def register_decorated_fn(name: str, poll_interval: int, domain: str, worker_id:
 class TaskHandler:
     def __init__(
             self,
-            workers: List[WorkerInterface] = [],
+            workers: List[BaseWorker] = [],
             configuration: Configuration = None,
             metrics_settings: MetricsSettings = None,
             scan_for_annotated_workers: bool = True,
@@ -55,7 +54,6 @@ class TaskHandler:
 
         # imports
         importlib.import_module('omagent_core.engine.http.models.task')
-        importlib.import_module('omagent_core.engine.worker.worker_task')
         if import_modules is not None:
             for module in import_modules:
                 logger.info(f'loading module {module}')
@@ -72,8 +70,7 @@ class TaskHandler:
                 worker_id = record['worker_id']
                 poll_interval = record['poll_interval']
 
-                worker = Worker(
-                    task_definition_name=task_def_name,
+                worker = BaseWorker(
                     execute_function=fn,
                     worker_id=worker_id,
                     domain=domain,
@@ -126,7 +123,7 @@ class TaskHandler:
 
     def __create_task_runner_processes(
             self,
-            workers: List[WorkerInterface],
+            workers: List[BaseWorker],
             configuration: Configuration,
             metrics_settings: MetricsSettings
     ) -> None:
@@ -138,7 +135,7 @@ class TaskHandler:
 
     def __create_task_runner_process(
             self,
-            worker: WorkerInterface,
+            worker: BaseWorker,
             configuration: Configuration,
             metrics_settings: MetricsSettings
     ) -> None:

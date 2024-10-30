@@ -13,7 +13,7 @@ from omagent_core.engine.http.models.task_exec_log import TaskExecLog
 from omagent_core.engine.http.models.task_result import TaskResult
 from omagent_core.engine.http.rest import AuthorizationException
 from omagent_core.engine.telemetry.metrics_collector import MetricsCollector
-from omagent_core.engine.worker.worker_interface import WorkerInterface
+from omagent_core.engine.worker.base import BaseWorker
 
 logger = logging.getLogger(
     Configuration.get_logging_formatted_name(
@@ -25,11 +25,11 @@ logger = logging.getLogger(
 class TaskRunner:
     def __init__(
             self,
-            worker: WorkerInterface,
+            worker: BaseWorker,
             configuration: Configuration = None,
             metrics_settings: MetricsSettings = None
     ):
-        if not isinstance(worker, WorkerInterface):
+        if not isinstance(worker, BaseWorker):
             raise Exception('Invalid worker')
         self.worker = worker
         self.__set_worker_properties()

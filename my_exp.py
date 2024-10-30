@@ -1,6 +1,5 @@
 from omagent_core.engine.http.models import Task, TaskResult
 from omagent_core.engine.http.models.task_result_status import TaskResultStatus
-from omagent_core.engine.worker.worker_interface import WorkerInterface
 from omagent_core.engine.workflow.task.simple_task import SimpleTask
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.executor.workflow_executor import WorkflowExecutor
@@ -9,7 +8,7 @@ from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.http.models import StartWorkflowRequest
 from time import sleep
 
-from omagent_core.engine.node.base import Node
+from omagent_core.engine.worker.base import BaseWorker
 
 
 # class SimpleWorker(WorkerInterface):
@@ -27,12 +26,13 @@ from omagent_core.engine.node.base import Node
 #         # poll every 500ms
 #         return 0.5
 
-class SimpleWorker(Node):
-    def _run(my_name:str):
-        print(my_name)
+class SimpleWorker(BaseWorker):
+    def _run(self, my_name:str):
+        print(22222222, my_name)
         return {'worker_style': 'class', 'secret_number': 1234, 'is_it_true': False}
 
 api_config = Configuration(base_url="http://0.0.0.0:8080")
+# http://36.133.246.107:21964/workflowDef/my_exp
 
 worker = SimpleWorker()
 task_handler = TaskHandler(configuration=api_config, workers=[worker], scan_for_annotated_workers=False)
@@ -44,11 +44,11 @@ task_handler.start_processes()
 workflow_executor = WorkflowExecutor(configuration=api_config)
 workflow = ConductorWorkflow(name='my_exp', executor=workflow_executor)
 
-task = SimpleTask(task_def_name='simple_worker', task_reference_name='ref_name')
+task = SimpleTask(task_def_name='SimpleWorker', task_reference_name='ref_name')
 task.input_parameters.update({'my_name': workflow.input('my_name')})
 workflow.add(task)
 register_res = workflow.register(True)
-print(register_res)
+print(3333333333333, register_res)
 
 workflow_request = StartWorkflowRequest(name=workflow.name, version=workflow.version, input={'my_name': 'Lu'})
 workflow_execution_id = workflow_executor.start_workflow(workflow_request)
