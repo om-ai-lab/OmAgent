@@ -9,7 +9,7 @@ from omagent_core.engine.http.models import StartWorkflowRequest
 from time import sleep
 
 from omagent_core.engine.worker.base import BaseWorker
-
+from omagent_core.utils.registry import registry
 
 # class SimpleWorker(WorkerInterface):
 #     def execute(self, task: Task) -> TaskResult:
@@ -25,17 +25,20 @@ from omagent_core.engine.worker.base import BaseWorker
 #     def get_polling_interval_in_seconds(self) -> float:
 #         # poll every 500ms
 #         return 0.5
-
+@registry.register_worker()
 class SimpleWorker(BaseWorker):
     def _run(self, my_name:str):
         print(22222222, my_name)
         return {'worker_style': 'class', 'secret_number': 1234, 'is_it_true': False}
+    
 
 api_config = Configuration(base_url="http://0.0.0.0:8080")
 # http://36.133.246.107:21964/workflowDef/my_exp
 
-worker = SimpleWorker()
-task_handler = TaskHandler(configuration=api_config, workers=[worker], scan_for_annotated_workers=False)
+# worker = SimpleWorker()
+# task_handler = TaskHandler(configuration=api_config, workers=[worker], scan_for_annotated_workers=False)
+worker_config = {'SimpleWorker': {'poll_interval': {'value': 100, 'description': 'Worker poll interval in millisecond', 'env_var': 'POLL_INTERVAL'}, 'domain': {'value': None, 'description': 'The domain of workflow', 'env_var': 'DOMAIN'}}}
+task_handler = TaskHandler(configuration=api_config,worker_config=worker_config)
 task_handler.start_processes()
 
 

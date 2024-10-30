@@ -10,6 +10,7 @@ from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.configuration.settings.metrics_settings import MetricsSettings
 from omagent_core.engine.telemetry.metrics_collector import MetricsCollector
 from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.utils.registry import registry
 
 logger = logging.getLogger(
     Configuration.get_logging_formatted_name(
@@ -44,10 +45,9 @@ def register_decorated_fn(name: str, poll_interval: int, domain: str, worker_id:
 class TaskHandler:
     def __init__(
             self,
-            workers: List[BaseWorker] = [],
+            worker_config: dict,
             configuration: Configuration = None,
             metrics_settings: MetricsSettings = None,
-            scan_for_annotated_workers: bool = True,
             import_modules: List[str] = None
     ):
         self.logger_process, self.queue = _setup_logging_queue(configuration)
@@ -59,25 +59,8 @@ class TaskHandler:
                 logger.info(f'loading module {module}')
                 importlib.import_module(module)
 
-        if workers is None:
-            workers = []
-        elif not isinstance(workers, list):
-            workers = [workers]
-        if scan_for_annotated_workers is True:
-            for (task_def_name, domain) in _decorated_functions:
-                record = _decorated_functions[(task_def_name, domain)]
-                fn = record['func']
-                worker_id = record['worker_id']
-                poll_interval = record['poll_interval']
-
-                worker = BaseWorker(
-                    execute_function=fn,
-                    worker_id=worker_id,
-                    domain=domain,
-                    poll_interval=poll_interval)
-                logger.info(f'created worker with name={task_def_name} and domain={domain}')
-                workers.append(worker)
-
+        workers = [item.from_config(worker_config) for item in registry.mapping['worker'].values()]
+        
         self.__create_task_runner_processes(workers, configuration, metrics_settings)
         self.__create_metrics_provider_process(metrics_settings)
         logger.info('TaskHandler initialized')

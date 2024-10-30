@@ -6,9 +6,10 @@ import socket
 import time
 import traceback
 from copy import deepcopy
-from typing import Any, Callable, Union
+from typing import Any, Callable, Union, Optional
 
 from typing_extensions import Self
+from pydantic import Field
 
 from omagent_core.base import BotBase
 from omagent_core.engine.automator import utils
@@ -21,7 +22,6 @@ from omagent_core.engine.http.models.task_result import TaskResult
 from omagent_core.engine.http.models.task_result_status import TaskResultStatus
 from omagent_core.engine.worker.exception import NonRetryableException
 
-DEFAULT_POLLING_INTERVAL = 100
 
 ExecuteTaskFunction = Callable[[Union[Task, object]], Union[TaskResult, object]]
 
@@ -50,25 +50,16 @@ def is_callable_return_value_of_type(
 
 
 class BaseWorker(BotBase, ABC):
-    def __init__(
-        self, poll_interval: float = None, domain: str = None, worker_id: str = None
-    ) -> Self:
-        super().__init__()
+    poll_interval: float = Field(default=100, description="Worker poll interval in millisecond")
+    domain: Optional[str] = Field(default=None, description="The domain of workflow")
+    
+    def model_post_init(self, *args, **kwargs) -> None:
         self.task_definition_name = self.name
         self.next_task_index = 0
         self._task_definition_name_cache = None
-        self._domain = domain
-        self._poll_interval = (
-            DEFAULT_POLLING_INTERVAL
-            if poll_interval is None
-            else deepcopy(poll_interval)
-        )
 
         self.api_client = ApiClient()
-        if worker_id is None:
-            self.worker_id = deepcopy(self.get_identity())
-        else:
-            self.worker_id = deepcopy(worker_id)
+        self.worker_id = deepcopy(self.get_identity())
 
     @abstractmethod
     def _run(self) -> Any:
@@ -155,9 +146,7 @@ class BaseWorker(BotBase, ABC):
         return self.worker_id if hasattr(self, "worker_id") else socket.gethostname()
 
     def get_polling_interval_in_seconds(self) -> float:
-        return (
-            self.poll_interval if self.poll_interval else DEFAULT_POLLING_INTERVAL
-        ) / 1000
+        return self.poll_interval / 1000
 
     def get_task_definition_name(self) -> str:
         return self.task_definition_name_cache
@@ -199,19 +188,3 @@ class BaseWorker(BotBase, ABC):
 
     def paused(self) -> bool:
         return False
-
-    @property
-    def domain(self):
-        return self._domain
-
-    @domain.setter
-    def domain(self, value):
-        self._domain = value
-
-    @property
-    def poll_interval(self):
-        return self._poll_interval
-
-    @poll_interval.setter
-    def poll_interval(self, value):
-        self._poll_interval = value
