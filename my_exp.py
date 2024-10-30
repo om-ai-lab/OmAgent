@@ -31,6 +31,13 @@ class SimpleWorker(BaseWorker):
         print(22222222, my_name)
         return {'worker_style': 'class', 'secret_number': 1234, 'is_it_true': False}
     
+@registry.register_worker()
+class SimpleWorker2(BaseWorker):
+    def _run(self, secret_number:int, is_it_true:bool):
+        print(2223333, is_it_true)
+        secret_number += 1
+        return {'num': secret_number}
+    
 
 # api_config = Configuration(base_url="http://0.0.0.0:8080")
 # http://36.133.246.107:21964/workflowDef/my_exp
@@ -46,12 +53,14 @@ workflow = ConductorWorkflow(name='my_exp')
 
 task = SimpleTask(task_def_name='SimpleWorker', task_reference_name='ref_name')
 task.input_parameters.update({'my_name': workflow.input('my_name')})
-workflow >> task
+task2 = SimpleTask(task_def_name='SimpleWorker2', task_reference_name='ref_name2')
+task2.input_parameters.update({ 'secret_number': task.output('secret_number'), 'is_it_true':task.output('is_it_true')})
+workflow >> task >> task2
 register_res = workflow.register(True)
 print(3333333333333, register_res)
 
-workflow_request = StartWorkflowRequest(name=workflow.name, version=workflow.version, input={'my_name': 'Lu'})
-workflow_execution_id = workflow.start_workflow(workflow_request)
+# workflow_request = StartWorkflowRequest(name=workflow.name, version=workflow.version, input={'my_name': 'Lu'})
+workflow_execution_id = workflow.start_workflow_with_input(workflow_input={'my_name': 'Lu'})
 
 print(f'\nworkflow execution ID: {workflow_execution_id}\n')
 

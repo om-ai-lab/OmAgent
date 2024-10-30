@@ -98,8 +98,6 @@ class BotBase(BaseSettings, ABC):
 
     @classmethod
     def from_config(cls, config_data: str) -> 'BotBase':
-        if cls.__name__ not in config_data:
-            raise ValueError(f"Config for {cls.__name__} not found")
         class_config = config_data.get(cls.__name__, {})
         config_values = {
             key: item['value'] if isinstance(item, dict) else item
