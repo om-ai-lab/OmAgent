@@ -7,6 +7,7 @@ import time
 import traceback
 from copy import deepcopy
 from typing import Any, Callable, Union, Optional
+import asyncio
 
 from typing_extensions import Self
 from pydantic import Field
@@ -62,14 +63,8 @@ class BaseWorker(BotBase, ABC):
         self.worker_id = deepcopy(self.get_identity())
 
     @abstractmethod
-    def _run(self) -> Any:
+    def _run(self, workflow_instance_id, *args, **kwargs) -> Any:
         """Run the Node."""
-
-    async def _arun(self) -> Any:
-        """Run the Node."""
-        raise NotImplementedError(
-            f"Async run not implemented for {type(self).__name__} Node."
-        )
 
     def execute(self, task: Task) -> TaskResult:
         task_input = {}
@@ -99,7 +94,21 @@ class BaseWorker(BotBase, ABC):
                             task_input[input_name] = default_value
                         else:
                             task_input[input_name] = None
-                task_output = self._run(**task_input)
+                if inspect.iscoroutinefunction(self._run):
+                    # 获取或创建事件循环
+                    try:
+                        loop = asyncio.get_running_loop()
+                    except RuntimeError:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                    
+                    # 创建任务并等待完成
+                    task_output = loop.run_until_complete(
+                        asyncio.gather(
+                            self._run(workflow_instance_id=task.workflow_instance_id, **task_input),
+                            return_exceptions=True
+                        )
+                    )[0]  # gather 返回列表，我们取第一个结果
 
             if type(task_output) == TaskResult:
                 task_output.task_id = task.task_id

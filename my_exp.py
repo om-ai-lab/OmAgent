@@ -8,6 +8,8 @@ from omagent_core.engine.automator.task_handler import TaskHandler
 from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.http.models import StartWorkflowRequest
 from time import sleep
+import asyncio
+from logging import Logger
 
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.registry import registry
@@ -30,28 +32,36 @@ from omagent_core.utils.registry import registry
 # 创建Node的运行逻辑，类型为worker，实现一个_run方法。 workflow_instance_id 就是workflow实例的唯一ID,从BaseWorker的execute的参数task里面可以获取，这儿还没想好怎么传进来
 @registry.register_worker()
 class SimpleWorker(BaseWorker):
-    def _run(self, my_name:str):
+    def _run(self, my_name:str, *args, **kwargs):
         print(22222222, my_name)
         return {'worker_style': 'class', 'secret_number': 1234, 'is_it_true': False}
     
 @registry.register_worker()
 class SimpleWorker2(BaseWorker):
-    def _run(self, secret_number:int, is_it_true:bool):
+    def _run(self, secret_number:int, is_it_true:bool, *args, **kwargs):
         print(2223333, is_it_true)
         secret_number += 1
         return {'num': secret_number}
     
 @registry.register_worker()
 class SimpleWorker3(BaseWorker):
-    def _run(self):
+    def _run(self, *args, **kwargs):
         print('switch 1 !!!')
         return {'switch_case_value': 1}
     
 @registry.register_worker()
 class SimpleWorker4(BaseWorker):
-    def _run(self):
-        print('444 !!!')
-        return {'me': 10086}
+    async def _run(self, *args, **kwargs):
+        # 创建多个并发任务
+        async def count_task(i):
+            await asyncio.sleep(1)
+            print(f'Task {i} completed!')
+            return i
+
+        tasks = [count_task(i) for i in range(10)]
+        results = await asyncio.gather(*tasks)
+        print('All tasks completed:', results)
+        return {'me': 10086, 'results': results}
     
 
 # api_config = Configuration(base_url="http://0.0.0.0:8080")
@@ -77,7 +87,7 @@ task4 = SimpleTask(task_def_name='SimpleWorker4', task_reference_name='ref_name4
 # switch_task.switch_case(1, task)
 # switch_task.switch_case(2, task2)
 
-workflow >> task3 >> {1 : task , 2 : task2} #设定workflow的运行顺序，>>是下一个节点，字典是分支，字典前面的一个节点需要在返回参数里包含一个 switch_case_value 字段，来指示走哪个分支
+workflow >> task4 #>> task3 >> {1 : task , 2 : task2} #设定workflow的运行顺序，>>是下一个节点，字典是分支，字典前面的一个节点需要在返回参数里包含一个 switch_case_value 字段，来指示走哪个分支
 register_res = workflow.register(True)  #工作流注册到conductor
 print(3333333333333, register_res)
 
