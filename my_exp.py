@@ -7,6 +7,8 @@ from omagent_core.engine.workflow.executor.workflow_executor import WorkflowExec
 from omagent_core.engine.automator.task_handler import TaskHandler
 from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.http.models import StartWorkflowRequest
+from omagent_core.utils.compile import compile_workflow
+from pathlib import Path
 from time import sleep
 import asyncio
 from logging import Logger
@@ -33,20 +35,20 @@ from omagent_core.utils.registry import registry
 @registry.register_worker()
 class SimpleWorker(BaseWorker):
     def _run(self, my_name:str, *args, **kwargs):
-        print(22222222, my_name)
+        print(1111111, my_name)
         return {'worker_style': 'class', 'secret_number': 1234, 'is_it_true': False}
     
 @registry.register_worker()
 class SimpleWorker2(BaseWorker):
     def _run(self, secret_number:int, is_it_true:bool, *args, **kwargs):
-        print(2223333, is_it_true)
+        print(22222222, is_it_true)
         secret_number += 1
         return {'num': secret_number}
     
 @registry.register_worker()
 class SimpleWorker3(BaseWorker):
     def _run(self, *args, **kwargs):
-        print('switch 1 !!!')
+        print('3333333333')
         return {'switch_case_value': 1}
     
 @registry.register_worker()
@@ -68,14 +70,32 @@ class SimpleWorker4(BaseWorker):
 # http://36.133.246.107:21964/workflowDef/my_exp    #这个是conductor的UI地址
 
 # worker通过config来初始化，可以使用 omagent-core/src/omagent_core/utils/compile.py 编译worker的config模版
-worker_config = {'SimpleWorker': {'poll_interval': {'value': 100, 'description': 'Worker poll interval in millisecond', 'env_var': 'POLL_INTERVAL'}, 'domain': {'value': None, 'description': 'The domain of workflow', 'env_var': 'DOMAIN'}}}
+worker_config = {'SimpleWorker2': {'poll_interval': {'value': 100, 'description': 'Worker poll interval in millisecond', 'env_var': 'POLL_INTERVAL'}, 'domain': {'value': None, 'description': 'The domain of workflow', 'env_var': 'DOMAIN'}}, 'SimpleWorker4': {'poll_interval': {'value': 100, 'description': 'Worker poll interval in millisecond', 'env_var': 'POLL_INTERVAL'}, 'domain': {'value': None, 'description': 'The domain of workflow', 'env_var': 'DOMAIN'}}, 'SimpleWorker': {'poll_interval': {'value': 100, 'description': 'Worker poll interval in millisecond', 'env_var': 'POLL_INTERVAL'}, 'domain': {'value': None, 'description': 'The domain of workflow', 'env_var': 'DOMAIN'}}, 'SimpleWorker3': {'poll_interval': {'value': 100, 'description': 'Worker poll interval in millisecond', 'env_var': 'POLL_INTERVAL'}, 'domain': {'value': None, 'description': 'The domain of workflow', 'env_var': 'DOMAIN'}}}
 task_handler = TaskHandler(worker_config=worker_config)
 task_handler.start_processes()  #启动worker，监听conductor的消息
 
 
 
 
-workflow = ConductorWorkflow(name='my_exp') #初始化workflow， 代码暂时需要在 CMCC-11 上跑
+# workflow = ConductorWorkflow(name='my_exp') #初始化workflow， 代码暂时需要在 CMCC-11 上跑
+
+# task = SimpleTask(task_def_name='SimpleWorker', task_reference_name='ref_name') #初始化task，也就是节点。task_def_name 绑定worker的类名
+# task.input_parameters.update({'my_name': workflow.input('my_name')})    #设置node的输入值
+# task2 = SimpleTask(task_def_name='SimpleWorker2', task_reference_name='ref_name2')
+# task2.input_parameters.update({ 'secret_number': task.output('secret_number'), 'is_it_true':task.output('is_it_true')})
+# task3 = SimpleTask(task_def_name='SimpleWorker3', task_reference_name='ref_name3')
+# task4 = SimpleTask(task_def_name='SimpleWorker4', task_reference_name='ref_name4')
+# # switch_task = SwitchTask(task_ref_name='switch_1', case_expression=task3.output('switch_case_value'))
+# # switch_task.switch_case(1, task)
+# # switch_task.switch_case(2, task2)
+
+# workflow >> task3 >> {1 : task , 2 : task2} #设定workflow的运行顺序，>>是下一个节点，字典是分支，字典前面的一个节点需要在返回参数里包含一个 switch_case_value 字段，来指示走哪个分支
+# # register_res = workflow.register(True)  #工作流注册到conductor
+# # print(3333333333333, register_res)
+
+
+workflow = ConductorWorkflow(name='my_exp')
+sub_workflow = ConductorWorkflow(name='my_sub_2')
 
 task = SimpleTask(task_def_name='SimpleWorker', task_reference_name='ref_name') #初始化task，也就是节点。task_def_name 绑定worker的类名
 task.input_parameters.update({'my_name': workflow.input('my_name')})    #设置node的输入值
@@ -83,13 +103,13 @@ task2 = SimpleTask(task_def_name='SimpleWorker2', task_reference_name='ref_name2
 task2.input_parameters.update({ 'secret_number': task.output('secret_number'), 'is_it_true':task.output('is_it_true')})
 task3 = SimpleTask(task_def_name='SimpleWorker3', task_reference_name='ref_name3')
 task4 = SimpleTask(task_def_name='SimpleWorker4', task_reference_name='ref_name4')
-# switch_task = SwitchTask(task_ref_name='switch_1', case_expression=task3.output('switch_case_value'))
-# switch_task.switch_case(1, task)
-# switch_task.switch_case(2, task2)
 
-workflow >> task4 #>> task3 >> {1 : task , 2 : task2} #设定workflow的运行顺序，>>是下一个节点，字典是分支，字典前面的一个节点需要在返回参数里包含一个 switch_case_value 字段，来指示走哪个分支
-register_res = workflow.register(True)  #工作流注册到conductor
-print(3333333333333, register_res)
+sub_workflow >> task3 >> task4
+workflow >> task >> sub_workflow
+
+# workflow >> task >> task2 >> task3 >> task4
+
+compile_workflow(workflow, Path('./'), True)
 
 # workflow_request = StartWorkflowRequest(name=workflow.name, version=workflow.version, input={'my_name': 'Lu'})
 workflow_execution_id = workflow.start_workflow_with_input(workflow_input={'my_name': 'Lu'})    #启动一个workflow实例，并运行

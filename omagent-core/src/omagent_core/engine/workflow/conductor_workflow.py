@@ -352,7 +352,7 @@ class ConductorWorkflow:
             inline.input_parameters.update(task._input_template)
             return self.__add_task(inline)
 
-        if isinstance(task, TaskInterface):
+        elif isinstance(task, TaskInterface):
             return self.__add_task(task)
         
         else:
@@ -420,6 +420,7 @@ class InlineSubWorkflowTask(TaskInterface):
             task_reference_name=task_ref_name,
             task_type=TaskType.SUB_WORKFLOW,
         )
+        self._workflow = deepcopy(workflow)
         self._workflow_name = deepcopy(workflow.name)
         self._workflow_version = deepcopy(workflow.version)
         self._workflow_definition = deepcopy(workflow.to_workflow_def())

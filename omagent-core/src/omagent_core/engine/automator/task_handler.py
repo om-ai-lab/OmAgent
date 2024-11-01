@@ -58,7 +58,7 @@ class TaskHandler:
                 logger.info(f'loading module {module}')
                 importlib.import_module(module)
 
-        workers = [item.from_config(worker_config) for item in registry.mapping['worker'].values()]
+        workers = [registry.get_worker(name).from_config(worker_config) for name in worker_config]
         
         self.__create_task_runner_processes(workers, Configuration(), metrics_settings)
         self.__create_metrics_provider_process(metrics_settings)

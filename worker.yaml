@@ -1,0 +1,27 @@
+SimpleWorker:
+  domain:
+    description: The domain of workflow
+    env_var: DOMAIN
+    value: null
+  poll_interval:
+    description: Worker poll interval in millisecond
+    env_var: POLL_INTERVAL
+    value: 100
+SimpleWorker3:
+  domain:
+    description: The domain of workflow
+    env_var: DOMAIN
+    value: null
+  poll_interval:
+    description: Worker poll interval in millisecond
+    env_var: POLL_INTERVAL
+    value: 100
+SimpleWorker4:
+  domain:
+    description: The domain of workflow
+    env_var: DOMAIN
+    value: null
+  poll_interval:
+    description: Worker poll interval in millisecond
+    env_var: POLL_INTERVAL
+    value: 100

@@ -22,6 +22,7 @@ from omagent_core.engine.http.models.task import Task
 from omagent_core.engine.http.models.task_result import TaskResult
 from omagent_core.engine.http.models.task_result_status import TaskResultStatus
 from omagent_core.engine.worker.exception import NonRetryableException
+from omagent_core.engine.workflow.task.simple_task import SimpleTask
 
 
 ExecuteTaskFunction = Callable[[Union[Task, object]], Union[TaskResult, object]]
@@ -95,20 +96,20 @@ class BaseWorker(BotBase, ABC):
                         else:
                             task_input[input_name] = None
                 if inspect.iscoroutinefunction(self._run):
-                    # 获取或创建事件循环
                     try:
                         loop = asyncio.get_running_loop()
                     except RuntimeError:
                         loop = asyncio.new_event_loop()
                         asyncio.set_event_loop(loop)
                     
-                    # 创建任务并等待完成
                     task_output = loop.run_until_complete(
                         asyncio.gather(
                             self._run(workflow_instance_id=task.workflow_instance_id, **task_input),
                             return_exceptions=True
                         )
-                    )[0]  # gather 返回列表，我们取第一个结果
+                    )[0]
+                else:
+                    task_output = self._run(workflow_instance_id=task.workflow_instance_id, **task_input)
 
             if type(task_output) == TaskResult:
                 task_output.task_id = task.task_id
