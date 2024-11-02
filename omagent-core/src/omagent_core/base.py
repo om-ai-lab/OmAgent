@@ -28,9 +28,9 @@ class STM(BaseModel):
 
 
 class BotBase(BaseSettings, ABC):
+    name: Optional[str] = Field(default=None, validate_default=True)
     stm_pool: ClassVar[Dict[str, STM]] = {}
     callback: Optional[BaseCallback] = DefaultCallback()
-    
 
     class Config:
         """Configuration for this pydantic object."""
@@ -38,9 +38,16 @@ class BotBase(BaseSettings, ABC):
         extra = "allow"
         arbitrary_types_allowed = True
 
-    @property
-    def name(self) -> str:
-        return self.__class__.__name__
+    # @property
+    # def name(self) -> str:
+    #     return self.__class__.__name__
+    @field_validator("name", mode="before")
+    @classmethod
+    def get_type(cls, name) -> str:
+        if not name:
+            return cls.__name__
+        else:
+            return name
 
     @property
     def request_id(self) -> str:
@@ -59,31 +66,57 @@ class BotBase(BaseSettings, ABC):
         self.stm_pool.pop(self.request_id, None)
 
     @classmethod
-    def get_config_template(cls) -> dict:
+    def get_config_template(
+        cls, description: bool = True, env_var: bool = True
+    ) -> dict:
         template = {}
         simple_types = (str, int, float, bool, type(None))
-        
+
         def is_simple_type(type_to_check: Any) -> bool:
-            return isinstance(type_to_check, type) and issubclass(type_to_check, simple_types)
-        
+            return isinstance(type_to_check, type) and issubclass(
+                type_to_check, simple_types
+            )
+
+        def is_botbase_subclass(type_to_check: Any) -> bool:
+            return (
+                isinstance(type_to_check, type)
+                and issubclass(type_to_check, BotBase)
+                and type_to_check != BotBase
+            )
+
         for field_name, field in cls.model_fields.items():
-            # Pass inner attributes and complex types
+            # Pass inner attributes
             if field_name.startswith("_"):
                 continue
-                
+
             field_type = field.annotation
+
+            # 处理Union类型
             if hasattr(field_type, "__origin__") and field_type.__origin__ is Union:
-                if not all(is_simple_type(t) for t in field_type.__args__):
+                types = field_type.__args__
+                if any(is_botbase_subclass(t) for t in types):
+                    # 如果Union中包含BotBase子类，取第一个子类进行递归
+                    for t in types:
+                        if is_botbase_subclass(t):
+                            template[field_name] = t.get_config_template()
+                            break
                     continue
+                elif not all(is_simple_type(t) for t in types):
+                    continue
+            # 处理BotBase子类
+            elif is_botbase_subclass(field_type):
+                template[field_name] = field_type.get_config_template()
+                continue
             elif not is_simple_type(field_type):
                 continue
-                
-            field_info = {
-                "value": None,
-                "description": field.description or "",
-                "env_var": field.alias.upper() if field.alias else field_name.upper(),
-            }
-            print(field_name, field.is_required())
+
+            field_info = {"value": None}
+            if description:
+                field_info["description"] = field.description or ""
+            if env_var:
+                field_info["env_var"] = (
+                    field.alias.upper() if field.alias else field_name.upper()
+                )
             # Get default value for tag as <required>
             if field.default_factory is not None:
                 field_info["value"] = field.default_factory()
@@ -93,17 +126,32 @@ class BotBase(BaseSettings, ABC):
                 field_info["value"] = field.default
 
             template[field_name] = field_info
-
+            template["name"] = cls.__name__
         return template
 
+    
     @classmethod
-    def from_config(cls, config_data: str) -> 'BotBase':
-        class_config = config_data.get(cls.__name__, {})
-        config_values = {
-            key: item['value'] if isinstance(item, dict) else item
-            for key, item in class_config.items()
-        }
+    def from_config(cls, config_data: str) -> "BotBase":
+        def clean_config_dict(config_dict: dict) -> dict:
+            """递归清理配置字典，移除所有的'description'和'env_var'键"""
+            cleaned = {}
+            for key, value in config_dict.items():
+                if isinstance(value, dict):
+                    if 'value' in value:
+                        # 如果是配置项字典，直接取value值
+                        cleaned[key] = value['value']
+                    else:
+                        # 如果是嵌套字典，递归处理
+                        cleaned[key] = clean_config_dict(value)
+                else:
+                    cleaned[key] = value
+            return cleaned
         
-        return cls(**config_values)
-    
-    
+        print(666666666, config_data)
+        class_config = config_data.get(cls.__name__, {})
+        print(7777777,cls.__name__,  class_config)
+        
+        clean_class_config = clean_config_dict(class_config)
+        print(8888888, clean_class_config)
+
+        return cls(**clean_class_config)

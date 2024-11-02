@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 
 import geocoder
 from openai import AsyncOpenAI, OpenAI
-
+from pydantic import Field
 from .schemas import Content, Message
 from ...utils.general import encode_image
 from ...utils.registry import registry
@@ -23,14 +23,14 @@ Operating System: {}"""
 
 @registry.register_llm()
 class OpenaiGPTLLM(BaseLLM):
-    model_id: str
-    vision: bool = False
-    endpoint: str = "https://api.openai.com/v1"
-    api_key: str
-    temperature: float = 1.0
-    max_tokens: int = 2048
-    use_default_sys_prompt: bool = True
-    response_format: str = "text"
+    model_id: str = Field(default="gpt-4o", description="The model id of openai")
+    vision: bool = Field(default=False, description="Whether the model supports vision")
+    endpoint: str = Field(default="https://api.openai.com/v1", description="The endpoint of LLM service")
+    api_key: str = Field(description="The api key of openai")
+    temperature: float = Field(default=1.0, description="The temperature of LLM")
+    max_tokens: int = Field(default=2048, description="The max tokens of LLM")
+    use_default_sys_prompt: bool = Field(default=True, description="Whether to use the default system prompt")
+    response_format: str = Field(default="text", description="The response format of openai")
 
     class Config:
         """Configuration for this pydantic object."""
@@ -38,10 +38,10 @@ class OpenaiGPTLLM(BaseLLM):
         protected_namespaces = ()
         extra = "allow"
 
-    def __init__(self, /, **data: Any) -> None:
-        super().__init__(**data)
+    def model_post_init(self, __context: Any) -> None:
         self.client = OpenAI(api_key=self.api_key, base_url=self.endpoint)
         self.aclient = AsyncOpenAI(api_key=self.api_key, base_url=self.endpoint)
+
 
     def _call(self, records: List[Message], **kwargs) -> Dict:
         if self.api_key is None or self.api_key == "":
@@ -190,7 +190,7 @@ class OpenaiGPTLLM(BaseLLM):
         loc = self._get_location()
         os = self._get_linux_distribution()
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        promt_str = BASIC_SYS_PROMPT.format(loc, os, current_time)
+        promt_str = BASIC_SYS_PROMPT.format(current_time, loc, os)
         return {"role": "system", "content": promt_str}
 
     def _get_linux_distribution(self) -> str:

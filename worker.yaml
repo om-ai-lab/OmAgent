@@ -1,26 +1,57 @@
-SimpleWorker:
+Conclude:
   domain:
     description: The domain of workflow
     env_var: DOMAIN
     value: null
-  poll_interval:
-    description: Worker poll interval in millisecond
-    env_var: POLL_INTERVAL
-    value: 100
-SimpleWorker3:
-  domain:
-    description: The domain of workflow
-    env_var: DOMAIN
-    value: null
-  poll_interval:
-    description: Worker poll interval in millisecond
-    env_var: POLL_INTERVAL
-    value: 100
-SimpleWorker4:
-  domain:
-    description: The domain of workflow
-    env_var: DOMAIN
-    value: null
+  llm:
+    api_key:
+      description: The api key of openai
+      env_var: API_KEY
+      value: <required>
+    cache:
+      description: ''
+      env_var: CACHE
+      value: false
+    endpoint:
+      description: The endpoint of LLM service
+      env_var: ENDPOINT
+      value: https://api.openai.com/v1
+    max_tokens:
+      description: The max tokens of LLM
+      env_var: MAX_TOKENS
+      value: 2048
+    model_id:
+      description: The model id of openai
+      env_var: MODEL_ID
+      value: gpt-4o
+    name: OpenaiGPTLLM
+    response_format:
+      description: The response format of openai
+      env_var: RESPONSE_FORMAT
+      value: text
+    temperature:
+      description: The temperature of LLM
+      env_var: TEMPERATURE
+      value: 1.0
+    use_default_sys_prompt:
+      description: Whether to use the default system prompt
+      env_var: USE_DEFAULT_SYS_PROMPT
+      value: true
+    vision:
+      description: Whether the model supports vision
+      env_var: VISION
+      value: false
+  name: Conclude
+  output_parser:
+    name: StrParser
+    regex:
+      description: ''
+      env_var: REGEX
+      value: null
+    regex_group:
+      description: ''
+      env_var: REGEX_GROUP
+      value: 0
   poll_interval:
     description: Worker poll interval in millisecond
     env_var: POLL_INTERVAL

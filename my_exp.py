@@ -1,6 +1,6 @@
 from omagent_core.engine.http.models import Task, TaskResult
 from omagent_core.engine.http.models.task_result_status import TaskResultStatus
-from omagent_core.engine.workflow.task.simple_task import SimpleTask
+from omagent_core.engine.workflow.task.simple_task import SimpleTask,simple_task
 from omagent_core.engine.workflow.task.switch_task import SwitchTask
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.executor.workflow_executor import WorkflowExecutor
@@ -8,10 +8,17 @@ from omagent_core.engine.automator.task_handler import TaskHandler
 from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.http.models import StartWorkflowRequest
 from omagent_core.utils.compile import compile_workflow
+from omagent_core.models.llms.base import BaseLLMBackend, BaseLLM
+from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
+from omagent_core.models.llms.prompt.prompt import PromptTemplate
+from omagent_core.models.llms.prompt.parser import StrParser
 from pathlib import Path
 from time import sleep
 import asyncio
 from logging import Logger
+from typing import List,Any
+from pydantic import Field
+import yaml
 
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.registry import registry
@@ -64,15 +71,24 @@ class SimpleWorker4(BaseWorker):
         results = await asyncio.gather(*tasks)
         print('All tasks completed:', results)
         return {'me': 10086, 'results': results}
+
+@registry.register_worker()
+class Conclude(BaseLLMBackend, BaseWorker):
+    llm: OpenaiGPTLLM
+    output_parser: StrParser
+    prompts: List[PromptTemplate] = Field(
+        default=[
+            PromptTemplate.from_template(template="你好啊。你是谁？")
+        ]
+    )
+
+    def _run(self,*args, **kwargs):
+        chat_complete_res = self.simple_infer()
+        return chat_complete_res
     
 
 # api_config = Configuration(base_url="http://0.0.0.0:8080")
 # http://36.133.246.107:21964/workflowDef/my_exp    #这个是conductor的UI地址
-
-# worker通过config来初始化，可以使用 omagent-core/src/omagent_core/utils/compile.py 编译worker的config模版
-worker_config = {'SimpleWorker2': {'poll_interval': {'value': 100, 'description': 'Worker poll interval in millisecond', 'env_var': 'POLL_INTERVAL'}, 'domain': {'value': None, 'description': 'The domain of workflow', 'env_var': 'DOMAIN'}}, 'SimpleWorker4': {'poll_interval': {'value': 100, 'description': 'Worker poll interval in millisecond', 'env_var': 'POLL_INTERVAL'}, 'domain': {'value': None, 'description': 'The domain of workflow', 'env_var': 'DOMAIN'}}, 'SimpleWorker': {'poll_interval': {'value': 100, 'description': 'Worker poll interval in millisecond', 'env_var': 'POLL_INTERVAL'}, 'domain': {'value': None, 'description': 'The domain of workflow', 'env_var': 'DOMAIN'}}, 'SimpleWorker3': {'poll_interval': {'value': 100, 'description': 'Worker poll interval in millisecond', 'env_var': 'POLL_INTERVAL'}, 'domain': {'value': None, 'description': 'The domain of workflow', 'env_var': 'DOMAIN'}}}
-task_handler = TaskHandler(worker_config=worker_config)
-task_handler.start_processes()  #启动worker，监听conductor的消息
 
 
 
@@ -96,20 +112,30 @@ task_handler.start_processes()  #启动worker，监听conductor的消息
 
 workflow = ConductorWorkflow(name='my_exp')
 sub_workflow = ConductorWorkflow(name='my_sub_2')
+workflow = ConductorWorkflow(name='conclude')
 
-task = SimpleTask(task_def_name='SimpleWorker', task_reference_name='ref_name') #初始化task，也就是节点。task_def_name 绑定worker的类名
-task.input_parameters.update({'my_name': workflow.input('my_name')})    #设置node的输入值
-task2 = SimpleTask(task_def_name='SimpleWorker2', task_reference_name='ref_name2')
-task2.input_parameters.update({ 'secret_number': task.output('secret_number'), 'is_it_true':task.output('is_it_true')})
-task3 = SimpleTask(task_def_name='SimpleWorker3', task_reference_name='ref_name3')
-task4 = SimpleTask(task_def_name='SimpleWorker4', task_reference_name='ref_name4')
 
-sub_workflow >> task3 >> task4
-workflow >> task >> sub_workflow
+task = simple_task(task_def_name='SimpleWorker', task_reference_name='ref_name', inputs={'my_name': workflow.input('my_name')})
+task2 = simple_task(task_def_name='SimpleWorker2', task_reference_name='ref_name2', inputs={ 'secret_number': task.output('secret_number'), 'is_it_true':task.output('is_it_true')})
+task3 = simple_task(task_def_name='SimpleWorker3', task_reference_name='ref_name3')
+task4 = simple_task(task_def_name='SimpleWorker4', task_reference_name='ref_name4')
+
+task_conclude = simple_task(task_def_name='Conclude', task_reference_name='ref_name_conclude')
+
+# sub_workflow >> task3 >> task4
+# workflow >> task >> sub_workflow
+
+workflow >> task_conclude
 
 # workflow >> task >> task2 >> task3 >> task4
 
 compile_workflow(workflow, Path('./'), True)
+
+# worker通过config来初始化，可以使用 omagent-core/src/omagent_core/utils/compile.py 编译worker的config模版
+
+worker_config = yaml.load(open('worker.yaml', "r"), Loader=yaml.FullLoader)
+task_handler = TaskHandler(worker_config=worker_config)
+task_handler.start_processes()  #启动worker，监听conductor的消息
 
 # workflow_request = StartWorkflowRequest(name=workflow.name, version=workflow.version, input={'my_name': 'Lu'})
 workflow_execution_id = workflow.start_workflow_with_input(workflow_input={'my_name': 'Lu'})    #启动一个workflow实例，并运行

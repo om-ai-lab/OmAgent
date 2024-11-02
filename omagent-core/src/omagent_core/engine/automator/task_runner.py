@@ -30,7 +30,7 @@ class TaskRunner:
             metrics_settings: MetricsSettings = None
     ):
         if not isinstance(worker, BaseWorker):
-            raise Exception('Invalid worker')
+            raise Exception(f'Invalid worker {type(worker)}')
         self.worker = worker
         self.__set_worker_properties()
         if not isinstance(configuration, Configuration):
