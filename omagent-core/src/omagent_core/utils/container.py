@@ -2,26 +2,30 @@ from typing import Dict, List, Type, Optional, Union, Callable
 from omagent_core.base import BotBase
 from omagent_core.services.connectors.base import ConnectorBase
 from omagent_core.utils.registry import registry
-import yaml
 
 class Container:
     def __init__(self):
         self._connectors: Dict[str, ConnectorBase] = {}
         self._handlers: Dict[str, BotBase] = {}
-        self._ltm: Dict[str, BotBase] = {}
-        self._stm: Dict[str, BotBase] = {}
+        self._memories: Dict[str, BotBase] = {}
         
     def register_connector(self, name: str, connector: Type[ConnectorBase], **kwargs) -> None:
         """Register a connector"""
         if name not in self._connectors:
             self._connectors[name] = connector(**kwargs)
             
-    def _register_component(self, name: str, component_type: str, config: dict, 
+    def get_connector(self, name: str) -> ConnectorBase:
+        if name not in self._connectors:
+            raise KeyError(f"There is no connector named '{name}' in container.")
+        return self._connectors[name]
+            
+    def _register_component(self, name: str, key: str, component_type: str, config: dict, 
                           target_dict: dict, registry_getter: Callable) -> None:
         """Generic component registration method
         
         Args:
             name: Component name
+            key: The key to save and retrieve component
             component_type: Component type description (for error messages)
             config: Component configuration
             target_dict: Target dictionary to store component instances
@@ -42,32 +46,37 @@ class Container:
                         self.register_connector(connector, connector_cls)
                     config[connector] = self._connectors[connector]
             
-            target_dict[name] = component_cls(**config)
+            target_dict[key or name] = component_cls(**config)
 
-    def register_handler(self, name: str, handler_config: dict = {}) -> None:
+    def register_handler(self, name: str, key: str = None, handler_config: dict = {}) -> None:
         self._register_component(
             name=name,
+            key=key,
             component_type="Handler",
             config=handler_config,
             target_dict=self._handlers,
             registry_getter=registry.get_handler
         )
+        
+    def get_handler(self, name: str) -> BotBase:
+        if name not in self._handlers:
+            raise KeyError(f"There is no handler named '{name}' in container.")
+        return self._handlers[name]
             
-    def register_memory(self, name: str, memory_type: str, memory_config: dict) -> None:
-        if memory_type.lower() == 'ltm':
-            target_dict = self._ltm
-        elif memory_type.lower() == 'stm':
-            target_dict = self._stm
-        else:
-            raise ValueError(f"Unknown memory type: {memory_type}")
-            
+    def register_memory(self, name: str, key: str = None, memory_config: dict = {}) -> None:
         self._register_component(
             name=name,
-            component_type=f"{memory_type.upper()} Memory",
+            key=key,
+            component_type="Memory",
             config=memory_config,
-            target_dict=target_dict,
+            target_dict=self._memories,
             registry_getter=registry.get_memory
         )
+        
+    def get_memory(self, name: str) -> BotBase:
+        if name not in self._memories:
+            raise KeyError(f"There is no memory named '{name}' in container.")
+        return self._memories[name]
     
     def _get_required_connectors(self, cls: Type[BotBase]) -> List[str]:
         required_connectors = []
@@ -81,19 +90,15 @@ class Container:
         return self._handlers
         
     @property
-    def ltm(self) -> Dict[str, BotBase]:
-        return self._ltm
+    def memories(self) -> Dict[str, BotBase]:
+        return self._memories
         
-    @property 
-    def stm(self) -> Dict[str, BotBase]:
-        return self._stm
     
     def compile_config(self) -> None:
         config = {
             "connectors": {},
             "handlers": {},
-            "ltm": {},
-            "stm": {}
+            "memories": {}
         }
         
         for name, connector in self._connectors.items():
@@ -102,11 +107,8 @@ class Container:
         for name, handler in self._handlers.items():
             config["handlers"][name] = handler.__class__.get_config_template()
             
-        for name, ltm in self._ltm.items():
-            config["ltm"][name] = ltm.__class__.get_config_template()
-            
-        for name, stm in self._stm.items():
-            config["stm"][name] = stm.__class__.get_config_template()
+        for name, memory in self._memories.items():
+            config["memory"][name] = memory.__class__.get_config_template()
             
         return config
 

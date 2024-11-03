@@ -1,9 +1,9 @@
 import asyncio
 import time
 import json
-from omagent_core.handlers.redis_stream_handler import RedisHandler
 from omagent_core.utils.registry import registry
 from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.utils.container import container
 
 @registry.register_worker()
 class RedisStreamListener(BaseWorker):
@@ -13,11 +13,12 @@ class RedisStreamListener(BaseWorker):
         consumer_name = f"{workflow_instance_id}_agent"  # consumer name
         poll_interval: int = 1
 
-        redis_handler: RedisHandler = RedisHandler()
         result = {}
         # ensure consumer group exists
         try:
-            redis_handler.redis_client.xgroup_create(stream_name, group_name, id='0', mkstream=True)
+            container.get_connector("RedisStreamHandler").redis_client.xgroup_create(
+                stream_name, group_name, id="0", mkstream=True
+            )
         except Exception as e:
             print(f"Consumer group may already exist: {e}")
 
@@ -26,14 +27,18 @@ class RedisStreamListener(BaseWorker):
         while True:
             try:
                 # read new messages from consumer group
-                messages = redis_handler.redis_client.xreadgroup(group_name, consumer_name, {stream_name: '>'}, count=1)
+                messages = container.get_connector("RedisStreamHandler").redis_client.xreadgroup(
+                    group_name, consumer_name, {stream_name: ">"}, count=1
+                )
                 print(f"Messages: {messages}")
-                
+
                 for stream, message_list in messages:
                     for message_id, message in message_list:
                         flag = self.process_message(message, result)
                         # confirm message has been processed
-                        redis_handler.redis_client.xack(stream_name, group_name, message_id)
+                        container.get_connector("RedisStreamHandler").redis_client.xack(
+                            stream_name, group_name, message_id
+                        )
                 if flag:
                     break
                 # Sleep for the specified interval before checking for new messages again

@@ -49,3 +49,18 @@ class RunningInfo(BaseModel):
 
 class DataMemorize(BaseModel):
     content: List[ContentItem]
+    
+
+class ContentStatus(str, Enum):
+    INCOMPLETE = "incomplete" # the conversation content is not yet complete
+    END_BLOCK = "end_block" # a single conversation has ended, but the overall result is not finished
+    END_ANSWER = "end_answer" # the overall return is complete
+
+class InteractionType(int, Enum):
+    DEFAULT = 0
+    INPUT = 1
+
+class MessageType(str, Enum):
+    TEXT = "text"
+    IMAGE_URL = "image_url"
+    IMAGE_BASE64 = "image_base64"

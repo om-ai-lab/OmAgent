@@ -87,11 +87,8 @@ def compile(
     if container_config['handlers']:
         with open(output_path / "handlers.yaml", "w") as f:
             f.write(container_config['handlers'])
-    if container_config['ltm']:
-        with open(output_path / "ltm.yaml", "w") as f:
-            f.write(container_config['ltm'])
-    if container_config['stm']:
-        with open(output_path / "stm.yaml", "w") as f:
-            f.write(container_config['stm'])
+    if container_config['memories']:
+        with open(output_path / "memories.yaml", "w") as f:
+            f.write(container_config['memories'])
 
     return {"worker_config": worker_config}
