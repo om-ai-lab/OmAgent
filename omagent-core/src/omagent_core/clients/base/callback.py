@@ -7,13 +7,31 @@ from collections import defaultdict
 from pathlib import Path
 from time import time
 from typing import Any, ClassVar
+from enum import Enum
 
 from colorama import Fore, Style
 from pydantic import BaseModel, model_validator
 
 from ...utils.error import VQLError
 from ...utils.logger import logging
+from ...handlers.redis_handler import RedisHandler
 import omagent_core.base
+
+class ContentStatus(Enum):
+    INCOMPLETE = "incomplete" # the conversation content is not yet complete
+    END_BLOCK = "end_block" # a single conversation has ended, but the overall result is not finished
+    END_ANSWER = "end_answer" # the overall return is complete
+
+class InteractionType(Enum):
+    DEFAULT = 0
+    INPUT = 1
+
+class MessageType(Enum):
+    TEXT = "text"
+    IMAGE_URL = "image_url"
+    IMAGE_BASE64 = "image_base64"
+
+redis_handler = RedisHandler()
 
 class BaseCallback(BaseModel, ABC):
     bot_id: str
@@ -197,3 +215,67 @@ class DefaultCallback(BaseCallback):
 
         data = {"message": data}
         requests.post(self.endpoint, json=data)
+
+
+class AppCallback(BaseCallback):
+    bot_id: str = ""
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)
+
+    def _create_message_data(self, agent_id, code, error_info, took, msg_type, msg, content_status, interaction_type, prompt_tokens, output_tokens):
+        message = {
+            "role": "assistant",
+            "type": msg_type,
+            "content": msg
+        }
+        usage = {
+            "prompt_tokens": prompt_tokens,
+            "output_tokens": output_tokens
+        }
+        data = {
+            "agent_id": agent_id,
+            "code": code,
+            "error_info": error_info,
+            "took": took,
+            "content_status": content_status,
+            "interaction_type": int(interaction_type),
+            "message": message,
+            "usage": usage
+        }
+        return {"payload": json.dumps(data, ensure_ascii=False)}
+
+    def send_to_group(self, stream_name, group_name, data):
+        print(f"Stream: {stream_name}, Group: {group_name}, Data: {data}")
+        redis_handler.redis_client.xadd(stream_name, data)
+        try:
+            redis_handler.redis_client.xgroup_create(stream_name, group_name, id='0')
+        except Exception as e:
+            print(f"Consumer group may already exist: {e}")
+
+    def send_base_message(self, agent_id, code, error_info, took, msg_type, msg, content_status, interaction_type, prompt_tokens, output_tokens):
+        stream_name = f"{agent_id}_output"
+        group_name = "omappagent"  # replace with your consumer group name
+        data = self._create_message_data(agent_id, code, error_info, took, msg_type, msg, content_status, interaction_type, prompt_tokens, output_tokens)
+        self.send_to_group(stream_name, group_name, data)
+
+    def send_incomplete(self, agent_id, took, msg_type, msg):
+        self.send_base_message(agent_id, 0, "", took, msg_type, msg, ContentStatus.INCOMPLETE.value, InteractionType.DEFAULT.value, 0, 0)
+
+    def send_block(self, agent_id, took, msg_type, msg, interaction_type=InteractionType.DEFAULT.value):
+        self.send_base_message(agent_id, 0, "", took, msg_type, msg, ContentStatus.END_BLOCK.value, interaction_type, 0, 0)
+
+    def send_answer(self, agent_id, took, msg_type, msg):
+        self.send_base_message(agent_id, 0, "", took, msg_type, msg, ContentStatus.END_ANSWER.value, InteractionType.DEFAULT.value, 0, 0)
+
+    def info(self, agent_id, progress, message):
+        stream_name = f"{agent_id}_running"
+        data = {"agent_id": agent_id, "progress": progress, "message": message}
+        payload = {"payload": json.dumps(data, ensure_ascii=False)} 
+        redis_handler.send_to_stream(stream_name, payload)
+
+    def error(self, agent_id, code, error_info):
+        self.send_base_message(agent_id, code, error_info, 0, MessageType.TEXT.value, "", "end_answer", 0, 0)
+
+    def finish(self, agent_id, took, type, msg):
+        self.send_answer(agent_id, took, type, msg)
