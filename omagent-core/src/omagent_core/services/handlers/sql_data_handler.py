@@ -6,8 +6,9 @@ from sqlalchemy_utils import create_database, database_exists
 from sqlmodel import Session, SQLModel, create_engine, delete, select
 
 from .table import BaseTable
-from ..utils.error import VQLError
-from ..utils.logger import logging
+from omagent_core.utils.registry import registry
+from omagent_core.utils.error import VQLError
+from omagent_core.utils.logger import logging
 
 
 class SQLDataHandler(BaseModel):

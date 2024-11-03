@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Callable, Any, Dict
 from functools import partial
 
-CATEGORIES = ["prompt", "llm", "node", "worker", "tool", "handler", "encoder"]
+CATEGORIES = ["prompt", "llm", "node", "worker", "tool", "handler", "encoder", "memory", "connector"]
 
 
 class Registry:
@@ -72,52 +72,37 @@ class Registry:
         """
         return self._get(category, name)
 
-    def import_module(self, project_root: str = None, custom_paths: List[str] = []):
-        """
-        Imports all modules from default and custom paths, skipping unnecessary files.
-
-        :param project_root: The root path of the project.
-        :param custom_paths: Custom paths to import modules from.
-        """
-        default_paths = [
-            Path(__file__).parents[1] / "core/prompt",
-            Path(__file__).parents[1] / "core/llm",
-            Path(__file__).parents[1] / "core/node",
-            Path(__file__).parents[1] / "core/encoder",
-            Path(__file__).parents[1] / "core/tool_system/tools",
-            Path(__file__).parents[1] / "handlers",
+    def import_module(self, project_root: str = None, custom: List[str] = []):
+        root_path = Path(__file__).parents[1]
+        default_path = [
+            root_path.joinpath("models"),
+            root_path.joinpath("tool_system"),
+            root_path.joinpath("services"),
+            root_path.joinpath("memories"),
         ]
-
-        for path in default_paths:
-            self._import_from_path(path, "omagent_core")
-
-        if project_root:
-            for custom_path in custom_paths:
-                custom_path = Path(custom_path).absolute()
-                self._import_from_path(custom_path, str(project_root))
-
-    def _import_from_path(self, path: Path, root: str):
-        """
-        Helper function to import modules from a specific path, skipping specific files.
-
-        :param path: The directory to search for modules.
-        :param root: The root directory to resolve the module name.
-        """
-        if not path.exists():
-            return
-
-        for module_file in path.rglob("*.py"):
-            if any(
-                skip in module_file.name for skip in ["__init__", "base.py", "entry.py"]
-            ):
-                continue
-            try:
-                module_name = root + str(module_file.relative_to(path.parent)).rsplit(
+                
+        for path in default_path:
+            for module in path.rglob("*.[ps][yo]"):
+                module = str(module)
+                if "__init__" in module or "base.py" in module or "entry.py" in module:
+                    continue
+                module = "omagent_core" + module.rsplit("omagent_core", 1)[1].rsplit(
                     ".", 1
                 )[0].replace("/", ".")
-                importlib.import_module(module_name)
-            except Exception as e:
-                print(f"Error importing {module_file}: {e}")
+                importlib.import_module(module)
+        if project_root:
+            for path in custom:
+                path = Path(path).absolute()
+                for module in path.rglob("*.[ps][yo]"):
+                    module = str(module)
+                    if "__init__" in module:
+                        continue
+                    module = (
+                        module.replace(str(project_root) + "/", "")
+                        .rsplit(".", 1)[0]
+                        .replace("/", ".")
+                    )
+                    importlib.import_module(module)
 
 
 # Instantiate registry

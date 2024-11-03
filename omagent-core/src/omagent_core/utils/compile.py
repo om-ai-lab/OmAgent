@@ -11,6 +11,7 @@ from omagent_core.engine.workflow.task.switch_task import SwitchTask
 from omagent_core.engine.workflow.task.fork_task import ForkTask
 from omagent_core.engine.workflow.task.do_while_task import DoWhileTask
 from omagent_core.engine.workflow.conductor_workflow import InlineSubWorkflowTask
+from omagent_core.utils.container import container
 
 
 # recursive processing of sub-workflows
@@ -42,7 +43,7 @@ def process_tasks(
     return worker_list
 
 
-def compile_workflow(
+def compile(
     workflow: ConductorWorkflow,
     output_path: Union[str, Path],
     overwrite: bool = False,
@@ -78,5 +79,19 @@ def compile_workflow(
     )
     with open(output_path / "worker.yaml", "w") as f:
         f.write(worker_config)
+        
+    container_config = container.compile_config()
+    if container_config['connectors']:
+        with open(output_path / "connectors.yaml", "w") as f:
+            f.write(container_config['connectors'])
+    if container_config['handlers']:
+        with open(output_path / "handlers.yaml", "w") as f:
+            f.write(container_config['handlers'])
+    if container_config['ltm']:
+        with open(output_path / "ltm.yaml", "w") as f:
+            f.write(container_config['ltm'])
+    if container_config['stm']:
+        with open(output_path / "stm.yaml", "w") as f:
+            f.write(container_config['stm'])
 
     return {"worker_config": worker_config}

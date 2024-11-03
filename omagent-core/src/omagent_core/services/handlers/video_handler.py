@@ -3,9 +3,9 @@ from typing import Any, Optional
 from pydantic import field_validator
 from pymilvus import CollectionSchema, DataType, FieldSchema
 
-from ..models.encoders.base import EncoderBase
-from ..utils.registry import registry
-from ..utils.error import VQLError
+from omagent_core.models.encoders.base import EncoderBase
+from omagent_core.utils.registry import registry
+from omagent_core.utils.error import VQLError
 from .milvus_handler import MilvusHandler
 
 

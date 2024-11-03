@@ -14,7 +14,7 @@ from pydantic import BaseModel, model_validator
 
 from ...utils.error import VQLError
 from ...utils.logger import logging
-from ...handlers.redis_handler import RedisHandler
+from ...services.handlers.redis_stream_handler import RedisStreamHandler
 import omagent_core.base
 
 class ContentStatus(Enum):

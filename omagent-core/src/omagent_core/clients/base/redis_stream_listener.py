@@ -1,7 +1,7 @@
 import asyncio
 import time
 import json
-from omagent_core.handlers.redis_handler import RedisHandler
+from omagent_core.handlers.redis_stream_handler import RedisHandler
 from omagent_core.utils.registry import registry
 from omagent_core.engine.worker.base import BaseWorker
 

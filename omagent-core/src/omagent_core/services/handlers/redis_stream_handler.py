@@ -1,14 +1,11 @@
 import redis
+from omagent_core.utils.registry import registry
+from omagent_core.base import BotBase
+from omagent_core.services.connectors.redis import RedisConnector
 
-class RedisHandler:
-    def __init__(self, redis_host='localhost', redis_port=6379, redis_password='', redis_db=0):
-        self.redis_client = redis.StrictRedis(
-            host=redis_host, 
-            port=redis_port, 
-            password=redis_password, 
-            db=redis_db,
-            decode_responses=True
-        )
+@registry.register_handler()
+class RedisStreamHandler(BotBase):
+    redis_stream_client: RedisConnector
 
     def read_from_stream(self, stream_name, last_id='0'):
         """
@@ -17,7 +14,7 @@ class RedisHandler:
         :param last_id: Last read ID
         :return: Data read from the stream
         """
-        return self.redis_client.xread({stream_name: last_id})
+        return self.redis_stream_client.xread({stream_name: last_id})
 
     def send_to_stream(self, stream_name, data):
         """
@@ -25,7 +22,7 @@ class RedisHandler:
         :param stream_name: Name of the Stream
         :param data: Data to be sent
         """
-        self.redis_client.xadd(stream_name, data)
+        self.redis_stream_client.xadd(stream_name, data)
 
     def get_stream_length(self, stream_name):
         """
@@ -33,14 +30,14 @@ class RedisHandler:
         :param stream_name: Name of the Stream
         :return: Length of the Stream
         """
-        return self.redis_client.xlen(stream_name)
+        return self.redis_stream_client.xlen(stream_name)
 
     def delete_stream(self, stream_name):
         """
         Delete the Redis Stream
         :param stream_name: Name of the Stream
         """
-        self.redis_client.delete(stream_name)
+        self.redis_stream_client.delete(stream_name)
 
     def create_consumer_group(self, stream_name, group_name):
         """
@@ -49,7 +46,7 @@ class RedisHandler:
         :param group_name: Name of the Consumer Group
         """
         try:
-            self.redis_client.xgroup_create(stream_name, group_name, id='0', mkstream=True)
+            self.redis_stream_client.xgroup_create(stream_name, group_name, id='0', mkstream=True)
         except redis.exceptions.ResponseError as e:
             if "BUSYGROUP Consumer Group name already exists" not in str(e):
                 raise
@@ -64,7 +61,7 @@ class RedisHandler:
         :param block: Block time in milliseconds
         :return: Messages read from the group
         """
-        return self.redis_client.xreadgroup(group_name, consumer_name, {stream_name: '>'}, count=count, block=block)
+        return self.redis_stream_client.xreadgroup(group_name, consumer_name, {stream_name: '>'}, count=count, block=block)
 
     def acknowledge_message(self, stream_name, group_name, message_id):
         """
@@ -73,4 +70,4 @@ class RedisHandler:
         :param group_name: Name of the Consumer Group
         :param message_id: ID of the message
         """
-        self.redis_client.xack(stream_name, group_name, message_id)
+        self.redis_stream_client.xack(stream_name, group_name, message_id)
