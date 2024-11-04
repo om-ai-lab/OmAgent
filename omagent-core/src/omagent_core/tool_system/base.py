@@ -8,12 +8,12 @@ import yaml
 from PIL import Image
 from pydantic import BaseModel, model_validator
 
-from ..handlers.sql_data_handler import SQLDataHandler
-from ..utils.error import VQLError
-from ..utils.logger import logging
-from ..models.od.schemas import Target
-from ..utils.plot import Annotator
-from ..base import BotBase
+from omagent_core.services.handlers.sql_data_handler import SQLDataHandler
+from omagent_core.utils.error import VQLError
+from omagent_core.utils.logger import logging
+from omagent_core.models.od.schemas import Target
+from omagent_core.utils.plot import Annotator
+from omagent_core.base import BotBase
 
 
 class ArgSchema(BaseModel):

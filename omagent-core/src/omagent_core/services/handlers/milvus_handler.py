@@ -6,11 +6,11 @@ from pydantic import BaseModel
 from pymilvus import Collection, DataType, MilvusClient, connections, utility
 from pymilvus.client import types
 
-from ..utils.registry import registry
-from ..utils.error import VQLError
+from omagent_core.utils.registry import registry
+from omagent_core.utils.error import VQLError
 
 
-@registry.register_handler()
+@registry.register_component()
 class MilvusHandler(BaseModel):
     host_url: str = "./memory.db"
     user: str = ""

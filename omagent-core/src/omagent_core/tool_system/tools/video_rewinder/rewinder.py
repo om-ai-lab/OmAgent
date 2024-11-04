@@ -3,15 +3,15 @@ import re
 from pathlib import Path
 from typing import List
 
-from ....models.llms.base import BaseLLMBackend
-from ....models.llms.prompt import PromptTemplate
-from ...base import ArgSchema, BaseTool
-from ....utils.logger import logging
-from ....utils.registry import registry
+from omagent_core.models.llms.base import BaseLLMBackend
+from omagent_core.models.llms.prompt import PromptTemplate
+from omagent_core.tool_system.base import ArgSchema, BaseTool
+from omagent_core.utils.logger import logging
+from omagent_core.utils.registry import registry
 from pydantic import Field
 from scenedetect import FrameTimecode
 
-from ....handlers.video_scenes import VideoScenes
+from omagent_core.services.handlers.video_scenes import VideoScenes
 
 CURRENT_PATH = Path(__file__).parents[0]
 

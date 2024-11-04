@@ -3,7 +3,6 @@ from pathlib import Path
 import yaml
 from omagent_core.base import BotBase
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
-from omagent_core.engine.http.api_client import conductor_client
 from omagent_core.utils.registry import registry
 from omagent_core.engine.workflow.task.task import TaskInterface
 from omagent_core.engine.workflow.task.simple_task import SimpleTask
@@ -11,6 +10,7 @@ from omagent_core.engine.workflow.task.switch_task import SwitchTask
 from omagent_core.engine.workflow.task.fork_task import ForkTask
 from omagent_core.engine.workflow.task.do_while_task import DoWhileTask
 from omagent_core.engine.workflow.conductor_workflow import InlineSubWorkflowTask
+from omagent_core.utils.container import container
 
 
 # recursive processing of sub-workflows
@@ -42,7 +42,7 @@ def process_tasks(
     return worker_list
 
 
-def compile_workflow(
+def compile(
     workflow: ConductorWorkflow,
     output_path: Union[str, Path],
     overwrite: bool = False,
@@ -69,14 +69,18 @@ def compile_workflow(
 
     print(worker_config)
     worker_config = yaml.dump(
-        worker_config, default_flow_style=False, allow_unicode=True
+        worker_config, allow_unicode=True, sort_keys=False
     )
 
     workflow.register(overwrite=overwrite)
     print(
-        f"see the workflow definition here: {conductor_client.configuration.ui_host}/workflowDef/{workflow.name}\n"
+        f"see the workflow definition here: {container.get_connector('conductor_config').ui_host}/workflowDef/{workflow.name}\n"
     )
     with open(output_path / "worker.yaml", "w") as f:
         f.write(worker_config)
+        
+    container_config = container.compile_config()
+    with open(output_path / "container.yaml", "w") as f:
+        f.write(yaml.dump(container_config, sort_keys=False, allow_unicode=True))
 
-    return {"worker_config": worker_config}
+    return {"worker_config": worker_config, "container_config": container_config}

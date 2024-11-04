@@ -14,6 +14,7 @@ from omagent_core.engine.http.models.task_result import TaskResult
 from omagent_core.engine.http.rest import AuthorizationException
 from omagent_core.engine.telemetry.metrics_collector import MetricsCollector
 from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.utils.container import container
 
 logger = logging.getLogger(
     Configuration.get_logging_formatted_name(
@@ -34,7 +35,7 @@ class TaskRunner:
         self.worker = worker
         self.__set_worker_properties()
         if not isinstance(configuration, Configuration):
-            configuration = Configuration()
+            configuration = container.get_connector('conductor_config')
         self.configuration = configuration
         self.metrics_collector = None
         if metrics_settings is not None:

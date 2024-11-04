@@ -12,6 +12,7 @@ from omagent_core.engine.http.models.workflow_state_update import WorkflowStateU
 from omagent_core.engine.http.models.workflow_test_request import WorkflowTestRequest
 from omagent_core.engine.orkes.orkes_base_client import OrkesBaseClient
 from omagent_core.engine.workflow_client import WorkflowClient
+from omagent_core.utils.container import container
 
 
 class OrkesWorkflowClient(OrkesBaseClient, WorkflowClient):
@@ -180,4 +181,4 @@ class OrkesWorkflowClient(OrkesBaseClient, WorkflowClient):
 
         return self.workflowResourceApi.update_workflow_and_task_state(update_requesst=update_requesst, workflow_id=workflow_id, **kwargs)
     
-workflow_client = OrkesWorkflowClient(Configuration())
+workflow_client = OrkesWorkflowClient(container.get_connector('conductor_config'))

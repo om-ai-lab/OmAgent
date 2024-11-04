@@ -55,7 +55,7 @@ class BaseWorker(BotBase, ABC):
     poll_interval: float = Field(default=100, description="Worker poll interval in millisecond")
     domain: Optional[str] = Field(default=None, description="The domain of workflow")
     
-    def model_post_init(self, *args, **kwargs) -> None:
+    def model_post_init(self, __context: Any) -> None:
         self.task_definition_name = self.name
         self.next_task_index = 0
         self._task_definition_name_cache = None

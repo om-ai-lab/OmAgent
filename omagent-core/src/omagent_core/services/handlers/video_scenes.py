@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, Tuple, Union
 
 import cv2
-from ..utils.logger import logging
+from omagent_core.utils.logger import logging
 from PIL import Image
 from pydantic import BaseModel
 from pydub import AudioSegment

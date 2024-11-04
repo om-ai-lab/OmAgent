@@ -17,6 +17,7 @@ from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.http import rest
 from omagent_core.engine.http.rest import AuthorizationException
 from omagent_core.engine.http.thread import AwaitableThread
+from omagent_core.utils.container import container
 
 logger = logging.getLogger(
     Configuration.get_logging_formatted_name(
@@ -46,7 +47,7 @@ class ApiClient(object):
             cookie=None
     ):
         if configuration is None:
-            configuration = Configuration()
+            configuration = container.get_connector('conductor_config')
         self.configuration = configuration
 
         self.rest_client = rest.RESTClientObject(connection=configuration.http_connection)
@@ -721,5 +722,3 @@ class ApiClient(object):
             for key, value in encrypted_headers.items():
                 headers[key] = value
         return headers
-
-conductor_client = ApiClient(configuration=Configuration())
