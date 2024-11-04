@@ -10,7 +10,7 @@ from omagent_core.utils.registry import registry
 from omagent_core.utils.error import VQLError
 
 
-@registry.register_handler()
+@registry.register_component()
 class MilvusHandler(BaseModel):
     host_url: str = "./memory.db"
     user: str = ""

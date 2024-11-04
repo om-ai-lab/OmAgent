@@ -90,7 +90,7 @@ class BotBase(BaseSettings, ABC):
 
     
     @classmethod
-    def from_config(cls, config_data: str) -> "BotBase":
+    def from_config(cls, config_data: dict) -> "BotBase":
         def clean_config_dict(config_dict: dict) -> dict:
             """Recursively clean up the configuration dictionary, removing all 'description' and 'env_var' keys"""
             cleaned = {}

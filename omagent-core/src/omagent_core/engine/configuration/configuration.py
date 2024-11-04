@@ -9,8 +9,9 @@ from omagent_core.engine.configuration.settings.authentication_settings import (
     AuthenticationSettings,
 )
 from omagent_core.base import BotBase
+from omagent_core.utils.registry import registry
 
-
+@registry.register_connector()
 class Configuration(BotBase):
     base_url: str = Field(
         default="http://localhost:8080",

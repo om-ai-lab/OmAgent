@@ -9,7 +9,7 @@ from omagent_core.utils.error import VQLError
 from .milvus_handler import MilvusHandler
 
 
-@registry.register_handler()
+@registry.register_component()
 class VideoHandler(MilvusHandler):
     collection_name: str
     text_encoder: Optional[EncoderBase] = None

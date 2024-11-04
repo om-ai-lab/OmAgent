@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Callable, Any, Dict
 from functools import partial
 
-CATEGORIES = ["prompt", "llm", "node", "worker", "tool", "handler", "encoder", "memory", "connector"]
+CATEGORIES = ["prompt", "llm", "node", "worker", "tool", "encoder", "connector", "component"]
 
 
 class Registry:

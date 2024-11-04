@@ -80,11 +80,7 @@ def compile(
         f.write(worker_config)
         
     container_config = container.compile_config()
-    if container_config['connectors']:
-        with open(output_path / "connectors.yaml", "w") as f:
-            f.write(yaml.dump(container_config['connectors'], sort_keys=False, allow_unicode=True))
-    if container_config['components']:
-        with open(output_path / "components.yaml", "w") as f:
-            f.write(yaml.dump(container_config['components'], sort_keys=False, allow_unicode=True))
+    with open(output_path / "container.yaml", "w") as f:
+        f.write(yaml.dump(container_config, sort_keys=False, allow_unicode=True))
 
-    return {"worker_config": worker_config}
+    return {"worker_config": worker_config, "container_config": container_config}

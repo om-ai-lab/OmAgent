@@ -3,7 +3,7 @@ from omagent_core.utils.registry import registry
 from omagent_core.base import BotBase
 from omagent_core.services.connectors.redis import RedisConnector
 
-@registry.register_handler()
+@registry.register_component()
 class RedisStreamHandler(BotBase):
     redis_stream_client: RedisConnector
 
