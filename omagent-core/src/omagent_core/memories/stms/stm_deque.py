@@ -1,10 +1,15 @@
 from .stm_base import STMBase
 from collections import defaultdict, deque
+from omagent_core.utils.registry import registry
+from pydantic import Field
+from typing import Any
 
-
+@registry.register_component()
 class DequeSTM(STMBase):
-    def __init__(self, maxlen=3):
-        self._storage = defaultdict(lambda: deque(maxlen=maxlen))
+    maxlen_deque_stm: int = Field(default=3)
+    
+    def model_post_init(self, __context: Any) -> None:
+        self._storage = defaultdict(lambda: deque(maxlen=self.maxlen_deque_stm))
 
     def __getitem__(self, key):
         return self._storage[key]

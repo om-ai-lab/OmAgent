@@ -1,13 +1,18 @@
 from .stm_base import STMBase
 import os
 import pickle
+from omagent_core.utils.registry import registry
+from pydantic import Field
+from typing import Any
 
 
+@registry.register_component()
 class LocalSTM(STMBase):
-    def __init__(self, base_directory='./stm_storage', storage_name='default'):
-        self.base_directory = base_directory
-        self.storage_name = storage_name
-        self.directory = os.path.join(base_directory, storage_name)
+    base_directory: str = Field(default='./stm_storage')
+    storage_name: str = Field(default='default')
+    
+    def model_post_init(self, __context: Any) -> None:
+        self.directory = os.path.join(self.base_directory, self.storage_name)
         os.makedirs(self.directory, exist_ok=True)
 
     def _get_filepath(self, key):

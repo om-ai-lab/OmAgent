@@ -1,18 +1,14 @@
 from .stm_base import STMBase
 import pickle
+from omagent_core.utils.registry import registry
+from omagent_core.services.connectors.redis import RedisConnector
 
 
+@registry.register_component()
 class RedisSTM(STMBase):
-    def __init__(self, client, storage_name='default'):
-        """
-        Initialize the RedisSTM with a Redis client and a storage name.
+    redis_stm_client: RedisConnector
+    storage_name: str = 'default'
 
-        Args:
-            client: The Redis client object.
-            storage_name (str, optional): The name of the storage. Defaults to 'default'.
-        """
-        self.storage_name = storage_name
-        self._client = client
     
     def _encode_key(self, key):
         """
@@ -52,7 +48,7 @@ class RedisSTM(STMBase):
             KeyError: If the key is not found in the Redis storage.
         """
         key = self._encode_key(key)
-        value = self._client.get(key)
+        value = self.redis_stm_client.get(key)
         if value is not None:
             return pickle.loads(value)
         raise KeyError(key)
@@ -66,7 +62,7 @@ class RedisSTM(STMBase):
             value (Any): The value to associate with the key.
         """
         key = self._encode_key(key)
-        self._client.set(key, pickle.dumps(value))
+        self.redis_stm_client.set(key, pickle.dumps(value))
 
     def __delitem__(self, key):
         """
@@ -79,7 +75,7 @@ class RedisSTM(STMBase):
             KeyError: If the key is not found in the Redis storage.
         """
         key = self._encode_key(key)
-        if not self._client.delete(key):
+        if not self.redis_stm_client.delete(key):
             raise KeyError(key)
 
     def __contains__(self, key):
@@ -93,7 +89,7 @@ class RedisSTM(STMBase):
             bool: True if the key exists, False otherwise.
         """
         key = self._encode_key(key)
-        return self._client.exists(key)
+        return self.redis_stm_client.exists(key)
 
     def keys(self):
         """
@@ -103,7 +99,7 @@ class RedisSTM(STMBase):
             list: A list containing all keys.
         """
         res = []
-        for k in self._client.keys():
+        for k in self.redis_stm_client.keys():
             key = k.decode('utf-8')
             if key.startswith(self.storage_name + '@@'):
                 res.append(self._decode_key(key))
