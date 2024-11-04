@@ -215,7 +215,7 @@ class ToolManager(BaseLLMBackend):
 
         return cls(**config)
 
-    def execute_task(self, task, related_info=None, function=None):
+    def execute_task(self, task, related_info={}, function=None):
         if self.llm == None:
             raise ValueError(
                 "The execute_task method requires the llm field to be initialized."
