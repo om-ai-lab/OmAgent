@@ -1,11 +1,10 @@
 from .stm_base import STMBase
+from omagent_core.utils.registry import registry
+from typing import Any
 
-
+@registry.register_component()
 class DictSTM(STMBase):
-    def __init__(self):
-        """
-        Initialize the DictSTM with an empty dictionary.
-        """
+    def model_post_init(self, __context: Any) -> None:
         self._storage = {}
 
     def __getitem__(self, key):

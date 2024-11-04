@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Tuple
+from omagent_core.base import BotBase
 
-class STMBase(ABC):
+class STMBase(BotBase):
     @abstractmethod
     def __getitem__(self, key: Any) -> Any:
         """
