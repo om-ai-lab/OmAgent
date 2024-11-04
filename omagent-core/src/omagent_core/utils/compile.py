@@ -3,7 +3,6 @@ from pathlib import Path
 import yaml
 from omagent_core.base import BotBase
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
-from omagent_core.engine.http.api_client import conductor_client
 from omagent_core.utils.registry import registry
 from omagent_core.engine.workflow.task.task import TaskInterface
 from omagent_core.engine.workflow.task.simple_task import SimpleTask
@@ -70,12 +69,12 @@ def compile(
 
     print(worker_config)
     worker_config = yaml.dump(
-        worker_config, default_flow_style=False, allow_unicode=True
+        worker_config, allow_unicode=True, sort_keys=False
     )
 
     workflow.register(overwrite=overwrite)
     print(
-        f"see the workflow definition here: {conductor_client.configuration.ui_host}/workflowDef/{workflow.name}\n"
+        f"see the workflow definition here: {container.get_connector('conductor_config').ui_host}/workflowDef/{workflow.name}\n"
     )
     with open(output_path / "worker.yaml", "w") as f:
         f.write(worker_config)
@@ -83,12 +82,9 @@ def compile(
     container_config = container.compile_config()
     if container_config['connectors']:
         with open(output_path / "connectors.yaml", "w") as f:
-            f.write(container_config['connectors'])
-    if container_config['handlers']:
-        with open(output_path / "handlers.yaml", "w") as f:
-            f.write(container_config['handlers'])
-    if container_config['memories']:
-        with open(output_path / "memories.yaml", "w") as f:
-            f.write(container_config['memories'])
+            f.write(yaml.dump(container_config['connectors'], sort_keys=False, allow_unicode=True))
+    if container_config['components']:
+        with open(output_path / "components.yaml", "w") as f:
+            f.write(yaml.dump(container_config['components'], sort_keys=False, allow_unicode=True))
 
     return {"worker_config": worker_config}

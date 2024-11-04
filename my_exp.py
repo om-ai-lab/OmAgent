@@ -7,7 +7,7 @@ from omagent_core.engine.workflow.executor.workflow_executor import WorkflowExec
 from omagent_core.engine.automator.task_handler import TaskHandler
 from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.http.models import StartWorkflowRequest
-from omagent_core.utils.compile import compile_workflow
+from omagent_core.utils.compile import compile
 from omagent_core.models.llms.base import BaseLLMBackend, BaseLLM
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
@@ -129,7 +129,7 @@ workflow >> task_conclude
 
 # workflow >> task >> task2 >> task3 >> task4
 
-compile_workflow(workflow, Path('./'), True)
+compile(workflow, Path('./'), True)
 
 # worker通过config来初始化，可以使用 omagent-core/src/omagent_core/utils/compile.py 编译worker的config模版
 

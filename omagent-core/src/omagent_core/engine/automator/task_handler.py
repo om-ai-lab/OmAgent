@@ -11,6 +11,7 @@ from omagent_core.engine.configuration.settings.metrics_settings import MetricsS
 from omagent_core.engine.telemetry.metrics_collector import MetricsCollector
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.registry import registry
+from omagent_core.utils.container import container
 
 logger = logging.getLogger(
     Configuration.get_logging_formatted_name(
@@ -49,7 +50,7 @@ class TaskHandler:
             metrics_settings: MetricsSettings = None,
             import_modules: List[str] = None
     ):
-        self.logger_process, self.queue = _setup_logging_queue(Configuration())
+        self.logger_process, self.queue = _setup_logging_queue(container.get_connector('conductor_config'))
 
         # imports
         importlib.import_module('omagent_core.engine.http.models.task')
@@ -60,7 +61,7 @@ class TaskHandler:
 
         workers = [registry.get_worker(name).from_config(worker_config) for name in worker_config]
         
-        self.__create_task_runner_processes(workers, Configuration(), metrics_settings)
+        self.__create_task_runner_processes(workers, container.get_connector('conductor_config'), metrics_settings)
         self.__create_metrics_provider_process(metrics_settings)
         logger.info('TaskHandler initialized')
 
