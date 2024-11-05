@@ -24,7 +24,6 @@ dependencies = [
   "httpx>=0.24.1",
   "tenacity>=8.2.3",
   "pyyaml>=6.0.1",
-  "requests",
   "pymilvus>=2.4.6",
   "networkx>=3.2.1",
   "duckduckgo_search>=3.9.9",
@@ -36,7 +35,19 @@ dependencies = [
   "jinja2>=3.1.2",
   "colorama>=0.4.6",
   "httpx[http2]",
-  "openai>=1.23.2"
+  "openai>=1.23.2",
+  "certifi >= 14.05.14",
+  "prometheus-client >= 0.13.1",
+  "six >= 1.10",
+  "requests >= 2.31.0",
+  "typing-extensions >= 4.2.0",
+  "astor >= 0.8.1",
+  "shortuuid >= 1.0.11",
+  "dacite >= 1.8.1",
+  "pydantic_settings >= 2.6.0",
+  "redis >= 4.8.0",
+  "fastapi>=0.109.0",
+  "uvicorn>=0.27.0"
 ]
 
 [project.urls]

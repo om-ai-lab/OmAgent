@@ -3,14 +3,14 @@ import pickle
 from pathlib import Path
 from typing import List
 
-from ....models.llms.base import BaseLLMBackend
-from ....engine.node import BaseProcessor
-from ....models.llms.prompt.parser import DictParser
-from ....models.llms.prompt import PromptTemplate
-from ....memories.ltms.ltm import LTM
-from ....engine.workflow.context import BaseWorkflowContext
-from ....utils.logger import logging
-from ....utils.registry import registry
+from omagent_core.models.llms.base import BaseLLMBackend
+from omagent_core.engine.node import BaseProcessor
+from omagent_core.models.llms.prompt.parser import DictParser
+from omagent_core.models.llms.prompt import PromptTemplate
+from omagent_core.memories.ltms.ltm import LTM
+from omagent_core.engine.workflow.context import BaseWorkflowContext
+from omagent_core.utils.logger import logging
+from omagent_core.utils.registry import registry
 from pydantic import Field, field_validator
 from pydub import AudioSegment
 from pydub.effects import normalize
@@ -18,7 +18,7 @@ from scenedetect import open_video
 
 from ....models.asr.stt import STT
 
-from ....handlers.video_scenes import VideoScenes
+from omagent_core.services.handlers.video_scenes import VideoScenes
 
 CURRENT_PATH = root_path = Path(__file__).parents[0]
 PARSER = DictParser()
