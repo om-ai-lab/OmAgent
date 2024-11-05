@@ -1,9 +1,15 @@
 import asyncio
 import time
 import json
+from omagent_core.engine.http.models.workflow_status import running_status
 from omagent_core.utils.registry import registry
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.container import container
+from omagent_core.engine.orkes.orkes_workflow_client import OrkesWorkflowClient
+from omagent_core.engine.configuration.configuration import Configuration
+from omagent_core.utils.logger import logging
+
+
 
 @registry.register_worker()
 class RedisStreamListener(BaseWorker):
@@ -13,49 +19,58 @@ class RedisStreamListener(BaseWorker):
         consumer_name = f"{workflow_instance_id}_agent"  # consumer name
         poll_interval: int = 1
 
+        configuration = Configuration()
+        client = OrkesWorkflowClient(configuration=configuration)
+
         result = {}
         # ensure consumer group exists
         try:
-            container.get_connector("RedisStreamHandler").redis_client.xgroup_create(
+            container.get_component("RedisStreamHandler").redis_stream_client._client.xgroup_create(
                 stream_name, group_name, id="0", mkstream=True
             )
         except Exception as e:
-            print(f"Consumer group may already exist: {e}")
+            logging.info(f"Consumer group may already exist: {e}")
 
-        print(f"Listening to Redis stream: {stream_name} in group: {group_name}")
+        logging.info(f"Listening to Redis stream: {stream_name} in group: {group_name}")
         flag = False
         while True:
             try:
+                logging.info(f"Checking workflow status: {workflow_instance_id}")
+                workflow_status = client.get_workflow_status(workflow_instance_id)
+                if workflow_status.status not in running_status:
+                    logging.info(f"Workflow {workflow_instance_id} is not running, exiting...")
+                    break
+
                 # read new messages from consumer group
-                messages = container.get_connector("RedisStreamHandler").redis_client.xreadgroup(
+                messages = container.get_component("RedisStreamHandler").redis_stream_client._client.xreadgroup(
                     group_name, consumer_name, {stream_name: ">"}, count=1
                 )
-                print(f"Messages: {messages}")
+                logging.info(f"Messages: {messages}")
 
                 for stream, message_list in messages:
                     for message_id, message in message_list:
                         flag = self.process_message(message, result)
                         # confirm message has been processed
-                        container.get_connector("RedisStreamHandler").redis_client.xack(
+                        container.get_component("RedisStreamHandler").redis_stream_client._client.xack(
                             stream_name, group_name, message_id
                         )
                 if flag:
                     break
                 # Sleep for the specified interval before checking for new messages again
-                print(f"Sleeping for {poll_interval} seconds, waiting for new messages...")
+                logging.info(f"Sleeping for {poll_interval} seconds, waiting for {stream_name}...")
                 time.sleep(poll_interval)
             except Exception as e:
-                print(f"Error while listening to stream: {e}")
+                logging.error(f"Error while listening to stream: {e}")
                 time.sleep(poll_interval)  # Wait before retrying
         return {"output": result}
 
     def process_message(self, message, result):
-        print(f"Received message: {message}")
+        logging.info(f"Received message: {message}")
         try:
             payload = message.get("payload")
             message_data = json.loads(payload)
             result.update(message_data)
         except Exception as e:
-            print(f"Error processing message: {e}")
+            logging.error(f"Error processing message: {e}")
             return False
         return True

@@ -48,5 +48,6 @@ class AppClient:
         self._task_handler_processor = TaskHandler(worker_config=worker_config)
         self._task_handler_processor.start_processes()
 
-    def stop_interactor(self):
+    def stop_processor(self):
         self._task_handler_processor.stop_processes()
+

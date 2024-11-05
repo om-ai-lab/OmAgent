@@ -3,6 +3,9 @@ from pydantic import BaseModel
 from enum import Enum
 
 
+class CodeEnum(int, Enum):
+    SUCCESS = 0
+
 class ContentItem(BaseModel):
     type: str
     resource_id: Optional[str]
