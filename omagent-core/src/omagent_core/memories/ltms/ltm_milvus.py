@@ -7,15 +7,16 @@ from pymilvus import CollectionSchema, FieldSchema, DataType, Collection, utilit
 import base64
 import pickle
 from typing import Any, Iterable, Tuple, List, Optional
+from pydantic import Field
 
 
 @registry.register_component()
 class MilvusLTM(LTMBase):
-    def __init__(self, milvus_ltm_client: MilvusConnector, storage_name: str = 'default', dim: int = 128):
-        super().__init__()
-        self.milvus_ltm_client = milvus_ltm_client
-        self.storage_name = storage_name
-        self.dim = dim
+    milvus_ltm_client: MilvusConnector
+    storage_name: str = Field(default='default')
+    dim: int = Field(default=128)
+    
+    def model_post_init(self, __context: Any) -> None:
         self.connection_alias = self.milvus_ltm_client.alias
 
         # Check if collection exists
