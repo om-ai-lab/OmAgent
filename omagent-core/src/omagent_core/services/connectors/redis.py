@@ -19,6 +19,6 @@ class RedisConnector(ConnectorBase):
             password=self.password,
             username=self.username,
             db=self.db,
-            decode_responses=True
+            decode_responses=False
         )
         self._client = Redis(connection_pool=pool)

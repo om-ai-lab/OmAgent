@@ -95,7 +95,7 @@ class BaseLLMBackend(BotBase, ABC):
     output_parser: Optional[BaseOutputParser] = Field(
         default=None, validate_default=True
     )
-    prompts: List[PromptTemplate]
+    prompts: List[PromptTemplate] = []
     llm: BaseLLM
     token_usage: ClassVar[dict] = defaultdict(int)
 
