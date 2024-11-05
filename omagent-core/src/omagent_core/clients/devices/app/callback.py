@@ -40,16 +40,16 @@ class AppCallback(BaseCallback):
         return {"payload": json.dumps(data, ensure_ascii=False)}
 
     def send_to_group(self, stream_name, group_name, data):
-        print(f"Stream: {stream_name}, Group: {group_name}, Data: {data}")
-        container.get_connector("RedisStreamHandler").redis_client.xadd(
+        logging.info(f"Stream: {stream_name}, Group: {group_name}, Data: {data}")
+        container.get_component("RedisStreamHandler").redis_stream_client._client.xadd(
             stream_name, data
         )
         try:
-            container.get_connector("RedisStreamHandler").redis_client.xgroup_create(
+            container.get_component("RedisStreamHandler").redis_stream_client._client.xgroup_create(
                 stream_name, group_name, id="0"
             )
         except Exception as e:
-            print(f"Consumer group may already exist: {e}")
+            logging.info(f"Consumer group may already exist: {e}")
 
     def send_base_message(
         self,
