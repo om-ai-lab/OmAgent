@@ -11,6 +11,7 @@ from omagent_core.engine.workflow.task.fork_task import ForkTask
 from omagent_core.engine.workflow.task.do_while_task import DoWhileTask
 from omagent_core.engine.workflow.conductor_workflow import InlineSubWorkflowTask
 from omagent_core.utils.container import container
+import itertools
 
 
 # recursive processing of sub-workflows
@@ -25,11 +26,11 @@ def process_tasks(
             if task._default_case:
                 process_tasks(task._default_case, worker_list)
             if task._decision_cases:
-                process_tasks(list(task._decision_cases.values()), worker_list)
+                process_tasks(itertools.chain(*task._decision_cases.values()), worker_list)
 
         elif isinstance(task, ForkTask):
             if task._forked_tasks:
-                process_tasks(task._forked_tasks, worker_list)
+                process_tasks(itertools.chain(*task._forked_tasks), worker_list)
         elif isinstance(task, DoWhileTask):
             if task._loop_over:
                 process_tasks(task._loop_over, worker_list)
