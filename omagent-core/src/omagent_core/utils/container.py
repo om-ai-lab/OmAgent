@@ -13,12 +13,14 @@ class Container:
 
     def register_connector(
         self,
-        name: str,
         connector: Type[BaseModel],
+        name: str = None,
         overwrite: bool = False,
         **kwargs,
     ) -> None:
         """Register a connector"""
+        if name is None:
+            name = connector.__name__
         if name not in self._connectors or overwrite:
             self._connectors[name] = connector(**kwargs)
 
@@ -30,7 +32,7 @@ class Container:
     def register_component(
         self,
         component: str | Type[BaseModel],
-        key: str = None,
+        name: str = None,
         config: dict = {},
         overwrite: bool = False,
     ) -> None:
@@ -54,7 +56,7 @@ class Container:
         else:
             raise ValueError(f"Invalid component type: {type(component)}")
 
-        if (key in self._components or component_name in self._components) and not overwrite:
+        if (name in self._components or component_name in self._components) and not overwrite:
             return
 
         required_connectors = self._get_required_connectors(component_cls)
@@ -62,11 +64,11 @@ class Container:
             for connector, cls_name in required_connectors:
                 if connector not in self._connectors:
                     connector_cls = registry.get_connector(cls_name)
-                    self.register_connector(connector, connector_cls)
+                    self.register_connector(connector_cls, connector)
                 config[connector] = self._connectors[connector]
 
-        self._components[key or component_name] = component_cls(**config)
-        return key or component_name
+        self._components[name or component_name] = component_cls(**config)
+        return name or component_name
 
     def get_component(self, component_name: str) -> BaseModel:
         if component_name not in self._components:
@@ -88,7 +90,7 @@ class Container:
     def components(self) -> Dict[str, BaseModel]:
         return self._components
     
-    def register_stm(self, stm: str|Type[BaseModel], key: str = None, config: dict = {}, overwrite: bool = False):
+    def register_stm(self, stm: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
         key = self.register_component(stm, key, config, overwrite)
         self._stm = self._components[key]
 
@@ -96,7 +98,7 @@ class Container:
     def stm(self) -> BaseModel:
             return self._stm
         
-    def register_ltm(self, ltm: str|Type[BaseModel], key: str = None, config: dict = {}, overwrite: bool = False):
+    def register_ltm(self, ltm: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
         key = self.register_component(ltm, key, config, overwrite)
         self._ltm = self._components[key]
         
@@ -104,7 +106,7 @@ class Container:
     def ltm(self) -> BaseModel:
             return self._ltm
     
-    def register_callback(self, callback: str|Type[BaseModel], key: str = None, config: dict = {}, overwrite: bool = False):
+    def register_callback(self, callback: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
         key = self.register_component(callback, key, config, overwrite)
         self._callback = self._components[key]
         
@@ -160,7 +162,7 @@ class Container:
             for name, config in config_data["components"].items():
                 self.register_component(
                     component=config.pop("name"),
-                    key=name,
+                    name=name,
                     config=config,
                     overwrite=True,
                 )
