@@ -1,13 +1,15 @@
+import os
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.utils.compile import compile
 from omagent_core.engine.automator.task_handler import TaskHandler
 import yaml
 from omagent_core.utils.container import container
+from omagent_core.utils.registry import registry
 
+registry.import_module()
 container.register_component(
     component="RedisStreamHandler",
-    key="redis_stream_handler_2",
-    component_category="handler",
+    key="redis_stream_handler_2"
 )
 
 
@@ -25,7 +27,9 @@ class AppClient:
         container.register_component("RedisStreamHandler")
 
     def compile(self):
-        compile(self._interactor, self._config_path + "/interactor")
+        output_path = self._config_path + "/interactor"
+        os.makedirs(output_path, exist_ok=True)
+        compile(self._interactor, output_path)
         if self._processor:
             compile(self._processor, self._config_path + "/processor")
 
@@ -48,5 +52,6 @@ class AppClient:
         self._task_handler_processor = TaskHandler(worker_config=worker_config)
         self._task_handler_processor.start_processes()
 
-    def stop_interactor(self):
+    def stop_processor(self):
         self._task_handler_processor.stop_processes()
+

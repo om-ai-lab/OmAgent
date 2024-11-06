@@ -1,4 +1,6 @@
 from colorama import Fore, Style
+from omagent_core.services.connectors.redis import RedisConnector
+from omagent_core.utils.registry import registry
 from pydantic import BaseModel, model_validator
 import json
 
@@ -6,10 +8,12 @@ from omagent_core.utils.error import VQLError
 from omagent_core.utils.logger import logging
 from omagent_core.utils.container import container
 from omagent_core.clients.base import CallbackBase
-from .schemas import ContentStatus, InteractionType, MessageType
+from .schemas import ContentStatus, InteractionType, MessageType, CodeEnum
 
-
+@registry.register_component()
 class AppCallback(CallbackBase):
+    redis_stream_client: RedisConnector
+    
     bot_id: str = ""
 
     def _create_message_data(
@@ -40,16 +44,16 @@ class AppCallback(CallbackBase):
         return {"payload": json.dumps(data, ensure_ascii=False)}
 
     def send_to_group(self, stream_name, group_name, data):
-        print(f"Stream: {stream_name}, Group: {group_name}, Data: {data}")
-        container.get_connector("RedisStreamHandler").redis_client.xadd(
+        logging.info(f"Stream: {stream_name}, Group: {group_name}, Data: {data}")
+        self.redis_stream_client._client.xadd(
             stream_name, data
         )
         try:
-            container.get_connector("RedisStreamHandler").redis_client.xgroup_create(
+            self.redis_stream_client._client.xgroup_create(
                 stream_name, group_name, id="0"
             )
         except Exception as e:
-            print(f"Consumer group may already exist: {e}")
+            logging.info(f"Consumer group may already exist: {e}")
 
     def send_base_message(
         self,
@@ -80,7 +84,7 @@ class AppCallback(CallbackBase):
         )
         self.send_to_group(stream_name, group_name, data)
 
-    def send_incomplete(self, agent_id, took, msg_type, msg):
+    def send_incomplete(self, agent_id, took, msg_type, msg, prompt_tokens=0, output_tokens=0):
         self.send_base_message(
             agent_id,
             0,
@@ -90,8 +94,8 @@ class AppCallback(CallbackBase):
             msg,
             ContentStatus.INCOMPLETE.value,
             InteractionType.DEFAULT.value,
-            0,
-            0,
+            prompt_tokens,
+            output_tokens,
         )
 
     def send_block(
@@ -101,32 +105,34 @@ class AppCallback(CallbackBase):
         msg_type,
         msg,
         interaction_type=InteractionType.DEFAULT.value,
+        prompt_tokens=0,
+        output_tokens=0,
     ):
         self.send_base_message(
             agent_id,
-            0,
+            CodeEnum.SUCCESS.value,
             "",
             took,
             msg_type,
             msg,
             ContentStatus.END_BLOCK.value,
             interaction_type,
-            0,
-            0,
+            prompt_tokens,
+            output_tokens,
         )
 
-    def send_answer(self, agent_id, took, msg_type, msg):
+    def send_answer(self, agent_id, took, msg_type, msg, prompt_tokens=0, output_tokens=0):
         self.send_base_message(
             agent_id,
-            0,
+            CodeEnum.SUCCESS.value,
             "",
             took,
             msg_type,
             msg,
             ContentStatus.END_ANSWER.value,
             InteractionType.DEFAULT.value,
-            0,
-            0,
+            prompt_tokens,
+            output_tokens,
         )
 
     def info(self, agent_id, progress, message):
@@ -137,18 +143,19 @@ class AppCallback(CallbackBase):
             stream_name, payload
         )
 
-    def error(self, agent_id, code, error_info):
+    def error(self, agent_id, error_code, error_info, prompt_tokens=0, output_tokens=0):
         self.send_base_message(
             agent_id,
-            code,
+            error_code,
             error_info,
             0,
             MessageType.TEXT.value,
             "",
-            "end_answer",
-            0,
-            0,
+            ContentStatus.END_ANSWER.value,
+            InteractionType.DEFAULT.value,
+            prompt_tokens,
+            output_tokens,
         )
 
-    def finish(self, agent_id, took, type, msg):
-        self.send_answer(agent_id, took, type, msg)
+    def finish(self, agent_id, took, type, msg, prompt_tokens=0, output_tokens=0):
+        self.send_answer(agent_id, took, type, msg, prompt_tokens, output_tokens)
