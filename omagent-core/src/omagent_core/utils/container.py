@@ -54,7 +54,7 @@ class Container:
         else:
             raise ValueError(f"Invalid component type: {type(component)}")
 
-        if (key or component_name in self._components) and not overwrite:
+        if (key in self._components or component_name in self._components) and not overwrite:
             return
 
         required_connectors = self._get_required_connectors(component_cls)
@@ -98,7 +98,7 @@ class Container:
         
     def register_ltm(self, ltm: str|Type[BaseModel], key: str = None, config: dict = {}, overwrite: bool = False):
         key = self.register_component(ltm, key, config, overwrite)
-        self.ltm = self._components[key]
+        self._ltm = self._components[key]
         
     @property
     def ltm(self) -> BaseModel:
@@ -106,7 +106,7 @@ class Container:
     
     def register_callback(self, callback: str|Type[BaseModel], key: str = None, config: dict = {}, overwrite: bool = False):
         key = self.register_component(callback, key, config, overwrite)
-        self.callback = self._components[key]
+        self._callback = self._components[key]
         
     @property
     def callback(self) -> BaseModel:

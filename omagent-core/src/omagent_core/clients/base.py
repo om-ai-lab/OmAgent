@@ -14,11 +14,10 @@ from pydantic import BaseModel, model_validator
 
 from ..utils.error import VQLError
 from ..utils.logger import logging
-from ..services.handlers.redis_stream_handler import RedisStreamHandler
-import omagent_core.base
+from omagent_core.base import BotBase
 
 
-class CallbackBase(BaseModel, ABC):
+class CallbackBase(BotBase, ABC):
     bot_id: str
     start_time: str = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
     folder_name: str = f"./running_logs/{start_time}"

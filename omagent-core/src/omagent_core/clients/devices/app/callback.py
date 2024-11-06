@@ -1,4 +1,6 @@
 from colorama import Fore, Style
+from omagent_core.services.connectors.redis import RedisConnector
+from omagent_core.utils.registry import registry
 from pydantic import BaseModel, model_validator
 import json
 
@@ -6,10 +8,12 @@ from omagent_core.utils.error import VQLError
 from omagent_core.utils.logger import logging
 from omagent_core.utils.container import container
 from omagent_core.clients.base import CallbackBase
-from .schemas import ContentStatus, InteractionType, MessageType
+from .schemas import ContentStatus, InteractionType, MessageType, CodeEnum
 
-
+@registry.register_component()
 class AppCallback(CallbackBase):
+    redis_stream_client: RedisConnector
+    
     bot_id: str = ""
 
     def _create_message_data(
@@ -41,11 +45,11 @@ class AppCallback(CallbackBase):
 
     def send_to_group(self, stream_name, group_name, data):
         logging.info(f"Stream: {stream_name}, Group: {group_name}, Data: {data}")
-        container.get_component("RedisStreamHandler").redis_stream_client._client.xadd(
+        self.redis_stream_client._client.xadd(
             stream_name, data
         )
         try:
-            container.get_component("RedisStreamHandler").redis_stream_client._client.xgroup_create(
+            self.redis_stream_client._client.xgroup_create(
                 stream_name, group_name, id="0"
             )
         except Exception as e:
