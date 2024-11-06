@@ -18,7 +18,7 @@ from ..services.handlers.redis_stream_handler import RedisStreamHandler
 import omagent_core.base
 
 
-class BaseCallback(BaseModel, ABC):
+class CallbackBase(BaseModel, ABC):
     bot_id: str
     start_time: str = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
     folder_name: str = f"./running_logs/{start_time}"
@@ -84,7 +84,7 @@ class BaseCallback(BaseModel, ABC):
         return None, None
 
 
-class TestCallback(BaseCallback):
+class TestCallback(CallbackBase):
     bot_id: str = ""
     start_time: int = time()
 

@@ -11,11 +11,11 @@ from colorama import Fore, Style
 from omagent_core.utils.error import VQLError
 from omagent_core.utils.logger import logging
 import omagent_core.base
-from omagent_core.clients.base import BaseCallback
+from omagent_core.clients.base import CallbackBase
 
 
 
-class DefaultCallback(BaseCallback):
+class DefaultCallback(CallbackBase):
     bot_id: str = ""
     start_time: int = time()
     endpoint: str = ""
