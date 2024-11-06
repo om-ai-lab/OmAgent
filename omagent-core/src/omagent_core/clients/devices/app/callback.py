@@ -5,11 +5,11 @@ import json
 from omagent_core.utils.error import VQLError
 from omagent_core.utils.logger import logging
 from omagent_core.utils.container import container
-from omagent_core.clients.base import BaseCallback
+from omagent_core.clients.base import CallbackBase
 from .schemas import ContentStatus, InteractionType, MessageType
 
 
-class AppCallback(BaseCallback):
+class AppCallback(CallbackBase):
     bot_id: str = ""
 
     def _create_message_data(
