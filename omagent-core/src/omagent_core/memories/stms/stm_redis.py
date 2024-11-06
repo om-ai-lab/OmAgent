@@ -48,7 +48,7 @@ class RedisSTM(STMBase):
             KeyError: If the key is not found in the Redis storage.
         """
         key = self._encode_key(key)
-        value = self.redis_stm_client.get(key)
+        value = self.redis_stm_client._client.get(key)
         if value is not None:
             return pickle.loads(value)
         raise KeyError(key)
@@ -62,7 +62,7 @@ class RedisSTM(STMBase):
             value (Any): The value to associate with the key.
         """
         key = self._encode_key(key)
-        self.redis_stm_client.set(key, pickle.dumps(value))
+        self.redis_stm_client._client.set(key, pickle.dumps(value))
 
     def __delitem__(self, key):
         """
@@ -75,7 +75,7 @@ class RedisSTM(STMBase):
             KeyError: If the key is not found in the Redis storage.
         """
         key = self._encode_key(key)
-        if not self.redis_stm_client.delete(key):
+        if not self.redis_stm_client._client.delete(key):
             raise KeyError(key)
 
     def __contains__(self, key):
@@ -89,7 +89,7 @@ class RedisSTM(STMBase):
             bool: True if the key exists, False otherwise.
         """
         key = self._encode_key(key)
-        return self.redis_stm_client.exists(key)
+        return self.redis_stm_client._client.exists(key)
 
     def keys(self):
         """
@@ -99,7 +99,7 @@ class RedisSTM(STMBase):
             list: A list containing all keys.
         """
         res = []
-        for k in self.redis_stm_client.keys():
+        for k in self.redis_stm_client._client.keys():
             key = k.decode('utf-8')
             if key.startswith(self.storage_name + '@@'):
                 res.append(self._decode_key(key))
@@ -185,39 +185,3 @@ class RedisSTM(STMBase):
         """
         return len(self.keys())
     
-if __name__ == "__main__":
-    x = RedisSTM(redis_url='redis://10.8.21.38:7379?db=11',storage_name='test')
-    print(len(x), x.keys())
-    from PIL import Image
-    img = Image.open('/data23/liu_peng/projs/OmAgent-main/20240529170425.jpg')
-    x['frame1'] = img 
-    x['json1'] = {'a': 1, "b": 2}
-    x['str1'] = 'hello'
-    print(len(x), x.keys())
-    print(x['str1'])
-    x['str1'] = 'hello again'
-    print(x['str1'])
-    print(x.values())
-    print(x.items())
-    print('-----------------------')
-    new_image = x['frame1']
-    print(x['json1']) 
-    print(len(x), x.keys())
-    print('-----------------------')
-    im = x.pop('frame1')
-    print(len(x), x.keys())
-    print('-----------------------')
-    print('json1' in x)
-    print(x.get('json1'))
-    del x['json1']
-    print('json1' in x)
-    print(x.get('json1'))
-    print(len(x), x.items())
-    print('-----------------------')
-    x.update({'new1': 1, 'new2': dict()})
-    print(len(x), x.items())
-    print('-----------------------')
-    x.clear()
-    print(len(x), x.items())
-
-
