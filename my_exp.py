@@ -1,3 +1,10 @@
+from omagent_core.utils.registry import registry
+from omagent_core.utils.container import container
+from omagent_core.engine.configuration.configuration import Configuration
+
+container.register_connector(Configuration, 'conductor_config')
+print(1111, container.get_connector('conductor_config'))
+
 from omagent_core.engine.http.models import Task, TaskResult
 from omagent_core.engine.http.models.task_result_status import TaskResultStatus
 from omagent_core.engine.workflow.task.simple_task import SimpleTask,simple_task
@@ -21,7 +28,7 @@ from pydantic import Field
 import yaml
 
 from omagent_core.engine.worker.base import BaseWorker
-from omagent_core.utils.registry import registry
+
 
 # class SimpleWorker(WorkerInterface):
 #     def execute(self, task: Task) -> TaskResult:
@@ -83,6 +90,7 @@ class Conclude(BaseLLMBackend, BaseWorker):
     )
 
     def _run(self,*args, **kwargs):
+        print(1111111111111111111111111111111111111111)
         chat_complete_res = self.simple_infer()
         return chat_complete_res
     
@@ -133,7 +141,8 @@ compile(workflow, Path('./'), True)
 
 # worker通过config来初始化，可以使用 omagent-core/src/omagent_core/utils/compile.py 编译worker的config模版
 
-worker_config = yaml.load(open('worker.yaml', "r"), Loader=yaml.FullLoader)
+from omagent_core.utils.build import build_from_file
+worker_config = build_from_file('examples/naive_test/configs')
 task_handler = TaskHandler(worker_config=worker_config)
 task_handler.start_processes()  #启动worker，监听conductor的消息
 

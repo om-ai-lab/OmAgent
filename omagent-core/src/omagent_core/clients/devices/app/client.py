@@ -6,12 +6,6 @@ import yaml
 from omagent_core.utils.container import container
 from omagent_core.utils.registry import registry
 
-registry.import_module()
-container.register_component(
-    component="RedisStreamHandler",
-    key="redis_stream_handler_2"
-)
-
 
 class AppClient:
     def __init__(
