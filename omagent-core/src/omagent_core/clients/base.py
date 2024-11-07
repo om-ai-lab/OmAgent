@@ -70,7 +70,7 @@ class CallbackBase(BotBase, ABC):
                 each.frame.f_locals.get("self").__class__.__name__
                 for each in stack[2:]
                 if isinstance(
-                    each.frame.f_locals.get("self"), omagent_core.base.BotBase
+                    each.frame.f_locals.get("self"), BotBase
                 )
             ]
         )

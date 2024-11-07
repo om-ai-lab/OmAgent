@@ -1,7 +1,15 @@
-import asyncio
+
+from omagent_core.clients.devices.app.schemas import CodeEnum, ContentStatus, InteractionType, MessageType
+from omagent_core.clients.input_base import InputBase
+from omagent_core.engine.configuration.configuration import Configuration
+from omagent_core.engine.orkes.orkes_workflow_client import OrkesWorkflowClient
+from omagent_core.services.connectors.redis import RedisConnector
+from omagent_core.utils import registry
 import time
 import json
 from omagent_core.engine.http.models.workflow_status import running_status
+from omagent_core.services.connectors.redis import RedisConnector
+from omagent_core.utils.general import read_image
 from omagent_core.utils.registry import registry
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.container import container
@@ -10,14 +18,18 @@ from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.utils.logger import logging
 
 
+@registry.register_component()
+class AppInput(InputBase):  
+    redis_stream_client: RedisConnector
 
-@registry.register_worker()
-class RedisStreamListener(BaseWorker):
-    def _run(self, workflow_instance_id: str):
+    def read_input(self, workflow_instance_id: str, input_prompt = ""):
         stream_name = f"{workflow_instance_id}_input"
         group_name = "omappagent"  # consumer group name
         consumer_name = f"{workflow_instance_id}_agent"  # consumer name
         poll_interval: int = 1
+
+        if input_prompt is not None:
+            self._send_input_message(workflow_instance_id, input_prompt)
 
         configuration = Configuration()
         client = OrkesWorkflowClient(configuration=configuration)
@@ -25,7 +37,7 @@ class RedisStreamListener(BaseWorker):
         result = {}
         # ensure consumer group exists
         try:
-            container.get_component("RedisStreamHandler").redis_stream_client._client.xgroup_create(
+            self.redis_stream_client._client.xgroup_create(
                 stream_name, group_name, id="0", mkstream=True
             )
         except Exception as e:
@@ -42,7 +54,7 @@ class RedisStreamListener(BaseWorker):
                     break
 
                 # read new messages from consumer group
-                messages = container.get_component("RedisStreamHandler").redis_stream_client._client.xreadgroup(
+                messages = self.redis_stream_client._client.xreadgroup(
                     group_name, consumer_name, {stream_name: ">"}, count=1
                 )
                 # Convert byte data to string
@@ -56,7 +68,7 @@ class RedisStreamListener(BaseWorker):
                     for message_id, message in message_list:
                         data_flag = self.process_message(message, result)
                         # confirm message has been processed
-                        container.get_component("RedisStreamHandler").redis_stream_client._client.xack(
+                        container.get_connector('redis_stream_client')._client.xack(
                             stream_name, group_name, message_id
                         )
                 if data_flag:
@@ -67,8 +79,8 @@ class RedisStreamListener(BaseWorker):
             except Exception as e:
                 logging.error(f"Error while listening to stream: {e}")
                 time.sleep(poll_interval)  # Wait before retrying
-        return {"output": result}
-
+        return result
+    
     def process_message(self, message, result):
         logging.info(f"Received message: {message}")
         try:
@@ -113,6 +125,8 @@ class RedisStreamListener(BaseWorker):
                 logging.error("'messages' should be a list")
                 return False
 
+            image_cache = {}
+            idx = 0
             for message in payload_data["messages"]:
                 if not isinstance(message, dict):
                     logging.error("Each item in 'messages' should be a dictionary")
@@ -130,9 +144,104 @@ class RedisStreamListener(BaseWorker):
                     if "type" not in content or "data" not in content:
                         logging.error("Each item in 'content' should contain 'type' and 'data' keys")
                         return False
+                    if content["type"] == "image_url":
+                        # Load the image from provided path
+                        img = read_image(input_source=content["data"])
+                        # Cache the loaded image
+                        image_cache[f'<image_{idx}>'] = img
+                        idx += 1
+
+            self.stm['image_cache'] = image_cache
+
             message_data = json.loads(payload)
             result.update(message_data)
         except Exception as e:
             logging.error(f"Error processing message: {e}")
             return False
         return True
+    
+    def _send_input_message(
+        self,
+        agent_id,
+        msg
+    ):
+        self._send_base_message(
+            agent_id,
+            CodeEnum.SUCCESS.value,
+            "",
+            0,
+            MessageType.TEXT.value,
+            msg,
+            ContentStatus.END_BLOCK.value,
+            InteractionType.INPUT.value,
+            0,
+            0,
+        )
+    
+    def _create_message_data(
+        self,
+        agent_id,
+        code,
+        error_info,
+        took,
+        msg_type,
+        msg,
+        content_status,
+        interaction_type,
+        prompt_tokens,
+        output_tokens,
+    ):
+        message = {"role": "assistant", "type": msg_type, "content": msg}
+        usage = {"prompt_tokens": prompt_tokens, "output_tokens": output_tokens}
+        data = {
+            "agent_id": agent_id,
+            "code": code,
+            "error_info": error_info,
+            "took": took,
+            "content_status": content_status,
+            "interaction_type": int(interaction_type),
+            "message": message,
+            "usage": usage,
+        }
+        return {"payload": json.dumps(data, ensure_ascii=False)}
+
+    def _send_to_group(self, stream_name, group_name, data):
+        logging.info(f"Stream: {stream_name}, Group: {group_name}, Data: {data}")
+        self.redis_stream_client._client.xadd(
+            stream_name, data
+        )
+        try:
+            self.redis_stream_client._client.xgroup_create(
+                stream_name, group_name, id="0"
+            )
+        except Exception as e:
+            logging.info(f"Consumer group may already exist: {e}")
+
+    def _send_base_message(
+        self,
+        agent_id,
+        code,
+        error_info,
+        took,
+        msg_type,
+        msg,
+        content_status,
+        interaction_type,
+        prompt_tokens,
+        output_tokens,
+    ):
+        stream_name = f"{agent_id}_output"
+        group_name = "omappagent"  # replace with your consumer group name
+        data = self._create_message_data(
+            agent_id,
+            code,
+            error_info,
+            took,
+            msg_type,
+            msg,
+            content_status,
+            interaction_type,
+            prompt_tokens,
+            output_tokens,
+        )
+        self._send_to_group(stream_name, group_name, data)

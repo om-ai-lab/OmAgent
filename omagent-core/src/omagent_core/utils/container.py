@@ -10,6 +10,7 @@ class Container:
         self._stm = None
         self._ltm = None
         self._callback = None
+        self._input = None
 
     def register_connector(
         self,
@@ -113,6 +114,14 @@ class Container:
     @property
     def callback(self) -> BaseModel:
             return self._callback
+    
+    def register_input(self, input: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
+        name = self.register_component(input, name, config, overwrite)
+        self._input = self._components[name]
+        
+    @property
+    def input(self) -> BaseModel:
+            return self._input
 
     def compile_config(self) -> None:
         config = {"connectors": {}, "components": {}}
