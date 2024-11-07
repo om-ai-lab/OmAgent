@@ -91,24 +91,24 @@ class Container:
         return self._components
     
     def register_stm(self, stm: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
-        key = self.register_component(stm, key, config, overwrite)
-        self._stm = self._components[key]
+        name = self.register_component(stm, name, config, overwrite)
+        self._stm = self._components[name]
 
     @property
     def stm(self) -> BaseModel:
             return self._stm
         
     def register_ltm(self, ltm: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
-        key = self.register_component(ltm, key, config, overwrite)
-        self._ltm = self._components[key]
+        name = self.register_component(ltm, name, config, overwrite)
+        self._ltm = self._components[name]
         
     @property
     def ltm(self) -> BaseModel:
             return self._ltm
     
     def register_callback(self, callback: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
-        key = self.register_component(callback, key, config, overwrite)
-        self._callback = self._components[key]
+        name = self.register_component(callback, name, config, overwrite)
+        self._callback = self._components[name]
         
     @property
     def callback(self) -> BaseModel:
