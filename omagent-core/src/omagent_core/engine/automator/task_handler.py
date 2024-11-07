@@ -46,7 +46,8 @@ def register_decorated_fn(name: str, poll_interval: int, domain: str, worker_id:
 class TaskHandler:
     def __init__(
             self,
-            worker_config: dict,
+            worker_config: List = [],
+            workers: List[BaseWorker] = [],
             metrics_settings: MetricsSettings = None,
             import_modules: List[str] = None
     ):
@@ -59,7 +60,7 @@ class TaskHandler:
                 logger.info(f'loading module {module}')
                 importlib.import_module(module)
 
-        workers = [registry.get_worker(name).from_config(worker_config) for name in worker_config]
+        workers += [registry.get_worker(config['name'])(**config) for config in worker_config]
         
         self.__create_task_runner_processes(workers, container.get_connector('conductor_config'), metrics_settings)
         self.__create_metrics_provider_process(metrics_settings)

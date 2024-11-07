@@ -12,11 +12,11 @@ from omagent_core.utils.logger import logging
 
 
 @registry.register_worker()
-class RedisStreamListener(BaseWorker):
+class ImageIndexListener(BaseWorker):
     def _run(self, workflow_instance_id: str):
-        stream_name = f"{workflow_instance_id}_input"
+        stream_name = f"image_process"
         group_name = "omappagent"  # consumer group name
-        consumer_name = f"{workflow_instance_id}_agent"  # consumer name
+        consumer_name = f"image_agent"  # consumer name
         poll_interval: int = 1
 
         configuration = Configuration()
@@ -32,10 +32,10 @@ class RedisStreamListener(BaseWorker):
             logging.info(f"Consumer group may already exist: {e}")
 
         logging.info(f"Listening to Redis stream: {stream_name} in group: {group_name}")
-        data_flag = False
+        flag = False
         while True:
             try:
-                # logging.info(f"Checking workflow status: {workflow_instance_id}")
+                logging.info(f"Checking workflow status: {workflow_instance_id}")
                 workflow_status = client.get_workflow_status(workflow_instance_id)
                 if workflow_status.status not in running_status:
                     logging.info(f"Workflow {workflow_instance_id} is not running, exiting...")
@@ -45,24 +45,23 @@ class RedisStreamListener(BaseWorker):
                 messages = container.get_component("RedisStreamHandler").redis_stream_client._client.xreadgroup(
                     group_name, consumer_name, {stream_name: ">"}, count=1
                 )
-                # Convert byte data to string
                 messages = [
                     (stream, [(message_id, {k.decode('utf-8'): v.decode('utf-8') for k, v in message.items()}) for message_id, message in message_list])
                     for stream, message_list in messages
                 ]
-                # logging.info(f"Messages: {messages}")
-                
+                logging.info(f"Messages: {messages}")
+
                 for stream, message_list in messages:
                     for message_id, message in message_list:
-                        data_flag = self.process_message(message, result)
+                        flag = self.process_message(message, result)
                         # confirm message has been processed
                         container.get_component("RedisStreamHandler").redis_stream_client._client.xack(
                             stream_name, group_name, message_id
                         )
-                if data_flag:
+                if flag:
                     break
                 # Sleep for the specified interval before checking for new messages again
-                # logging.info(f"Sleeping for {poll_interval} seconds, waiting for {stream_name} ...")
+                logging.info(f"Sleeping for {poll_interval} seconds, waiting for {stream_name} ...")
                 time.sleep(poll_interval)
             except Exception as e:
                 logging.error(f"Error while listening to stream: {e}")
@@ -75,19 +74,13 @@ class RedisStreamListener(BaseWorker):
             payload = message.get("payload")
             '''
             {
-                "agent_id": "string",
-                "messages": [
+                "content": [
                     {
-                        "role": "string",
-                        "content": [
-                            {
-                                "type": "string",
-                                "data": "string"
-                            }
-                        ]
+                    "type": "string",
+                    "resource_id": "string",
+                    "data": "string"
                     }
-                ],
-                "kwargs": {}
+                ]
             }
             '''
             # check payload data
@@ -101,35 +94,21 @@ class RedisStreamListener(BaseWorker):
                 logging.error(f"Payload is not a valid JSON: {e}")
                 return False
 
-            if "agent_id" not in payload_data:
-                logging.error("Payload does not contain 'agent_id' key")
+            if "content" not in payload_data:
+                logging.error("Payload does not contain 'content' key")
                 return False
 
-            if "messages" not in payload_data:
-                logging.error("Payload does not contain 'messages' key")
+            if not isinstance(payload_data["content"], list):
+                logging.error("'content' should be a list")
                 return False
 
-            if not isinstance(payload_data["messages"], list):
-                logging.error("'messages' should be a list")
-                return False
-
-            for message in payload_data["messages"]:
-                if not isinstance(message, dict):
-                    logging.error("Each item in 'messages' should be a dictionary")
+            for item in payload_data["content"]:
+                if not isinstance(item, dict):
+                    logging.error("Each item in 'content' should be a dictionary")
                     return False
-                if "role" not in message or "content" not in message:
-                    logging.error("Each item in 'messages' should contain 'role' and 'content' keys")
+                if "type" not in item or "resource_id" not in item or "data" not in item:
+                    logging.error("Each item in 'content' should contain 'type', 'resource_id' and 'data' keys")
                     return False
-                if not isinstance(message["content"], list):
-                    logging.error("'content' should be a list")
-                    return False
-                for content in message["content"]:
-                    if not isinstance(content, dict):
-                        logging.error("Each item in 'content' should be a dictionary")
-                        return False
-                    if "type" not in content or "data" not in content:
-                        logging.error("Each item in 'content' should contain 'type' and 'data' keys")
-                        return False
             message_data = json.loads(payload)
             result.update(message_data)
         except Exception as e:

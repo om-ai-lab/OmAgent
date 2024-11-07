@@ -81,6 +81,8 @@ class BaseWorker(BotBase, ABC):
             else:
                 params = inspect.signature(self._run).parameters
                 for input_name in params:
+                    if input_name == 'workflow_instance_id':
+                        continue
                     typ = params[input_name].annotation
                     default_value = params[input_name].default
                     if input_name in task.input_data:

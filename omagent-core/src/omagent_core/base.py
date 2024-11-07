@@ -4,6 +4,7 @@ from typing import Optional, Union, Any
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
+from omagent_core.utils.container import container
 
 
 REQUEST_ID = contextvars.ContextVar("request_id")
@@ -11,6 +12,9 @@ REQUEST_ID = contextvars.ContextVar("request_id")
 
 class BotBase(BaseSettings, ABC):
     name: Optional[str] = Field(default=None, validate_default=True)
+    stm: Optional['BotBase'] = None
+    ltm: Optional['BotBase'] = None
+    callback: Optional['BotBase'] = None
 
     class Config:
         """Configuration for this pydantic object."""
@@ -26,6 +30,30 @@ class BotBase(BaseSettings, ABC):
             return cls.__name__
         else:
             return name
+        
+    @field_validator("stm", mode="before")
+    def get_stm(cls, stm):
+        if stm is None:
+            return container.stm
+        if isinstance(stm, str):
+            return container.get_component(stm)
+        return stm
+    
+    @field_validator("ltm", mode="before")
+    def get_ltm(cls, ltm):
+        if ltm is None:
+            return container.ltm
+        if isinstance(ltm, str):
+            return container.get_component(ltm)
+        return ltm
+    
+    @field_validator("callback", mode="before")
+    def get_callback(cls, callback):
+        if callback is None:
+            return container.callback
+        if isinstance(callback, str):
+            return container.get_component(callback)
+        return callback
 
     @classmethod
     def get_config_template(
