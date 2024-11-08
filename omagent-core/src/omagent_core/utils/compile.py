@@ -9,6 +9,7 @@ from omagent_core.engine.workflow.task.simple_task import SimpleTask
 from omagent_core.engine.workflow.task.switch_task import SwitchTask
 from omagent_core.engine.workflow.task.fork_task import ForkTask
 from omagent_core.engine.workflow.task.do_while_task import DoWhileTask
+from omagent_core.engine.workflow.task.set_variable_task import SetVariableTask
 from omagent_core.engine.workflow.conductor_workflow import InlineSubWorkflowTask
 from omagent_core.utils.container import container
 import itertools
@@ -37,6 +38,8 @@ def process_tasks(
         elif isinstance(task, InlineSubWorkflowTask):
             # recursive compilation of sub-workflows
             process_tasks(task._workflow._tasks, worker_list)
+        elif isinstance(task, SetVariableTask):
+            pass
         else:
             raise ValueError(f"Unsupported task type {type(task)}")
 

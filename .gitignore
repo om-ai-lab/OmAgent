@@ -151,3 +151,6 @@ data/
 tests/mathvista
 running_logs/
 *.db
+
+# vscode
+.vscode

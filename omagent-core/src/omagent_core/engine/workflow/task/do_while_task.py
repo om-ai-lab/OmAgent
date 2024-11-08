@@ -6,11 +6,15 @@ from typing_extensions import Self
 from omagent_core.engine.http.models.workflow_task import WorkflowTask
 from omagent_core.engine.workflow.task.task import TaskInterface, get_task_interface_list_as_workflow_task_list
 from omagent_core.engine.workflow.task.task_type import TaskType
+from omagent_core.engine.task.agent_task import AgentTask
 
 
 def get_for_loop_condition(task_ref_name: str, iterations: int) -> str:
     return f"if ( $.{task_ref_name}.iteration < {iterations} ) {{ true; }} else {{ false; }}"
 
+def get_dnc_loop_condition(task_ref_name: str) -> str:
+    
+    return f" if ( $.task_divider['exit_flag'] == true || $.task_conqueror['exit_flag'] == true) {{ false; }} else {{ true; }}"
 
 class DoWhileTask(TaskInterface):
     # termination_condition is a Javascript expression that evaluates to True or False
@@ -55,3 +59,20 @@ class ForEachTask(DoWhileTask):
             tasks=tasks,
         )
         super().input_parameter("items", iterate_over)
+
+class InfiniteLoopTask(DoWhileTask):
+    def __init__(self, task_ref_name: str, tasks: List[TaskInterface]) -> Self:
+        super().__init__(
+            task_ref_name=task_ref_name,
+            termination_condition="true",
+            tasks=tasks,
+        )
+
+class DnCLoopTask(DoWhileTask):
+    def __init__(self, task_ref_name: str, tasks: List[TaskInterface], pre_loop_exit:List[TaskInterface] = [], post_loop_exit:List[TaskInterface] = []) -> Self:
+        real_tasks = pre_loop_exit + tasks + post_loop_exit
+        super().__init__(
+            task_ref_name=task_ref_name,
+            termination_condition=get_dnc_loop_condition(task_ref_name),
+            tasks=real_tasks,
+        )

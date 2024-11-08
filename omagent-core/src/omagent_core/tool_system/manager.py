@@ -215,13 +215,13 @@ class ToolManager(BaseLLMBackend):
 
         return cls(**config)
 
-    def execute_task(self, task, related_info={}, function=None):
+    def execute_task(self, task, related_info='', function=None):
         if self.llm == None:
             raise ValueError(
                 "The execute_task method requires the llm field to be initialized."
             )
         chat_complete_res = self.infer(
-            [{"task": task, "related_info": list(related_info.keys())}],
+            [{"task": task, "related_info": related_info}],
             tools=self.generate_schema(),
         )[0]
         content = chat_complete_res["choices"][0]["message"].get("content")

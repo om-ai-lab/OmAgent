@@ -3,7 +3,7 @@ import re
 from copy import deepcopy
 from distutils.util import strtobool
 from pathlib import Path
-
+import os
 import yaml
 
 from .env import EnvVar
@@ -77,7 +77,7 @@ def prep_config(sub_config: dict, config: dict, forbid_keys: list):
             elif match := re.search(r'\$\{env\|([^,}]+)(?:,([^}]+))?\}', conf):
                 env_key = match.group(1).strip()
                 default_value = match.group(2)
-                env_value = EnvVar.get(env_key)
+                env_value = os.getenv(env_key)
                 if env_value:
                     sub_config[key] = env_value
                 elif not env_value and default_value:

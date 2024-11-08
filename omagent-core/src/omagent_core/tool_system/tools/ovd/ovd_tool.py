@@ -32,7 +32,7 @@ class ObjectDetection(BaseModelTool):
         "Object detection tool, which can detect any objects and add visual prompting(bounding box and label) to the image."
         "Tasks like object counting, specific object detection, etc. must use this tool."
     )
-    ovd_endpoint: str
+    ovd_endpoint: str = ''
     model_id: str = "OmDet-Turbo_tiny_SWIN_T"
 
     class Config:

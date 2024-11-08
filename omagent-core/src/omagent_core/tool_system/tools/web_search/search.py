@@ -9,7 +9,8 @@ from pydantic import Field, field_validator
 
 from ....utils.logger import logging
 from ....utils.registry import registry
-from ....models.llms.base import BaseLLMBackend
+from ....models.llms.base import BaseLLMBackend, BaseLLM
+from ....models.llms.openai_gpt import OpenaiGPTLLM
 from ....models.llms.prompt import PromptTemplate
 from ...base import ArgSchema, BaseTool
 
@@ -171,90 +172,6 @@ class WebSearch(BaseTool, BaseLLMBackend):
         res = requests.get(url, headers=headers, timeout=30)
         if res.status_code in [301, 302, 307, 308]:
             res = requests.get(res.headers["location"])
-        else:
-            res.raise_for_status()
-
-        soup = BeautifulSoup(res.text, "html.parser")
-        text = soup.get_text()
-        lines = (line.strip() for line in text.splitlines())
-        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-        text = "\n".join(chunk for chunk in chunks if chunk)
-
-        links = soup.find_all("a")
-        if len(links) > 0:
-            text += "\n\nLinks:\n"
-            for link in links:
-                if link.string != None and link.get("href") != None:
-                    striped_link_string = link.string.strip()
-                    if striped_link_string != "" and link.get("href").startswith(
-                        "http"
-                    ):
-                        text += f"{striped_link_string} ({link.get('href')})\n"
-
-        return text
-
-    async def _arun(
-        self, search_query: str, goals_to_browse: str, region: str = None, num_results=3
-    ) -> List[str]:
-        """Search with search tools and browse the website returned by search. Note some websites may not be accessable due to network error.
-
-        :param string search_query: The search query.
-        :param string goals_to_browse: What's you want to find on the website returned by search. If you need more details, request it in here. Examples: 'What is latest news about deepmind?', 'What is the main idea of this article?'
-        :param string? region: The region code of the search, default to `en-US`. Available regions: `en-US`, `zh-CN`, `ja-JP`, `de-DE`, `fr-FR`, `en-GB`.
-        :return string: The results of the search.
-        """
-
-        if region is None:
-            region = "en-US"
-        if self.bing_api_key is None:
-            pages = [
-                {"name": ret["title"], "snippet": ret["body"], "url": ret["href"]}
-                for ret in DDGS().text(search_query, region="wt-wt")
-            ]
-
-        else:
-            result = await self.client.get(
-                self.bing_endpoint,
-                headers={"Ocp-Apim-Subscription-Key": self.bing_api_key},
-                params={"q": search_query, "mkt": region},
-                timeout=10,
-            )
-            result.raise_for_status()
-            result = result.json()
-            pages = result["webPages"]["value"]
-
-        search_results = []
-
-        for idx in range(min(len(pages), num_results)):
-            try:
-                page = await self.async_browse_website(
-                    pages[idx]["url"], goals_to_browse
-                )
-            except httpx.HTTPStatusError as e:
-                page = e.response.text
-            except Exception as e:
-                page = str(e)
-
-            message = {
-                "name": pages[idx]["name"],
-                "snippet": pages[idx]["snippet"],
-                "page": page,
-            }
-            search_results.append(message)
-
-        return search_results
-
-    async def async_abrowse_website(self, url: str, goals_to_browse: str) -> str:
-        """Give a http or https url to browse a website and return the summarize text. Note some websites may not be accessable due to network error. This tool only return the content of give url and cannot provide any information need interaction with the website.
-
-        :param string url: The realworld Uniform Resource Locator (web address) to scrape text from. Never provide something like "<URL of the second news article>", give real url!!! Example: 'https://www.deepmind.com/'
-        :param string goals_to_browse: The goals for browse the given `url` (e.g. what you want to find on webpage.). If you need more details, request it in here.
-        :return string: The content of the website, with formatted text.
-        """
-        # self._check_url_valid(url)
-        res = await self.client.get(url)
-        if res.status_code in [301, 302, 307, 308]:
-            res = await self.client.get(res.headers["location"])
         else:
             res.raise_for_status()
 

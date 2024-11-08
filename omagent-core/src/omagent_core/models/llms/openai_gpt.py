@@ -10,6 +10,7 @@ from .schemas import Content, Message
 from ...utils.general import encode_image
 from ...utils.registry import registry
 from .base import BaseLLM
+from omagent_core.utils.container import container
 
 BASIC_SYS_PROMPT = """You are an intelligent agent that can help in many regions. 
 Flowing are some basic information about your working environment, please try your best to answer the questions based on them if needed. 
@@ -23,10 +24,10 @@ Operating System: {}"""
 
 @registry.register_llm()
 class OpenaiGPTLLM(BaseLLM):
-    model_id: str = Field(default="gpt-4o", description="The model id of openai")
+    model_id: str = Field(default=os.getenv("MODEL_ID", "gpt-4o"), description="The model id of openai")
     vision: bool = Field(default=False, description="Whether the model supports vision")
-    endpoint: str = Field(default="https://api.openai.com/v1", description="The endpoint of LLM service")
-    api_key: str = Field(description="The api key of openai")
+    endpoint: str = Field(default=os.getenv("ENDPOINT", "https://api.openai.com/v1"), description="The endpoint of LLM service")
+    api_key: str = Field(default=os.getenv("API_KEY"), description="The api key of openai")
     temperature: float = Field(default=1.0, description="The temperature of LLM")
     max_tokens: int = Field(default=2048, description="The max tokens of LLM")
     use_default_sys_prompt: bool = Field(default=True, description="Whether to use the default system prompt")
@@ -40,19 +41,19 @@ class OpenaiGPTLLM(BaseLLM):
 
     def model_post_init(self, __context: Any) -> None:
         self.client = OpenAI(api_key=self.api_key, base_url=self.endpoint)
-        self.aclient = AsyncOpenAI(api_key=self.api_key, base_url=self.endpoint)
+        # self.aclient = AsyncOpenAI(api_key=self.api_key, base_url=self.endpoint)
 
 
     def _call(self, records: List[Message], **kwargs) -> Dict:
         if self.api_key is None or self.api_key == "":
             raise ValueError("api_key is required")
 
-        if len(self.stm.image_cache):
+        if len(self.stm.get('image_cache', [])):
             for record in records:
                 record.combine_image_message(
                     image_cache={
                         key: encode_image(value)
-                        for key, value in self.stm.image_cache.items()
+                        for key, value in self.stm['image_cache'].items()
                     }
                 )
         elif len(kwargs.get("images", [])):
@@ -89,56 +90,7 @@ class OpenaiGPTLLM(BaseLLM):
             )
         res = res.model_dump()
         body.update({"response": res})
-        self.callback.send_block(body)
-        return res
-
-    async def _acall(self, records: List[Message], **kwargs) -> Dict:
-        if self.api_key is None or self.api_key == "":
-            raise ValueError("api_key is required")
-
-        if len(self.stm.image_cache):
-            for record in records:
-                record.combine_image_message(
-                    image_cache={
-                        key: encode_image(value)
-                        for key, value in self.stm.image_cache.items()
-                    }
-                )
-        elif len(kwargs.get("images", [])):
-            image_cache = {}
-            for index, each in enumerate(kwargs["images"]):
-                image_cache[f"<image_{index}>"] = each
-            for record in records:
-                record.combine_image_message(
-                    image_cache={
-                        key: encode_image(value) for key, value in image_cache.items()
-                    }
-                )
-        body = self._msg2req(records)
-        if kwargs.get("tool_choice"):
-            body["tool_choice"] = kwargs["tool_choice"]
-        if kwargs.get("tools"):
-            body["tools"] = kwargs["tools"]
-
-        if self.vision:
-            res = await self.aclient.chat.completions.create(
-                model=self.model_id,
-                messages=body["messages"],
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-            )
-        else:
-            res = await self.aclient.chat.completions.create(
-                model=self.model_id,
-                messages=body["messages"],
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                response_format=body.get("response_format", None),
-                tools=body.get("tools", None),
-            )
-        res = res.model_dump()
-        body.update({"response": res})
-        self.callback.send_block(body)
+        # self.callback.send_block(body)
         return res
 
     def _msg2req(self, records: List[Message]) -> dict:

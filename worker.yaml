@@ -1,3 +1,41 @@
+TaskDivider:
+  name: TaskDivider
+  poll_interval:
+    value: 100
+    description: Worker poll interval in millisecond
+    env_var: POLL_INTERVAL
+  domain:
+    value: null
+    description: The domain of workflow
+    env_var: DOMAIN
+  output_parser:
+    name: BaseOutputParser
+    regex:
+      value: null
+      env_var: REGEX
+    regex_group:
+      value: 0
+      env_var: REGEX_GROUP
+  llm:
+    name: BaseLLM
+    cache:
+      value: false
+      env_var: CACHE
+  tool_manager:
+    name: ToolManager
+    output_parser:
+      name: BaseOutputParser
+      regex:
+        value: null
+        env_var: REGEX
+      regex_group:
+        value: 0
+        env_var: REGEX_GROUP
+    llm:
+      name: BaseLLM
+      cache:
+        value: false
+        env_var: CACHE
 Conclude:
   name: Conclude
   poll_interval:
@@ -9,7 +47,7 @@ Conclude:
     description: The domain of workflow
     env_var: DOMAIN
   output_parser:
-    name: StrParser
+    name: BaseOutputParser
     regex:
       value: null
       env_var: REGEX
@@ -17,39 +55,83 @@ Conclude:
       value: 0
       env_var: REGEX_GROUP
   llm:
-    name: OpenaiGPTLLM
+    name: BaseLLM
     cache:
       value: false
       env_var: CACHE
-    model_id:
-      value: gpt-4o
-      description: The model id of openai
-      env_var: MODEL_ID
-    vision:
+TaskConqueror:
+  name: TaskConqueror
+  poll_interval:
+    value: 100
+    description: Worker poll interval in millisecond
+    env_var: POLL_INTERVAL
+  domain:
+    value: null
+    description: The domain of workflow
+    env_var: DOMAIN
+  output_parser:
+    name: BaseOutputParser
+    regex:
+      value: null
+      env_var: REGEX
+    regex_group:
+      value: 0
+      env_var: REGEX_GROUP
+  llm:
+    name: BaseLLM
+    cache:
       value: false
-      description: Whether the model supports vision
-      env_var: VISION
-    endpoint:
-      value: https://api.openai.com/v1
-      description: The endpoint of LLM service
-      env_var: ENDPOINT
-    api_key:
-      value: <required>
-      description: The api key of openai
-      env_var: API_KEY
-    temperature:
-      value: 1.0
-      description: The temperature of LLM
-      env_var: TEMPERATURE
-    max_tokens:
-      value: 2048
-      description: The max tokens of LLM
-      env_var: MAX_TOKENS
-    use_default_sys_prompt:
-      value: true
-      description: Whether to use the default system prompt
-      env_var: USE_DEFAULT_SYS_PROMPT
-    response_format:
-      value: text
-      description: The response format of openai
-      env_var: RESPONSE_FORMAT
+      env_var: CACHE
+  tool_manager:
+    name: ToolManager
+    output_parser:
+      name: BaseOutputParser
+      regex:
+        value: null
+        env_var: REGEX
+      regex_group:
+        value: 0
+        env_var: REGEX_GROUP
+    llm:
+      name: BaseLLM
+      cache:
+        value: false
+        env_var: CACHE
+TaskRescue:
+  name: TaskRescue
+  poll_interval:
+    value: 100
+    description: Worker poll interval in millisecond
+    env_var: POLL_INTERVAL
+  domain:
+    value: null
+    description: The domain of workflow
+    env_var: DOMAIN
+  output_parser:
+    name: BaseOutputParser
+    regex:
+      value: null
+      env_var: REGEX
+    regex_group:
+      value: 0
+      env_var: REGEX_GROUP
+  llm:
+    name: BaseLLM
+    cache:
+      value: false
+      env_var: CACHE
+  tool_manager:
+    name: ToolManager
+    output_parser:
+      name: BaseOutputParser
+      regex:
+        value: null
+        env_var: REGEX
+      regex_group:
+        value: 0
+        env_var: REGEX_GROUP
+    llm:
+      name: BaseLLM
+      cache:
+        value: false
+        env_var: CACHE

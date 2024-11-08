@@ -23,7 +23,7 @@ class FaceRecognition(BaseModelTool):
     )
     threshold: float = 0.6
     num_jitters: int = 1
-    face_db: str
+    face_db: str = 'data/face_db'
     model: str = "large"
     loaded_face_db: Optional[dict] = None
 
