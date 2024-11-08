@@ -12,10 +12,10 @@ REQUEST_ID = contextvars.ContextVar("request_id")
 
 class BotBase(BaseSettings, ABC):
     name: Optional[str] = Field(default=None, validate_default=True)
-    stm: Optional['BotBase'] = None
-    ltm: Optional['BotBase'] = None
-    callback: Optional['BotBase'] = None
-    input: Optional['BotBase'] = None
+    component_stm: Optional[str] = None
+    component_ltm: Optional[str] = None
+    component_callback: Optional[str] = None
+    component_input: Optional[str] = None
 
     class Config:
         """Configuration for this pydantic object."""
@@ -32,37 +32,35 @@ class BotBase(BaseSettings, ABC):
         else:
             return name
         
-    @field_validator("stm", mode="before")
-    def get_stm(cls, stm):
-        if stm is None:
+    @property
+    def stm(self) -> str:
+        if self.component_stm is None:
             return container.stm
-        if isinstance(stm, str):
-            return container.get_component(stm)
-        return stm
+        else:
+            return container.get_component(self.component_stm)
     
-    @field_validator("ltm", mode="before")
-    def get_ltm(cls, ltm):
-        if ltm is None:
+    @property
+    def ltm(self) -> str:
+        if self.component_ltm is None:
             return container.ltm
-        if isinstance(ltm, str):
-            return container.get_component(ltm)
-        return ltm
+        else:
+            return container.get_component(self.component_ltm)
     
-    @field_validator("callback", mode="before")
-    def get_callback(cls, callback):
-        if callback is None:
+    @property
+    def callback(self) -> str:
+        if self.component_callback is None:
             return container.callback
-        if isinstance(callback, str):
-            return container.get_component(callback)
-        return callback
+        else:
+            return container.get_component(self.component_callback)
     
-    @field_validator("input", mode="before")
-    def get_input(cls, input):
-        if input is None:
+    @property
+    def input(self) -> str:
+        if self.component_input is None:
             return container.input
-        if isinstance(input, str):
-            return container.get_component(input)
-        return input
+        else:
+            return container.get_component(self.component_input)
+        
+
 
     @classmethod
     def get_config_template(
