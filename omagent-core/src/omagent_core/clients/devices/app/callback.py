@@ -1,10 +1,7 @@
-from colorama import Fore, Style
 from omagent_core.services.connectors.redis import RedisConnector
 from omagent_core.utils.registry import registry
-from pydantic import BaseModel, model_validator
 import json
 
-from omagent_core.utils.error import VQLError
 from omagent_core.utils.logger import logging
 from omagent_core.utils.container import container
 from omagent_core.clients.base import CallbackBase

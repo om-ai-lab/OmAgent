@@ -1,34 +1,32 @@
-import os
-from omagent_core.advanced_components.node.input_interface.input_interface import InputIterface
-from omagent_core.advanced_components.node.simple_vqa.simple_vqa import SimpleVQA
+from omagent_core.services.connectors.redis import RedisConnector
+from omagent_core.utils.container import container
 from omagent_core.engine.configuration.configuration import Configuration
-from omagent_core.engine.http.models.task_result_status import TaskResultStatus
-from omagent_core.engine.http.models.workflow_status import terminal_status
+container.register_connector(name='conductor_config', connector=Configuration)
+container.register_connector(name='redis_stream_client', connector=RedisConnector)
+from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.orkes.orkes_workflow_client import OrkesWorkflowClient
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.utils.build import build_from_file
-from omagent_core.utils.compile import compile
 from omagent_core.engine.automator.task_handler import TaskHandler
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
-from omagent_core.engine.workflow.task.simple_task import simple_task
 from omagent_core.engine.http.models.workflow_status import running_status
-from pathlib import Path
-import yaml
 from omagent_core.engine.automator.task_handler import TaskHandler
-
-from omagent_core.memories.stms.stm_dict import DictSTM
-from omagent_core.memories.stms.stm_deque import DequeSTM
-from omagent_core.memories.stms.stm_redis import RedisSTM
-from omagent_core.utils.registry import registry
 from omagent_core.utils.build import build_from_file
+from omagent_core.utils.registry import registry
+from omagent_core.clients.devices.app.input import AppInput
+from omagent_core.clients.devices.cli.callback import DefaultCallback
 import yaml
 from time import sleep
 import json
 from colorama import Fore, Style
 from omagent_core.utils.container import container
-from omagent_core.utils.registry import registry
 from omagent_core.utils.logger import logging
 
+registry.import_module()
+
+container.register_stm(stm='RedisSTM')
+container.register_callback(callback=DefaultCallback)
+container.register_input(input=AppInput)
 
 class DefaultClient:
     def __init__(
@@ -41,26 +39,9 @@ class DefaultClient:
         self._processor = processor
         self._config_path = config_path
 
-    def _is_redis_stream_listener_running(self, workflow):
-        try:
-            for task in workflow.tasks:
-                # print(task.task_def_name, task.status)
-                if task.task_def_name == 'RedisStreamListener' and task.status in [TaskResultStatus.IN_PROGRESS]:
-                    return True
-            return False
-        except Exception as e:
-            logging.error(f"Error while checking RedisStreamListener status: {e}")
-            return False
-
-    def compile(self):
-        output_path = self._config_path + "/interactor"
-        os.makedirs(output_path, exist_ok=True)
-        compile(self._interactor, output_path)
-        if self._processor:
-            compile(self._processor, self._config_path + "/processor")
 
     def start_interactor(self):
-        worker_config = build_from_file(self._config_path + "/step1_simpleVQA/configs")
+        worker_config = build_from_file(self._config_path)
         self._task_handler_interactor = TaskHandler(worker_config=worker_config)
         self._task_handler_interactor.start_processes()
         workflow_instance_id = self._interactor.start_workflow_with_input(workflow_input={})
@@ -74,16 +55,20 @@ class DefaultClient:
         client = OrkesWorkflowClient(configuration=configuration)
         
         try:
-            container.get_component("RedisStreamHandler").redis_stream_client._client.xgroup_create(
+            container.get_connector('redis_stream_client')._client.xgroup_create(
                 stream_name, group_name, id="0", mkstream=True
             )
         except Exception as e:
             logging.info(f"Consumer group may already exist: {e}")
 
-        data_flag = False
-        content = None
+        
         while True: 
             try:
+                status = self._interactor.get_workflow(workflow_id=workflow_instance_id).status    #获取执行状态
+                if status == 'COMPLETED':
+                    break
+                data_flag = False
+                content = None
                 # logging.info(f"Checking workflow status: {workflow_instance_id}")
                 workflow_status = client.get_workflow_status(workflow_instance_id)
                 if workflow_status.status not in running_status:
@@ -132,6 +117,7 @@ class DefaultClient:
             except Exception as e:
                 logging.error(f"Error while listening to stream: {e}")
                 sleep(poll_interval)  # Wait before retrying
+        self.stop_interactor()
 
     def stop_interactor(self):
         self._task_handler_interactor.stop_processes()
