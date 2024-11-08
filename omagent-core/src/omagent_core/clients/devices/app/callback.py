@@ -101,9 +101,9 @@ class AppCallback(CallbackBase):
     def send_block(
         self,
         agent_id,
-        took,
-        msg_type,
         msg,
+        took=0,
+        msg_type=MessageType.TEXT.value,
         interaction_type=InteractionType.DEFAULT.value,
         prompt_tokens=0,
         output_tokens=0,
@@ -121,7 +121,7 @@ class AppCallback(CallbackBase):
             output_tokens,
         )
 
-    def send_answer(self, agent_id, took, msg_type, msg, prompt_tokens=0, output_tokens=0):
+    def send_answer(self, agent_id, msg, took=0, msg_type=MessageType.TEXT.value,  prompt_tokens=0, output_tokens=0):
         self.send_base_message(
             agent_id,
             CodeEnum.SUCCESS.value,

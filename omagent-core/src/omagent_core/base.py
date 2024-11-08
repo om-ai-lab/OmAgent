@@ -15,6 +15,7 @@ class BotBase(BaseSettings, ABC):
     stm: Optional['BotBase'] = None
     ltm: Optional['BotBase'] = None
     callback: Optional['BotBase'] = None
+    input: Optional['BotBase'] = None
 
     class Config:
         """Configuration for this pydantic object."""
@@ -54,6 +55,14 @@ class BotBase(BaseSettings, ABC):
         if isinstance(callback, str):
             return container.get_component(callback)
         return callback
+    
+    @field_validator("input", mode="before")
+    def get_input(cls, input):
+        if input is None:
+            return container.input
+        if isinstance(input, str):
+            return container.get_component(input)
+        return input
 
     @classmethod
     def get_config_template(

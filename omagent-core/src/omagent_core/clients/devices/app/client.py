@@ -1,5 +1,6 @@
 import os
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
+from omagent_core.utils.build import build_from_file
 from omagent_core.utils.compile import compile
 from omagent_core.engine.automator.task_handler import TaskHandler
 import yaml
@@ -18,22 +19,11 @@ class AppClient:
         self._processor = processor
         self._config_path = config_path
 
-        container.register_component("RedisStreamHandler")
-
-    def compile(self):
-        output_path = self._config_path + "/interactor"
-        os.makedirs(output_path, exist_ok=True)
-        compile(self._interactor, output_path)
-        if self._processor:
-            compile(self._processor, self._config_path + "/processor")
-
     def start_interactor(self):
-        worker_config = yaml.load(
-            open(self._config_path + "/interactor/worker.yaml", "r"),
-            Loader=yaml.FullLoader,
-        )
+        worker_config = build_from_file(self._config_path + "/step1_simpleVQA/configs")
         self._task_handler_interactor = TaskHandler(worker_config=worker_config)
         self._task_handler_interactor.start_processes()
+        workflow_execution_id = self._interactor.start_workflow_with_input(workflow_input={})
 
     def stop_interactor(self):
         self._task_handler_interactor.stop_processes()
