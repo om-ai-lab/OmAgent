@@ -11,7 +11,6 @@ from omagent_core.engine.http.models.workflow_status import running_status
 from omagent_core.services.connectors.redis import RedisConnector
 from omagent_core.utils.general import read_image
 from omagent_core.utils.registry import registry
-from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.container import container
 from omagent_core.engine.orkes.orkes_workflow_client import OrkesWorkflowClient
 from omagent_core.engine.configuration.configuration import Configuration
@@ -125,8 +124,6 @@ class AppInput(InputBase):
                 logging.error("'messages' should be a list")
                 return False
 
-            image_cache = {}
-            idx = 0
             for message in payload_data["messages"]:
                 if not isinstance(message, dict):
                     logging.error("Each item in 'messages' should be a dictionary")
@@ -144,14 +141,6 @@ class AppInput(InputBase):
                     if "type" not in content or "data" not in content:
                         logging.error("Each item in 'content' should contain 'type' and 'data' keys")
                         return False
-                    if content["type"] == "image_url":
-                        # Load the image from provided path
-                        img = read_image(input_source=content["data"])
-                        # Cache the loaded image
-                        image_cache[f'<image_{idx}>'] = img
-                        idx += 1
-
-            self.stm['image_cache'] = image_cache
 
             message_data = json.loads(payload)
             result.update(message_data)

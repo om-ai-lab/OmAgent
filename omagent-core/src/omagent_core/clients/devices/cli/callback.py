@@ -1,32 +1,15 @@
 import datetime
-import json
 import os
-from collections import defaultdict
-from pathlib import Path
-from time import time
-from typing import Any, ClassVar
 
 from colorama import Fore, Style
-
-from omagent_core.clients.devices.app.schemas import InteractionType, MessageType
 from omagent_core.utils.registry import registry
-from omagent_core.utils.error import VQLError
 from omagent_core.utils.logger import logging
-import omagent_core.base
 from omagent_core.clients.base import CallbackBase
 
 
 @registry.register_component()
 class DefaultCallback(CallbackBase):
     bot_id: str = ""
-    # start_time: int = time()
-    # endpoint: str = ""
-    # loop_count: ClassVar[dict] = defaultdict(int)
-    # callback_count: ClassVar[dict] = defaultdict(int)
-
-    # def __init__(self, **data: Any):
-    #     super().__init__(**data)
-    #     self.endpoint = data.get("endpoint", "")
 
     def visualize_in_terminal(self, *args, **kwargs):
         pass
