@@ -16,11 +16,11 @@ class MilvusLTM(LTMBase):
     storage_name: str = Field(default='default')
     dim: int = Field(default=128)
     
-    def model_post_init(self, __context: Any) -> None:
-        self.connection_alias = self.milvus_ltm_client.alias
+    def model_post_init(self, __context: Any) -> None:        
 
         # Check if collection exists
-        if not utility.has_collection(self.storage_name, using=self.connection_alias):
+        if not self.milvus_ltm_client._client.has_collection(self.storage_name):
+            index_params = self.milvus_ltm_client._client.prepare_index_params()
             # Define field schemas
             key_field = FieldSchema(
                 name="key", dtype=DataType.VARCHAR, is_primary=True, max_length=256
@@ -31,44 +31,37 @@ class MilvusLTM(LTMBase):
             embedding_field = FieldSchema(
                 name="embedding", dtype=DataType.FLOAT_VECTOR, description="Embedding vector", dim=self.dim
             )
+            index_params = self.milvus_ltm_client._client.prepare_index_params()            
 
             # Create collection schema
             schema = CollectionSchema(
                 fields=[key_field, value_field, embedding_field],
                 description="Key-Value storage with embeddings",
             )
-            # Create collection
-            self.collection = Collection(
-                name=self.storage_name,
-                schema=schema,
-                using=self.connection_alias
-            )
+            for field in schema.fields:
+                if (
+                    field.dtype == DataType.FLOAT_VECTOR
+                    or field.dtype == DataType.BINARY_VECTOR
+                ):
+                    index_params.add_index(
+                        field_name=field.name,
+                        index_name=field.name,
+                        index_type="FLAT",
+                        metric_type="COSINE",
+                        params={"nlist": 128},
+                    )
+            self.milvus_ltm_client._client.create_collection(self.storage_name, schema=schema, index_params=index_params)            
 
-            # Create index separately after collection creation
-            index_params = {
-                "metric_type": "COSINE",
-                "index_type": "IVF_FLAT",
-                "params": {"nlist": 128}
-            }
-            self.collection.create_index(
-                field_name="embedding",
-                index_params=index_params
-            )
-            self.collection.load()
-            print(f"Created collection {self.storage_name} successfully")
+            # Create index separately after collection creation                        
+            print(f"Created storage {self.storage_name} successfully")
         else:
-            # Load the existing collection
-            self.collection = Collection(
-                name=self.storage_name,
-                using=self.connection_alias
-            )
-            self.collection.load()
-            print(f"{self.storage_name} collection already exists")
+
+            print(f"{self.storage_name} storage already exists")
 
     def __getitem__(self, key: Any) -> Any:
         key_str = str(key)
         expr = f'key == "{key_str}"'
-        res = self.collection.query(expr, output_fields=["value"])
+        res = self.milvus_ltm_client._client.query(self.storage_name, expr, output_fields=["value"])
         if res:
             value_base64 = res[0]['value']
             value_bytes = base64.b64decode(value_base64)
@@ -109,41 +102,26 @@ class MilvusLTM(LTMBase):
         ]
 
         # Insert the new record
-        self.collection.insert(data)
+        self.milvus_ltm_client._client.insert(collection_name=self.storage_name, data=data)
 
-    def __setitem2__(self, key: Any, value: Any, embedding: Optional[List[float]] = None) -> None:
-        key_str = str(key)
-        value_bytes = pickle.dumps(value)
-        value_base64 = base64.b64encode(value_bytes).decode('utf-8')
-
-        if embedding is None:
-            raise ValueError("An embedding vector must be provided.")
-
-        if key_str in self:
-            self.__delitem__(key_str)
-
-        data = [
-            {
-                "key": key_str,
-                "value": value_base64,
-                "embedding": embedding,
-            }
-        ]
-
-        self.collection.insert(data)
 
     def __delitem__(self, key: Any) -> None:
         key_str = str(key)
         if key_str in self:
             expr = f'key == "{key_str}"'
-            self.collection.delete(expr)
+            self.milvus_ltm_client._client.delete(self.storage_name, expr)
         else:
             raise KeyError(f"Key {key} not found")
 
     def __contains__(self, key: Any) -> bool:
         key_str = str(key)
         expr = f'key == "{key_str}"'
-        res = self.collection.query(expr, output_fields=["key"])
+        # Adjust the query call to match the expected signature
+        res = self.milvus_ltm_client._client.query(
+            self.storage_name,  # Pass the collection name as the first argument
+            filter=expr,
+            output_fields=["key"]
+        )
         return len(res) > 0
     """
     def __len__(self) -> int:
@@ -152,19 +130,19 @@ class MilvusLTM(LTMBase):
     """
     def __len__(self) -> int:
         expr = 'key != ""'  # Expression to match all entities
-        self.collection.load(refresh=True)
-        results = self.collection.query(expr, output_fields=["key"], consistency_level="Strong")
+        #self.milvus_ltm_client._client.load(refresh=True)
+        results = self.milvus_ltm_client._client.query(self.storage_name, expr, output_fields=["key"], consistency_level="Strong")
         return len(results)
 
     def keys(self,limit=10) -> Iterable[Any]:
         expr = ""
-        res = self.collection.query(expr, output_fields=["key"], limit=limit)
+        res = self.milvus_ltm_client._client.query(self.storage_name, expr, output_fields=["key"], limit=limit)
         return (item['key'] for item in res)
 
     def values(self) -> Iterable[Any]:
         expr = 'key != ""'  # Expression to match all active entities
-        self.collection.load(refresh=True)
-        res = self.collection.query(expr, output_fields=["value"], consistency_level="Strong")
+        self.milvus_ltm_client._client.load(refresh=True)
+        res = self.milvus_ltm_client._client.query(self.storage_name, expr, output_fields=["value"], consistency_level="Strong")
         for item in res:
             value_base64 = item['value']
             value_bytes = base64.b64decode(value_base64)
@@ -173,7 +151,7 @@ class MilvusLTM(LTMBase):
 
     def items(self) -> Iterable[Tuple[Any, Any]]:
         expr = 'key != ""'
-        res = self.collection.query(expr, output_fields=["key", "value"])
+        res = self.milvus_ltm_client._client.query(self.storage_name, expr, output_fields=["key", "value"])
         for item in res:
             key = item['key']
             value_base64 = item['value']
@@ -189,10 +167,7 @@ class MilvusLTM(LTMBase):
 
     def clear(self) -> None:
         expr = 'key != ""'  # This expression matches all records where 'key' is not empty
-        self.collection.delete(expr)
-        # Optionally, flush and wait for the deletion to complete
-        self.collection.flush()
-        #utility.wait_for_flushed(collection_name=self.collection.name)
+        self.milvus_ltm_client._client.delete(self.storage_name, filter=expr)
 
     def pop(self, key: Any, default: Any = None) -> Any:
         try:
@@ -214,10 +189,11 @@ class MilvusLTM(LTMBase):
             "metric_type": "COSINE",
             "params": {"nprobe": 10},
         }
-        results = self.collection.search(
+        results = self.milvus_ltm_client._client.search(
+            self.storage_name,
             data=[embedding],
             anns_field="embedding",
-            param=search_params,
+            search_params=search_params,
             limit=top_k,
             output_fields=["key", "value"],
             consistency_level="Strong",
@@ -225,11 +201,11 @@ class MilvusLTM(LTMBase):
 
         items = []
         for match in results[0]:
-            key = match.entity.get('key')
-            value_base64 = match.entity.get('value')
+            key = match.get("entity").get('key')
+            value_base64 = match.get("entity").get('value')            
             value_bytes = base64.b64decode(value_base64)
             value = pickle.loads(value_bytes)
-            distance = match.distance
+            distance = match["distance"]
             if distance >= threshold:
                 items.append((key, value, distance))
 
@@ -240,13 +216,14 @@ if __name__ == "__main__":
     milvus_ltm_client = MilvusConnector()
     milvus_ltm = MilvusLTM(milvus_ltm_client=milvus_ltm_client, dim=128, storage_name='test3')
     #print(milvus_ltm["key"])
-    #milvus_ltm.clear()
+    
     embedding_vector = [0.1] * 128  # Replace with actual 128-dimensional vector
-    milvus_ltm['0'] = {"value": {"abc":"abc"}, "embedding": embedding_vector}
+    milvus_ltm["0"] = {"value": {"abc":"abc"}, "embedding": embedding_vector}
+    milvus_ltm.clear()
+
+    print (milvus_ltm["0"])
     
     print(len(milvus_ltm))
-    print (milvus_ltm["1"])
-
     for key in milvus_ltm.keys():
         print(key)
     for value in milvus_ltm.items():

@@ -1,5 +1,7 @@
 from typing import Dict, List, Type, Optional
 from pydantic import BaseModel
+import yaml
+from pathlib import Path
 from omagent_core.utils.registry import registry
 
 
@@ -143,7 +145,7 @@ class Container:
 
         return config
 
-    def from_config(self, config_data: dict) -> None:
+    def from_config(self, config_data: dict|str|Path) -> None:
         """Update container from configuration
 
         Args:
@@ -162,7 +164,11 @@ class Container:
                 else:
                     cleaned[key] = value
             return cleaned
-
+        
+        if isinstance(config_data, str|Path):
+            if not Path(config_data).exists():
+                raise FileNotFoundError(f"Config file not found: {config_data}")
+            config_data = yaml.load(open(config_data, 'r'), Loader=yaml.FullLoader)
         config_data = clean_config_dict(config_data)
 
         # connectors
