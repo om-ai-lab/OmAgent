@@ -40,33 +40,16 @@ class TaskDivider(BaseLLMBackend, BaseWorker):
     )
     tool_manager: ToolManager
 
-    def _run(self, agent_task: dict, last_output: str, *args, **kwargs):
+    def _run(self, agent_task: dict, last_output: str, workflow_instance_id: str, *args, **kwargs):
         # task = AgentTask(**agent_task)
         task = self.stm['agent_task']
-        EXIT_FLAG = False
         if task.task_depth() >= EnvVar.MAX_TASK_DEPTH:
             last_output = "failed: Max subtask depth reached"
             divide_failed_structure = {
                 "parent_task": task.task,
                 "failed_reason": "Max subtask depth reached",
             }
-            self.callback.send_block(divide_failed_structure)
-            if task.status == "failed":
-                pass
-            elif task.children != []:
-                task = task.children[0]
-                EXIT_FLAG = False
-            elif task.next_sibling_task() is not None:
-                task = task.next_sibling_task()
-                EXIT_FLAG = False
-            else:
-                if task.parent is None:
-                    EXIT_FLAG = True
-                elif task.parent.next_sibling_task() is None:
-                    EXIT_FLAG = True
-                else:
-                    task = task.parent.next_sibling_task()
-                    EXIT_FLAG = False
+            self.callback.send_block(agent_id=workflow_instance_id, msg=divide_failed_structure)
             self.stm['agent_task'] = task
             return {"agent_task": task.task_info(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
 
@@ -89,26 +72,10 @@ class TaskDivider(BaseLLMBackend, BaseWorker):
                     for idx, child in enumerate(task.children)
                 ],
             }
-            # task = AgentTask(**task.children[0])
-            if task.status == "failed":
-                pass
-            elif task.children != []:
-                task = task.children[0]
-                EXIT_FLAG = False
-            elif task.next_sibling_task() is not None:
-                task = task.next_sibling_task()
-                EXIT_FLAG = False
-            else:
-                if task.parent is None:
-                    EXIT_FLAG = True
-                elif task.parent.next_sibling_task() is None:
-                    EXIT_FLAG = True
-                else:
-                    task = task.parent.next_sibling_task()
-                    EXIT_FLAG = False
-            self.callback.send_block(divided_detail_structure)
+            subtasks_info = "\n".join([f"{idx}: {each['task']}" for idx, each in enumerate(task.children_info())])
+            self.callback.send_block(agent_id=workflow_instance_id, msg=f'Current task "{task.task}" has been divided into {len(task.children)} subtasks: \n{subtasks_info}')
             self.stm['agent_task'] = task
-            return {"agent_task": task.task_info(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs, "exit_flag": EXIT_FLAG}
+            return {"agent_task": task.task_info(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
 
         elif chat_complete_res.get("failed_reason"):
             last_output = (
@@ -116,22 +83,7 @@ class TaskDivider(BaseLLMBackend, BaseWorker):
                     chat_complete_res.get("failed_reason", "No reason generated.")
                 )
             )
-            if task.status == "failed":
-                pass
-            elif task.children != []:
-                task = task.children[0]
-                EXIT_FLAG = False
-            elif task.next_sibling_task() is not None:
-                task = task.next_sibling_task()
-                EXIT_FLAG = False
-            else:
-                if task.parent is None:
-                    EXIT_FLAG = True
-                elif task.parent.next_sibling_task() is None:
-                    EXIT_FLAG = True
-                else:
-                    task = task.parent.next_sibling_task()
-                    EXIT_FLAG = False
+            self.stm['agent_task'] = task
             return {"agent_task": task.task_info(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
         else:
             raise ValueError("LLM generation is not valid.")

@@ -45,14 +45,13 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
     )
     tool_manager: ToolManager
 
-    def _run(self, agent_task: dict, last_output: str, *args, **kwargs):
+    def _run(self, agent_task: dict, last_output: str, workflow_instance_id: str, *args, **kwargs):
         # task: AgentTask = task
         if self.stm.get('agent_task'):
             task = self.stm['agent_task']
         else:
             task = AgentTask(**agent_task)
         task.status = TaskStatus.RUNNING
-        EXIT_FLAG = True
         if not self.stm.get('former_results'):
             self.stm['former_results'] = {}
         llm_detail = {
@@ -74,7 +73,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
             "task_depth": task.task_depth(),
             "llm_detail": llm_detail,
         }
-        self.callback.send_block(chat_structure)
+        # self.callback.send_block(agent_id=workflow_instance_id, msg=chat_structure)
         payload = {
             "task": task.task,
             "tools": self.tool_manager.generate_prompt(),
@@ -114,7 +113,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
         new_data = {first_key: content[first_key]}
         content = new_data
 
-        self.callback.send_block(content)
+        # self.callback.send_block(agent_id=workflow_instance_id, msg=content)
         if content.get("agent_answer"):
             last_output = content
             if task.parent:
@@ -131,25 +130,9 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                 "tool_status": task.status,
                 "tool_result": task.result,
             }
-            if task.status == "failed":
-                pass
-            elif task.children != []:
-                task = task.children[0]
-                EXIT_FLAG = False
-            elif task.next_sibling_task() is not None:
-                task = task.next_sibling_task()
-                EXIT_FLAG = False
-            else:
-                if task.parent is None:
-                    EXIT_FLAG = True
-                elif task.parent.next_sibling_task() is None:
-                    EXIT_FLAG = True
-                else:
-                    task = task.parent.next_sibling_task()
-                    EXIT_FLAG = False
-            self.callback.send_block(direct_output_structure)
+            self.callback.send_block(agent_id=workflow_instance_id, msg=f'Current task "{task.task}" has direct output: \n{content["agent_answer"]}')
             self.stm['agent_task'] = task
-            return {"agent_task": task.task_info(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs, "exit_flag": EXIT_FLAG}
+            return {"agent_task": task.task_info(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
 
         elif content.get("divide"):
             task.result = content["divide"]
@@ -163,28 +146,12 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                 "tool_status": task.status,
                 "tool_result": task.result,
             }
-            self.callback.send_block(direct_output_structure)
-            # if task.status == "failed":
-            #     pass
-            # elif task.children != []:
-            #     task = task.children[0]
-            #     EXIT_FLAG = False
-            # elif task.next_sibling_task() is not None:
-            #     task = task.next_sibling_task()
-            #     EXIT_FLAG = False
-            # else:
-            #     if task.parent is None:
-            #         EXIT_FLAG = True
-            #     elif task.parent.next_sibling_task() is None:
-            #         EXIT_FLAG = True
-            #     else:
-            #         task = task.parent.next_sibling_task()
-            #         EXIT_FLAG = False
-            EXIT_FLAG = False
+            self.callback.send_block(agent_id=workflow_instance_id, msg=f'Current task "{task.task}" needs to be divided: \n{content["divide"]}')
             self.stm['agent_task'] = task
-            return {"agent_task": task.task_info(), "switch_case_value": "complex", "last_output": last_output, "kwargs": kwargs, "exit_flag": EXIT_FLAG}
+            return {"agent_task": task.task_info(), "switch_case_value": "complex", "last_output": last_output, "kwargs": kwargs}
 
         elif content.get("tool_call"):
+            self.callback.send_block(agent_id=workflow_instance_id, msg=f'Current tool call task: \n{content["tool_call"]}')
             execution_status, execution_results = self.tool_manager.execute_task(
                 content["tool_call"], related_info=self.stm['former_results']
             )
@@ -206,48 +173,16 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                     "tool_status": task.status,
                     "tool_result": task.result,
                 }
-                if task.status == "failed":
-                    pass
-                elif task.children != []:
-                    task = task.children[0]
-                    EXIT_FLAG = False
-                elif task.next_sibling_task() is not None:
-                    task = task.next_sibling_task()
-                    EXIT_FLAG = False
-                else:
-                    if task.parent is None:
-                        EXIT_FLAG = True
-                    elif task.parent.next_sibling_task() is None:
-                        EXIT_FLAG = True
-                    else:
-                        task = task.parent.next_sibling_task()
-                        EXIT_FLAG = False
-                self.callback.send_block(toolcall_success_output_structure)
+                self.callback.send_block(agent_id=workflow_instance_id, msg=toolcall_success_output_structure)
                 self.stm['agent_task'] = task
-                return {"agent_task": task.task_info(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs, "exit_flag": EXIT_FLAG}
+                return {"agent_task": task.task_info(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
             else:
                 task.result = execution_results
                 task.status = TaskStatus.FAILED
                 former_results['tool_call_error'] = f"tool_call {content['tool_call']} raise error: {task.result}"
                 self.stm['former_results'] = former_results
-                # if task.status == "failed":
-                #     pass
-                # elif task.children != []:
-                #     task = task.children[0]
-                #     EXIT_FLAG = False
-                # elif task.next_sibling_task() is not None:
-                #     task = task.next_sibling_task()
-                #     EXIT_FLAG = False
-                # else:
-                #     if task.parent is None:
-                #         EXIT_FLAG = True
-                #     elif task.parent.next_sibling_task() is None:
-                #         EXIT_FLAG = True
-                #     else:
-                #         task = task.parent.next_sibling_task()
-                #         EXIT_FLAG = False
-                EXIT_FLAG = False
-                return {"agent_task": task.task_info(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs, "exit_flag": EXIT_FLAG}
+                self.stm['agent_task'] = task
+                return {"agent_task": task.task_info(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
 
         else:
             raise ValueError("LLM generation is not valid.")

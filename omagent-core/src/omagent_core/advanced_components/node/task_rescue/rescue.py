@@ -50,7 +50,6 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
                 failed_detail=tool_call_error,
             )
             former_results['failed_detail'] = chat_complete_res["choices"][0]["message"]["content"]
-            # self.stm['former_results'] = former_results
 
             rescue_execution_status, rescue_execution_results = (
                 self.tool_manager.execute_task(
@@ -58,11 +57,6 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
                 )
             )
             if rescue_execution_status == "success":
-                # toolcall_rescue_output_structure = {
-                #     "tool_status": rescue_execution_status,
-                #     "tool_result": rescue_execution_results,
-                # }
-                # former_results = self.stm['former_results']
                 former_results.pop("failed_detail", None)
                 former_results['rescue_detail'] = rescue_execution_results
                 self.stm['former_results'] = former_results

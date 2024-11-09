@@ -25,18 +25,16 @@ class Conclude(BaseLLMBackend, BaseWorker):
         ]
     )
 
-    def _run(self, last_output: str, *args, **kwargs):
+    def _run(self, last_output: str, workflow_instance_id: str, *args, **kwargs):
         task = self.stm['agent_task']
         chat_complete_res = self.simple_infer(
             task=task.find_root_task().task,
             result=last_output,
             img_placeholders="".join(list(self.stm.get('image_cache', {}).keys())),
         )
-        self.callback.send_block(
-            f'Answer: {chat_complete_res["choices"][0]["message"]["content"]}'
+        self.callback.send_answer(agent_id=workflow_instance_id, msg=f'Answer: {chat_complete_res["choices"][0]["message"]["content"]}'
         )
         last_output = chat_complete_res["choices"][0]["message"]["content"]
-        # args.stm = self.token_usage.items()
         for key, value in self.token_usage.items():
             print(f"Usage of {key}: {value}")
         print(last_output)

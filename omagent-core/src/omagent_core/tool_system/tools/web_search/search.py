@@ -124,16 +124,25 @@ class WebSearch(BaseTool, BaseLLMBackend):
             ]
 
         else:
-            result = requests.get(
-                self.bing_endpoint,
-                headers={"Ocp-Apim-Subscription-Key": self.bing_api_key},
-                params={"q": search_query, "mkt": region},
-                timeout=10,
-            )
+            try:
+                result = requests.get(
+                    self.bing_endpoint,
+                    headers={"Ocp-Apim-Subscription-Key": self.bing_api_key},
+                    params={"q": search_query, "mkt": region},
+                    timeout=10,
+                )
 
-            result.raise_for_status()
-            result = result.json()
-            pages = result["webPages"]["value"]
+                result.raise_for_status()
+                result = result.json()
+                pages = result["webPages"]["value"]
+            except Exception as e:
+                logging.error(f"Bing search failed: {e}")
+                return [{
+                    "name": '',
+                    "snippet": '',
+                    "url": '',
+                    "page": '',
+                }]
 
         search_results = []
 

@@ -14,7 +14,7 @@ def get_for_loop_condition(task_ref_name: str, iterations: int) -> str:
 
 def get_dnc_loop_condition(task_ref_name: str) -> str:
     
-    return f" if ( $.task_divider['exit_flag'] == true || $.task_conqueror['exit_flag'] == true) {{ false; }} else {{ true; }}"
+    return f" if ( $.{task_ref_name}['exit_flag'] == true) {{ false; }} else {{ true; }}"
 
 class DoWhileTask(TaskInterface):
     # termination_condition is a Javascript expression that evaluates to True or False
@@ -69,10 +69,17 @@ class InfiniteLoopTask(DoWhileTask):
         )
 
 class DnCLoopTask(DoWhileTask):
-    def __init__(self, task_ref_name: str, tasks: List[TaskInterface], pre_loop_exit:List[TaskInterface] = [], post_loop_exit:List[TaskInterface] = []) -> Self:
-        real_tasks = pre_loop_exit + tasks + post_loop_exit
+    def __init__(self, task_ref_name: str, tasks: List[TaskInterface], pre_loop_exit: TaskInterface=None, post_loop_exit: TaskInterface=None) -> Self:
+        if pre_loop_exit is not None and post_loop_exit is not None:
+            real_tasks = pre_loop_exit + tasks + post_loop_exit
+        elif pre_loop_exit is not None:
+            real_tasks = pre_loop_exit + tasks
+        elif post_loop_exit is not None:
+            real_tasks = tasks + post_loop_exit
+        else:
+            real_tasks = tasks
         super().__init__(
             task_ref_name=task_ref_name,
-            termination_condition=get_dnc_loop_condition(task_ref_name),
+            termination_condition=get_dnc_loop_condition(post_loop_exit[0].task_reference_name),
             tasks=real_tasks,
         )
