@@ -39,7 +39,7 @@ class TaskDivider(BaseLLMBackend, BaseWorker):
     )
     tool_manager: ToolManager
 
-    def _run(self, agent_task: dict, last_output: str, workflow_instance_id: str, *args, **kwargs):
+    def _run(self, agent_task: dict, last_output: str, *args, **kwargs):
         task = TaskTree(**agent_task)
         current_node = task.get_current_node()
         if task.get_depth(current_node.id) >= EnvVar.MAX_TASK_DEPTH:
@@ -48,7 +48,7 @@ class TaskDivider(BaseLLMBackend, BaseWorker):
                 "parent_task": current_node.task,
                 "failed_reason": "Max subtask depth reached",
             }
-            self.callback.send_block(agent_id=workflow_instance_id, msg=divide_failed_structure)
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Divider', message=f'Max subtask depth reached.')
             return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
 
         chat_complete_res = self.simple_infer(
@@ -61,7 +61,7 @@ class TaskDivider(BaseLLMBackend, BaseWorker):
         if chat_complete_res.get("tasks"):
             task.add_subtasks(current_node.id, chat_complete_res["tasks"])
             subtasks_info = "\n".join([f"{idx}: {each.task}" for idx, each in enumerate(task.get_children(current_node.id))])
-            self.callback.send_block(agent_id=workflow_instance_id, msg=f'Current task "{current_node.task}" has been divided into {len(task.get_children(current_node.id))} subtasks: \n{subtasks_info}')
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Divider', message=f'Task "{current_node.task}" has been divided into {len(task.get_children(current_node.id))} subtasks: \n{subtasks_info}')
             return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
 
         elif chat_complete_res.get("failed_reason"):
@@ -70,6 +70,7 @@ class TaskDivider(BaseLLMBackend, BaseWorker):
                     chat_complete_res.get("failed_reason", "No reason generated.")
                 )
             )
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Divider', message=f'Subtask generation failed.')
             return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
         else:
             raise ValueError("LLM generation is not valid.")

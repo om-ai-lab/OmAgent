@@ -26,14 +26,14 @@ class Conclude(BaseLLMBackend, BaseWorker):
         ]
     )
 
-    def _run(self, agent_task: dict, last_output: str, workflow_instance_id: str, *args, **kwargs):
+    def _run(self, agent_task: dict, last_output: str, *args, **kwargs):
         task = TaskTree(**agent_task)
         chat_complete_res = self.simple_infer(
             task=task.get_root().task,
             result=last_output,
             img_placeholders="".join(list(self.stm.get('image_cache', {}).keys())),
         )
-        self.callback.send_answer(agent_id=workflow_instance_id, msg=f'Answer: {chat_complete_res["choices"][0]["message"]["content"]}'
+        self.callback.send_answer(agent_id=self.workflow_instance_id, msg=f'Answer: {chat_complete_res["choices"][0]["message"]["content"]}'
         )
         last_output = chat_complete_res["choices"][0]["message"]["content"]
         for key, value in self.token_usage.items():

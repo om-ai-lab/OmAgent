@@ -44,7 +44,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
     )
     tool_manager: ToolManager
 
-    def _run(self, agent_task: dict, last_output: str, workflow_instance_id: str, *args, **kwargs):
+    def _run(self, agent_task: dict, last_output: str, *args, **kwargs):
         task = TaskTree(**agent_task)
         current_node = task.get_current_node()
         current_node.status = TaskStatus.RUNNING
@@ -99,7 +99,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
             self.stm['former_results'] = former_results
             current_node.result = content["agent_answer"]
             current_node.status = TaskStatus.SUCCESS
-            self.callback.send_block(agent_id=workflow_instance_id, msg=f'Current task "{current_node.task}" has direct output: \n{content["agent_answer"]}')
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" agent answer: {content["agent_answer"]}')
             return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
 
         elif content.get("divide"):
@@ -110,11 +110,11 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                     content["divide"]
                 )
             )
-            self.callback.send_block(agent_id=workflow_instance_id, msg=f'Current task "{current_node.task}" needs to be divided: \n{content["divide"]}')
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" needs to be divided.')
             return {"agent_task": task.model_dump(), "switch_case_value": "complex", "last_output": last_output, "kwargs": kwargs}
 
         elif content.get("tool_call"):
-            self.callback.send_block(agent_id=workflow_instance_id, msg=f'Current tool call task: \n{content["tool_call"]}')
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" needs to be executed by tool.')
             execution_status, execution_results = self.tool_manager.execute_task(
                 content["tool_call"], related_info=self.stm['former_results']
             )
@@ -134,13 +134,14 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                     "tool_status": current_node.status,
                     "tool_result": current_node.result,
                 }
-                self.callback.send_block(agent_id=workflow_instance_id, msg=toolcall_success_output_structure)
+                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call success.')
                 return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
             else:
                 current_node.result = execution_results
                 current_node.status = TaskStatus.FAILED
                 former_results['tool_call_error'] = f"tool_call {content['tool_call']} raise error: {current_node.result}"
                 self.stm['former_results'] = former_results
+                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call failed.')
                 return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
 
         else:

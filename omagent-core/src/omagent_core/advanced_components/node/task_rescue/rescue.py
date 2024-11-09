@@ -46,8 +46,9 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
             former_results = self.stm['former_results']
             tool_call_error = former_results.pop("tool_call_error", None)
             task = TaskTree(**agent_task)
+            current_node = task.get_current_node()
             chat_complete_res = self.simple_infer(
-                task=task.task,
+                task=current_node.task,
                 failed_detail=tool_call_error,
             )
             former_results['failed_detail'] = chat_complete_res["choices"][0]["message"]["content"]
@@ -61,10 +62,13 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
                 former_results.pop("failed_detail", None)
                 former_results['rescue_detail'] = rescue_execution_results
                 self.stm['former_results'] = former_results
+                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Rescue', message=f'Rescue tool call success.')
                 return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
             else:
                 self.stm['former_results'] = former_results
                 task.status = TaskStatus.RUNNING
+                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Rescue', message=f'Rescue tool call failed.')
                 return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
         else:
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Rescue', message=f'No tool call to rescue.')
             return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
