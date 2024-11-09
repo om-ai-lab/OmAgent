@@ -51,7 +51,7 @@ class TaskHandler:
             metrics_settings: MetricsSettings = None,
             import_modules: List[str] = None
     ):
-        self.logger_process, self.queue = _setup_logging_queue(container.get_connector('conductor_config'))
+        self.logger_process, self.queue = _setup_logging_queue(container.conductor_config)
 
         # imports
         importlib.import_module('omagent_core.engine.http.models.task')
@@ -65,7 +65,7 @@ class TaskHandler:
             concurrency = config.get('concurrency', BaseWorker.model_fields['concurrency'].default)
             workers.extend([worker_cls(**config) for _ in range(concurrency)])
         
-        self.__create_task_runner_processes(workers, container.get_connector('conductor_config'), metrics_settings)
+        self.__create_task_runner_processes(workers, container.conductor_config, metrics_settings)
         self.__create_metrics_provider_process(metrics_settings)
         logger.info('TaskHandler initialized')
 

@@ -35,7 +35,7 @@ class TaskRunner:
         self.worker = worker
         self.__set_worker_properties()
         if not isinstance(configuration, Configuration):
-            configuration = container.get_connector('conductor_config')
+            configuration = container.conductor_config
         self.configuration = configuration
         self.metrics_collector = None
         if metrics_settings is not None:

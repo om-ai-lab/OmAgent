@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import yaml
 from pathlib import Path
 from omagent_core.utils.registry import registry
+from omagent_core.engine.configuration.configuration import Configuration, TEMPLATE_CONFIG
 
 
 class Container:
@@ -13,7 +14,8 @@ class Container:
         self._ltm_name: Optional[str] = None
         self._callback_name: Optional[str] = None
         self._input_name: Optional[str] = None
-
+        self.conductor_config = Configuration()
+        
     def register_connector(
         self,
         connector: Type[BaseModel],
@@ -135,7 +137,7 @@ class Container:
         return self.get_component(self._input_name)
 
     def compile_config(self, description: bool = True, env_var: bool = True) -> None:
-        config = {"connectors": {}, "components": {}}
+        config = {"conductor_config": TEMPLATE_CONFIG, "connectors": {}, "components": {}}
         exclude_fields = ["_parent", "component_stm", "component_ltm", "component_callback", "component_input"]
         for name, connector in self._connectors.items():
             config["connectors"][name] = connector.__class__.get_config_template(description=description, env_var=env_var, exclude_fields=exclude_fields)
@@ -170,6 +172,9 @@ class Container:
                 raise FileNotFoundError(f"Config file not found: {config_data}")
             config_data = yaml.load(open(config_data, 'r'), Loader=yaml.FullLoader)
         config_data = clean_config_dict(config_data)
+        
+        if "conductor_config" in config_data:
+            self.conductor_config = self.conductor_config.model_copy(update=config_data["conductor_config"], deep=True)
 
         # connectors
         if "connectors" in config_data:

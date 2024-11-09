@@ -1,9 +1,7 @@
+from pathlib import Path
 from omagent_core.services.connectors.redis import RedisConnector
 from omagent_core.utils.container import container
-from omagent_core.engine.configuration.configuration import Configuration
-container.register_connector(name='conductor_config', connector=Configuration)
 container.register_connector(name='redis_stream_client', connector=RedisConnector)
-from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.orkes.orkes_workflow_client import OrkesWorkflowClient
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.utils.build import build_from_file
@@ -31,7 +29,7 @@ container.register_input(input=AppInput)
 class DefaultClient:
     def __init__(
         self,
-        interactor: ConductorWorkflow,
+        interactor: ConductorWorkflow = None,
         processor: ConductorWorkflow = None,
         config_path: str = "./config",
         workers: list = [],
@@ -52,8 +50,7 @@ class DefaultClient:
         group_name = "omappagent"  # replace with your consumer group name
         poll_interval = 1
 
-        configuration = Configuration()
-        client = OrkesWorkflowClient(configuration=configuration)
+        client = OrkesWorkflowClient(configuration=container.conductor_config)
         
         try:
             container.get_connector('redis_stream_client')._client.xgroup_create(
@@ -95,18 +92,37 @@ class DefaultClient:
                             stream_name, group_name, message_id
                         )
                 if data_flag:
-                    user_input = input(f"{Fore.GREEN}{content}:{Style.RESET_ALL}")
+                    contents = []
+                    while True:
+                        print(f"{Fore.GREEN}{content}(Waiting for input, press Enter twice to finish):{Style.RESET_ALL}")
+                        user_input_lines = []
+                        while True:
+                            line = input(f"{Fore.GREEN}>>>{Style.RESET_ALL}")
+                            if line == "":
+                                break
+                            user_input_lines.append(line)
+                        logging.info(f"User input lines: {user_input_lines}")
+                        
+                    
+                        for user_input in user_input_lines:
+                            if self.is_url(user_input) or self.is_file(user_input):
+                                contents.append({
+                                    "type": "image_url",
+                                    "data": user_input
+                                })
+                            else:
+                                contents.append({
+                                    "type": "text",
+                                    "data": user_input
+                                })
+                        if len(contents) > 0:
+                            break
                     result = {
                         "agent_id": workflow_instance_id,
                         "messages": [
                             {
                                 "role": "user",
-                                "content": [
-                                        {
-                                        "type": "text",
-                                        "data": user_input
-                                    }
-                                ]
+                                "content": contents
                             }
                         ],
                         "kwargs": {}    
@@ -124,12 +140,35 @@ class DefaultClient:
         self._task_handler_interactor.stop_processes()
         
     def start_processor(self):
-        worker_config = yaml.load(
-            open(self._config_path + "/processor/worker.yaml", "r"),
-            Loader=yaml.FullLoader,
-        )
-        self._task_handler_processor = TaskHandler(worker_config=worker_config)
+        worker_config = build_from_file(self._config_path)
+        self._task_handler_processor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_processor.start_processes()
+        workflow_instance_id = self._processor.start_workflow_with_input(workflow_input={})
+        user_input = input(f"{Fore.GREEN}Please input a folder path of images:\n>>>{Style.RESET_ALL}")
+        
+        image_items = []
+        idx = 0
+        for image_file in Path(user_input).iterdir():
+            if image_file.is_file() and image_file.suffix in ['.png', '.jpg', '.jpeg']:
+                image_items.append({
+                    "type": "image_url",
+                    "resource_id": str(idx),
+                    "data": str(image_file)
+                })
+                idx += 1
+        result = {
+            "content": image_items
+        }
+        container.get_connector('redis_stream_client')._client.xadd(f"image_process", {"payload":json.dumps(result, ensure_ascii=False) })
+        while True:
+            status = self._processor.get_workflow(workflow_id=workflow_instance_id).status
+            if status == 'COMPLETED':
+                break
+
+            sleep(1)
+        self.stop_processor()
+        
+
 
     def stop_processor(self):
         self._task_handler_processor.stop_processes()
@@ -157,4 +196,25 @@ class DefaultClient:
             logging.error(f"Error processing message: {e}")
             return False, None
         return False, None  
+    
+    def is_file(self, path: str) -> bool:
+        """
+        Determine if the given string is a file
+
+        :param path: File path string
+        :return: Returns True if it is a file, otherwise returns False
+        """
+        import os
+        try:
+            return os.path.isfile(path)
+        except Exception as e:
+            logging.error(f"Error checking if path is a file: {e}")
+            return False
+        
+    def is_url(self, url: str) -> bool:
+        """
+        Determine if the given string is a URL
+        """
+        import re
+        return bool(re.match(r'^https?://', url))
 

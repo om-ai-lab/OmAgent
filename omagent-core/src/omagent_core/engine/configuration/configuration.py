@@ -3,16 +3,44 @@ import os
 import time
 from typing import Optional, Any
 
-from pydantic import Field
+from pydantic import Field, BaseModel
 
 from omagent_core.engine.configuration.settings.authentication_settings import (
     AuthenticationSettings,
 )
-from omagent_core.base import BotBase
-from omagent_core.utils.registry import registry
 
-@registry.register_connector()
-class Configuration(BotBase):
+TEMPLATE_CONFIG = {
+    "name": "Configuration",
+    "base_url": {
+        "value": "http://localhost:8080",
+        "description": "The Conductor Server API endpoint",
+        "env_var": "CONDUCTOR_SERVER_URL",
+    },
+    "auth_key": {
+        "value": None,
+        "description": "The authorization key",
+        "env_var": "AUTH_KEY",
+    },
+    "auth_secret": {
+        "value": None,
+        "description": "The authorization secret",
+        "env_var": "CONDUCTOR_AUTH_SECRET",
+    },
+    "auth_token_ttl_min": {
+        "value": 45,
+        "description": "The authorization token refresh interval in minutes.",
+        "env_var": "AUTH_TOKEN_TTL_MIN",
+    },
+    "debug": {"value": False, "description": "Debug mode", "env_var": "DEBUG"},
+}
+
+
+class Configuration(BaseModel):
+    class Config:
+        """Configuration for this pydantic object."""
+
+        extra = "allow"
+
     base_url: str = Field(
         default="http://localhost:8080",
         description="The Conductor Server API endpoint",
@@ -27,7 +55,7 @@ class Configuration(BotBase):
     auth_token_ttl_min: int = Field(
         default=45, description="The authorization token refresh interval in minutes."
     )
-    debug: bool = Field(default=False, description='Debug mode')
+    debug: bool = Field(default=False, description="Debug mode")
 
     def model_post_init(self, __context: Any) -> None:
         self.__log_level = logging.DEBUG if self.debug else logging.INFO

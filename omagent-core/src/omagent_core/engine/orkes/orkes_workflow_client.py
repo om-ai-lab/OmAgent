@@ -181,4 +181,4 @@ class OrkesWorkflowClient(OrkesBaseClient, WorkflowClient):
 
         return self.workflowResourceApi.update_workflow_and_task_state(update_requesst=update_requesst, workflow_id=workflow_id, **kwargs)
     
-workflow_client = OrkesWorkflowClient(container.get_connector('conductor_config'))
+workflow_client = OrkesWorkflowClient(container.conductor_config)

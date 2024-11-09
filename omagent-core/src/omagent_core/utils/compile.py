@@ -24,7 +24,7 @@ def compile(
 
     workflow.register(overwrite=overwrite)
     print(
-        f"see the workflow definition here: {container.get_connector('conductor_config').ui_host}/workflowDef/{workflow.name}\n"
+        f"see the workflow definition here: {container.conductor_config.ui_host}/workflowDef/{workflow.name}\n"
     )
 
     if not (output_path / "container.yaml").exists():
