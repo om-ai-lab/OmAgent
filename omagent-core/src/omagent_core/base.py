@@ -1,6 +1,6 @@
 import contextvars
 from abc import ABC
-from typing import Optional, Union, Any
+from typing import Optional, Union, Any, List
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
@@ -64,7 +64,7 @@ class BotBase(BaseSettings, ABC):
 
     @classmethod
     def get_config_template(
-        cls, description: bool = True, env_var: bool = True
+        cls, description: bool = True, env_var: bool = True, exclude_fields: List[str] = []
     ) -> dict:
         template = {}
         simple_types = (str, int, float, bool, type(None))
@@ -83,7 +83,7 @@ class BotBase(BaseSettings, ABC):
 
         for field_name, field in cls.model_fields.items():
             # Pass inner attributes
-            if field_name.startswith("_"):
+            if field_name.startswith("_") or field_name in exclude_fields:
                 continue
 
             field_type = field.annotation
@@ -93,13 +93,13 @@ class BotBase(BaseSettings, ABC):
                 if any(is_botbase_subclass(t) for t in types):
                     for t in types:
                         if is_botbase_subclass(t):
-                            template[field_name] = t.get_config_template()
+                            template[field_name] = t.get_config_template(description=description, env_var=env_var, exclude_fields=exclude_fields)
                             break
                     continue
                 elif not all(is_simple_type(t) for t in types):
                     continue
             elif is_botbase_subclass(field_type):
-                template[field_name] = field_type.get_config_template()
+                template[field_name] = field_type.get_config_template(description=description, env_var=env_var, exclude_fields=exclude_fields)
                 continue
             elif not is_simple_type(field_type):
                 continue

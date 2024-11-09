@@ -134,12 +134,12 @@ class Container:
 
     def compile_config(self, description: bool = True, env_var: bool = True) -> None:
         config = {"connectors": {}, "components": {}}
-
+        exclude_fields = ["_parent", "component_stm", "component_ltm", "component_callback", "component_input"]
         for name, connector in self._connectors.items():
-            config["connectors"][name] = connector.__class__.get_config_template(description=description, env_var=env_var)
-
+            config["connectors"][name] = connector.__class__.get_config_template(description=description, env_var=env_var, exclude_fields=exclude_fields)
+        exclude_fields.extend(self._connectors.keys())
         for name, component in self._components.items():
-            config["components"][name] = component.__class__.get_config_template(description=description, env_var=env_var)
+            config["components"][name] = component.__class__.get_config_template(description=description, env_var=env_var, exclude_fields=exclude_fields)
 
         return config
 
