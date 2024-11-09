@@ -1,3 +1,4 @@
+from time import sleep
 from omagent_core.utils.container import container
 from omagent_core.engine.configuration.configuration import Configuration
 container.register_connector(name='conductor_config', connector=Configuration)
@@ -23,7 +24,7 @@ container.register_input(input=AppInput)
 class AppClient:
     def __init__(
         self,
-        interactor: ConductorWorkflow,
+        interactor: ConductorWorkflow = None,
         processor: ConductorWorkflow = None,
         config_path: str = "./config",
         workers: list = [],
@@ -37,18 +38,22 @@ class AppClient:
         worker_config = build_from_file(self._config_path)
         self._task_handler_interactor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_interactor.start_processes()
-        workflow_execution_id = self._interactor.start_workflow_with_input(workflow_input={})
+        # workflow_execution_id = self._interactor.start_workflow_with_input(workflow_input={})
 
     def stop_interactor(self):
         self._task_handler_interactor.stop_processes()
         
     def start_processor(self):
-        worker_config = yaml.load(
-            open(self._config_path + "/processor/worker.yaml", "r"),
-            Loader=yaml.FullLoader,
-        )
-        self._task_handler_processor = TaskHandler(worker_config=worker_config)
+        worker_config = build_from_file(self._config_path)
+        self._task_handler_processor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_processor.start_processes()
+        workflow_instance_id = self._processor.start_workflow_with_input(workflow_input={})
+        while True:
+            status = self._processor.get_workflow(workflow_id=workflow_instance_id).status
+            if status == 'COMPLETED':
+                workflow_instance_id = self._processor.start_workflow_with_input(workflow_input={})
+
+            sleep(1)
 
     def stop_processor(self):
         self._task_handler_processor.stop_processes()
