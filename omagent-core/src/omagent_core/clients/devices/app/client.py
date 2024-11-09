@@ -1,7 +1,4 @@
 from omagent_core.utils.container import container
-from omagent_core.engine.configuration.configuration import Configuration
-container.register_connector(name='conductor_config', connector=Configuration)
-
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.utils.build import build_from_file
 from omagent_core.engine.automator.task_handler import TaskHandler

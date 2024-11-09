@@ -1,9 +1,6 @@
 from omagent_core.services.connectors.redis import RedisConnector
 from omagent_core.utils.container import container
-from omagent_core.engine.configuration.configuration import Configuration
-container.register_connector(name='conductor_config', connector=Configuration)
 container.register_connector(name='redis_stream_client', connector=RedisConnector)
-from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.orkes.orkes_workflow_client import OrkesWorkflowClient
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.utils.build import build_from_file
@@ -52,8 +49,7 @@ class DefaultClient:
         group_name = "omappagent"  # replace with your consumer group name
         poll_interval = 1
 
-        configuration = Configuration()
-        client = OrkesWorkflowClient(configuration=configuration)
+        client = OrkesWorkflowClient(configuration=container.conductor_config)
         
         try:
             container.get_connector('redis_stream_client')._client.xgroup_create(
