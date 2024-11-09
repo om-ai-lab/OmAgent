@@ -15,8 +15,8 @@ from omagent_core.utils.container import container
 
 class WorkflowExecutor:
     def __init__(self) -> Self:
-        self.metadata_client = MetadataResourceApi(ApiClient(container.get_connector('conductor_config')))
-        self.task_client = TaskResourceApi(ApiClient(container.get_connector('conductor_config')))
+        self.metadata_client = MetadataResourceApi(ApiClient(container.conductor_config))
+        self.task_client = TaskResourceApi(ApiClient(container.conductor_config))
         self.workflow_client = workflow_client
 
     def register_workflow(self, workflow: WorkflowDef, overwrite: bool = None) -> object:

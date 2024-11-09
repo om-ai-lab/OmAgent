@@ -47,7 +47,7 @@ class ApiClient(object):
             cookie=None
     ):
         if configuration is None:
-            configuration = container.get_connector('conductor_config')
+            configuration = container.conductor_config
         self.configuration = configuration
 
         self.rest_client = rest.RESTClientObject(connection=configuration.http_connection)
