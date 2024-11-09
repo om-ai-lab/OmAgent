@@ -43,7 +43,6 @@ container.register_stm(stm='RedisSTM')
 container.register_callback(callback=AppCallback)
 container.register_input(input=AppInput)
 stm = container.get_component('RedisSTM')
-stm.clear()
 
 
 workflow = ConductorWorkflow(name='dnc')
@@ -78,6 +77,7 @@ workflow >> client_input_task >> init_set_variable_task >> dncloop_task >> concl
 # workflow >> init_set_variable_task >> dncloop_task >> conclude_task
 
 compile(workflow, Path('./'), True)
+container.from_config(Path('./container.yaml'))
 
 # worker通过config来初始化，可以使用 omagent-core/src/omagent_core/utils/compile.py 编译worker的config模版
 

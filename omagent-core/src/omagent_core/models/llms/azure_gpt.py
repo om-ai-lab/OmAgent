@@ -56,7 +56,7 @@ class AzureGPTLLM(BaseLLM):
         if self.api_key is None or self.api_key == "":
             raise ValueError("api_key is required")
 
-        if len(self.stm.get('image_cache', [])):
+        if self.stm(self.workflow_instance_id).get('image_cache') is not None and len(self.stm(self.workflow_instance_id)['image_cache']):
             for record in records:
                 record.combine_image_message(
                     image_cache={
@@ -104,7 +104,7 @@ class AzureGPTLLM(BaseLLM):
         if self.api_key is None or self.api_key == "":
             raise ValueError("api_key is required")
 
-        if len(self.stm.get('image_cache', [])):
+        if self.stm(self.workflow_instance_id).get('image_cache') is not None and len(self.stm(self.workflow_instance_id)['image_cache']):
             for record in records:
                 record.combine_image_message(
                     image_cache={

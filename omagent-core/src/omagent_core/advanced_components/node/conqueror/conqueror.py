@@ -48,8 +48,8 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
         task = TaskTree(**agent_task)
         current_node = task.get_current_node()
         current_node.status = TaskStatus.RUNNING
-        if not self.stm.get('former_results'):
-            self.stm['former_results'] = {}
+        if not self.stm(self.workflow_instance_id).get('former_results'):
+            self.stm(self.workflow_instance_id)['former_results'] = {}
         payload = {
             "task": current_node.task,
             "tools": self.tool_manager.generate_prompt(),
@@ -77,9 +77,9 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                 if task.get_parent(current_node.id)
                 else []
             ),
-            "former_results": self.stm['former_results'],
-            "extra_info": self.stm.get("extra"),
-            "img_placeholders": "".join(list(self.stm.get("image_cache", {}).keys()))
+            "former_results": self.stm(self.workflow_instance_id)['former_results'],
+            "extra_info": self.stm(self.workflow_instance_id).get("extra"),
+            "img_placeholders": "".join(list(self.stm(self.workflow_instance_id).get("image_cache", {}).keys()))
         }
         chat_complete_res = self.infer(input_list=[payload])
         content = chat_complete_res[0]["choices"][0]["message"].get("content")
@@ -93,10 +93,10 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
             last_output = content
             if task.get_parent(current_node.id):
                 if current_node.id not in [each.id for each in task.get_children(task.get_parent(current_node.id).id)]:
-                    self.stm['former_results'] = {}
-            former_results = self.stm['former_results']
+                    self.stm(self.workflow_instance_id)['former_results'] = {}
+            former_results = self.stm(self.workflow_instance_id)['former_results']
             former_results[current_node.task] = content
-            self.stm['former_results'] = former_results
+            self.stm(self.workflow_instance_id)['former_results'] = former_results
             current_node.result = content["agent_answer"]
             current_node.status = TaskStatus.SUCCESS
             self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" agent answer: {content["agent_answer"]}')
@@ -118,16 +118,16 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
             execution_status, execution_results = self.tool_manager.execute_task(
                 content["tool_call"], related_info=self.stm['former_results']
             )
-            former_results = self.stm['former_results']
+            former_results = self.stm(self.workflow_instance_id)['former_results']
             former_results['tool_call'] = content['tool_call']
             if execution_status == "success":
                 last_output = execution_results
                 if task.get_parent(current_node.id):
                     if current_node.id not in [each.id for each in task.get_children(task.get_parent(current_node.id).id)]:
-                        self.stm['former_results'] = {}
+                        self.stm(self.workflow_instance_id)['former_results'] = {}
                 former_results.pop("tool_call", None)
                 former_results[current_node.task] = execution_results
-                self.stm['former_results'] = former_results
+                self.stm(self.workflow_instance_id)['former_results'] = former_results
                 current_node.result = execution_results
                 current_node.status = TaskStatus.SUCCESS
                 toolcall_success_output_structure = {
@@ -140,7 +140,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                 current_node.result = execution_results
                 current_node.status = TaskStatus.FAILED
                 former_results['tool_call_error'] = f"tool_call {content['tool_call']} raise error: {current_node.result}"
-                self.stm['former_results'] = former_results
+                self.stm(self.workflow_instance_id)['former_results'] = former_results
                 self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call failed.')
                 return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
 

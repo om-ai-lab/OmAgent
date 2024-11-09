@@ -28,10 +28,11 @@ class Conclude(BaseLLMBackend, BaseWorker):
 
     def _run(self, agent_task: dict, last_output: str, *args, **kwargs):
         task = TaskTree(**agent_task)
+        self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conclude', message=f'{task.get_current_node().task}')
         chat_complete_res = self.simple_infer(
             task=task.get_root().task,
             result=last_output,
-            img_placeholders="".join(list(self.stm.get('image_cache', {}).keys())),
+            img_placeholders="".join(list(self.stm(self.workflow_instance_id).get('image_cache', {}).keys())),
         )
         self.callback.send_answer(agent_id=self.workflow_instance_id, msg=f'Answer: {chat_complete_res["choices"][0]["message"]["content"]}'
         )
@@ -39,4 +40,5 @@ class Conclude(BaseLLMBackend, BaseWorker):
         for key, value in self.token_usage.items():
             print(f"Usage of {key}: {value}")
         print(last_output)
+        self.stm(self.workflow_instance_id).clear()
         return {'last_output': last_output}

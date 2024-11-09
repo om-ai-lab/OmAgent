@@ -41,9 +41,9 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
     tool_manager: ToolManager
 
     def _run(self, agent_task: dict, last_output: str, *args, **kwargs) -> Tuple[BaseWorkflowContext, str]:
-        toolcall_content = self.stm['former_results'].pop("tool_call", None)
+        toolcall_content = self.stm(self.workflow_instance_id).get("former_results", {}).pop("tool_call", None)
         if toolcall_content is not None:
-            former_results = self.stm['former_results']
+            former_results = self.stm(self.workflow_instance_id)['former_results']
             tool_call_error = former_results.pop("tool_call_error", None)
             task = TaskTree(**agent_task)
             current_node = task.get_current_node()
@@ -61,12 +61,12 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
             if rescue_execution_status == "success":
                 former_results.pop("failed_detail", None)
                 former_results['rescue_detail'] = rescue_execution_results
-                self.stm['former_results'] = former_results
+                self.stm(self.workflow_instance_id)['former_results'] = former_results
                 self.callback.info(agent_id=self.workflow_instance_id, progress=f'Rescue', message=f'Rescue tool call success.')
                 return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
             else:
-                self.stm['former_results'] = former_results
-                task.status = TaskStatus.RUNNING
+                self.stm(self.workflow_instance_id)['former_results'] = former_results
+                current_node.status = TaskStatus.RUNNING
                 self.callback.info(agent_id=self.workflow_instance_id, progress=f'Rescue', message=f'Rescue tool call failed.')
                 return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
         else:

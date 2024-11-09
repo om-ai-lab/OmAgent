@@ -43,8 +43,8 @@ class ClientInput(BaseWorker):
                 image = read_image(each_content['data'])
             elif each_content['type'] == 'text':
                 text = each_content['data']
-        # if image is not None:
-        #     self.stm['image_cache'] = {f'<image_{idx}>' : image}
+        if image is not None:
+            self.stm(self.workflow_instance_id)['image_cache'] = {f'<image_0>' : image}
         if text is not None:
             tree.add_node({"task": text})
         return {'agent_task': tree.model_dump(), 'last_output': None}
