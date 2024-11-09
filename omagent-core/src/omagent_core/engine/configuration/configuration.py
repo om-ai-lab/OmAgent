@@ -3,7 +3,9 @@ import os
 import time
 from typing import Optional, Any
 
-from pydantic import Field, BaseModel
+from pydantic import Field
+from pydantic_settings import BaseSettings
+
 
 from omagent_core.engine.configuration.settings.authentication_settings import (
     AuthenticationSettings,
@@ -12,7 +14,7 @@ from omagent_core.engine.configuration.settings.authentication_settings import (
 TEMPLATE_CONFIG = {
     "name": "Configuration",
     "base_url": {
-        "value": "http://localhost:8080",
+        "value": "http://12345:8080",
         "description": "The Conductor Server API endpoint",
         "env_var": "CONDUCTOR_SERVER_URL",
     },
@@ -35,22 +37,20 @@ TEMPLATE_CONFIG = {
 }
 
 
-class Configuration(BaseModel):
+class Configuration(BaseSettings):
     class Config:
         """Configuration for this pydantic object."""
 
         extra = "allow"
 
     base_url: str = Field(
-        default="http://localhost:8080",
-        description="The Conductor Server API endpoint",
-        alias="CONDUCTOR_SERVER_URL",
+        default="http://192.168.1.100:8080",
+        description="The Conductor Server API endpoint"
     )
     auth_key: Optional[str] = Field(default=None, description="The authorization key")
     auth_secret: Optional[str] = Field(
         default=None,
         description="The authorization secret",
-        alias="CONDUCTOR_AUTH_SECRET",
     )
     auth_token_ttl_min: int = Field(
         default=45, description="The authorization token refresh interval in minutes."

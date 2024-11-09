@@ -182,7 +182,7 @@ class Container:
         config_data = clean_config_dict(config_data)
         
         if "conductor_config" in config_data:
-            self.conductor_config = self.conductor_config.model_copy(update=config_data["conductor_config"], deep=True)
+            self.conductor_config = Configuration(**config_data["conductor_config"])
 
         # connectors
         if "connectors" in config_data:

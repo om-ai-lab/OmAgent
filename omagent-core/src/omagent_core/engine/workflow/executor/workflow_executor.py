@@ -3,7 +3,6 @@ from typing import Any, Dict, List
 
 from typing_extensions import Self, Optional
 
-from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.http.api.metadata_resource_api import MetadataResourceApi
 from omagent_core.engine.http.api.task_resource_api import TaskResourceApi
 from omagent_core.engine.http.api_client import ApiClient
