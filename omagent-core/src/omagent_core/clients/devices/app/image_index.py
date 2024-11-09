@@ -19,8 +19,7 @@ class ImageIndexListener(BaseWorker):
         consumer_name = f"image_agent"  # consumer name
         poll_interval: int = 1
 
-        configuration = Configuration()
-        client = OrkesWorkflowClient(configuration=configuration)
+        client = OrkesWorkflowClient(configuration=container.conductor_config)
 
         result = {}
         # ensure consumer group exists

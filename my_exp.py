@@ -7,6 +7,7 @@ from omagent_core.engine.http.models.task_result_status import TaskResultStatus
 from omagent_core.engine.workflow.task.simple_task import SimpleTask,simple_task
 from omagent_core.engine.workflow.task.switch_task import SwitchTask
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
+
 from omagent_core.engine.workflow.executor.workflow_executor import WorkflowExecutor
 from omagent_core.engine.automator.task_handler import TaskHandler
 from omagent_core.engine.configuration.configuration import Configuration
@@ -27,6 +28,8 @@ from omagent_core.engine.worker.base import BaseWorker
 
 container.compile_config(Path('./'))
 
+container.from_config('container.yaml')
+print(11111111111111111111111111111111, container.conductor_config)
 
 # class SimpleWorker(WorkerInterface):
 #     def execute(self, task: Task) -> TaskResult:
