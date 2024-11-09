@@ -6,7 +6,7 @@ import platform
 from PIL import Image
 import requests
 import os
-
+from pathlib import Path
 
 class LRUCache:
     # initializing capacity
@@ -87,11 +87,11 @@ def get_platform() -> str:
 
 def read_image(input_source) -> Image.Image:
     """
-    Read an image from a local path, URL, or PIL Image object.
+    Read an image from a local path, URL, PIL Image object, or Path object.
     
     Args:
-        input_source (str or PIL.Image.Image): The source of the image.
-            Can be a local file path, a URL, or a PIL Image object.
+        input_source (str or PIL.Image.Image or Path): The source of the image.
+            Can be a local file path, a URL, a PIL Image object, or a Path object.
     
     Returns:
         PIL.Image.Image: The image as a PIL Image object.
@@ -102,8 +102,8 @@ def read_image(input_source) -> Image.Image:
     if isinstance(input_source, Image.Image):
         return input_source
     
-    if isinstance(input_source, str):
-        if input_source.startswith(('http://', 'https://')):
+    if isinstance(input_source, (str, Path)):
+        if isinstance(input_source, str) and input_source.startswith(('http://', 'https://')):
             # URL
             try:
                 response = requests.get(input_source)
@@ -111,8 +111,8 @@ def read_image(input_source) -> Image.Image:
                 return Image.open(BytesIO(response.content))
             except requests.RequestException as e:
                 raise ValueError(f"Failed to fetch image from URL: {e}")
-        elif os.path.isfile(input_source):
-            # Local file path
+        elif os.path.isfile(str(input_source)):
+            # Local file path or Path object
             try:
                 return Image.open(input_source)
             except IOError as e:
@@ -120,4 +120,4 @@ def read_image(input_source) -> Image.Image:
         else:
             raise ValueError("Invalid input source. Must be a valid URL or local file path.")
     
-    raise ValueError("Invalid input type. Must be a string (URL or file path) or PIL Image object.")
+    raise ValueError("Invalid input type. Must be a string (URL or file path), Path object, or PIL Image object.")

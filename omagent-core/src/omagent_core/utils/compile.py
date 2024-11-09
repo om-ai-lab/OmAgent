@@ -1,18 +1,8 @@
-from typing import Type, Set, Union, List
+from typing import Union
 from pathlib import Path
 import yaml
-from omagent_core.base import BotBase
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
-from omagent_core.utils.registry import registry
-from omagent_core.engine.workflow.task.task import TaskInterface
-from omagent_core.engine.workflow.task.simple_task import SimpleTask
-from omagent_core.engine.workflow.task.switch_task import SwitchTask
-from omagent_core.engine.workflow.task.fork_task import ForkTask
-from omagent_core.engine.workflow.task.do_while_task import DoWhileTask
-from omagent_core.engine.workflow.task.set_variable_task import SetVariableTask
-from omagent_core.engine.workflow.conductor_workflow import InlineSubWorkflowTask
 from omagent_core.utils.container import container
-import itertools
 
 
 
@@ -42,6 +32,7 @@ def compile(
         with open(output_path / "container.yaml", "w") as f:
             f.write(yaml.dump(container_config, sort_keys=False, allow_unicode=True))
     else:
+        print("container.yaml already exists, skip compiling")
         container_config = yaml.load(open(output_path / "container.yaml", "r"), Loader=yaml.FullLoader)
 
     return {"container_config": container_config}

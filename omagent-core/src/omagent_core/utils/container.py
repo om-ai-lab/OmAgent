@@ -1,5 +1,7 @@
 from typing import Dict, List, Type, Optional
 from pydantic import BaseModel
+import yaml
+from pathlib import Path
 from omagent_core.utils.registry import registry
 
 
@@ -134,16 +136,16 @@ class Container:
 
     def compile_config(self, description: bool = True, env_var: bool = True) -> None:
         config = {"connectors": {}, "components": {}}
-
+        exclude_fields = ["_parent", "component_stm", "component_ltm", "component_callback", "component_input"]
         for name, connector in self._connectors.items():
-            config["connectors"][name] = connector.__class__.get_config_template(description=description, env_var=env_var)
-
+            config["connectors"][name] = connector.__class__.get_config_template(description=description, env_var=env_var, exclude_fields=exclude_fields)
+        exclude_fields.extend(self._connectors.keys())
         for name, component in self._components.items():
-            config["components"][name] = component.__class__.get_config_template(description=description, env_var=env_var)
+            config["components"][name] = component.__class__.get_config_template(description=description, env_var=env_var, exclude_fields=exclude_fields)
 
         return config
 
-    def from_config(self, config_data: dict) -> None:
+    def from_config(self, config_data: dict|str|Path) -> None:
         """Update container from configuration
 
         Args:
@@ -162,7 +164,11 @@ class Container:
                 else:
                     cleaned[key] = value
             return cleaned
-
+        
+        if isinstance(config_data, str|Path):
+            if not Path(config_data).exists():
+                raise FileNotFoundError(f"Config file not found: {config_data}")
+            config_data = yaml.load(open(config_data, 'r'), Loader=yaml.FullLoader)
         config_data = clean_config_dict(config_data)
 
         # connectors

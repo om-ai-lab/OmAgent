@@ -26,14 +26,16 @@ class AppClient:
         interactor: ConductorWorkflow,
         processor: ConductorWorkflow = None,
         config_path: str = "./config",
+        workers: list = [],
     ) -> None:
         self._interactor = interactor
         self._processor = processor
         self._config_path = config_path
-
+        self._workers = workers
+        
     def start_interactor(self):
         worker_config = build_from_file(self._config_path)
-        self._task_handler_interactor = TaskHandler(worker_config=worker_config)
+        self._task_handler_interactor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_interactor.start_processes()
         workflow_execution_id = self._interactor.start_workflow_with_input(workflow_input={})
 
