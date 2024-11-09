@@ -22,7 +22,7 @@ from omagent_core.utils.container import container
 class OrkesClients:
     def __init__(self, configuration: Configuration = None):
         if configuration is None:
-            configuration = container.get_connector('conductor_config')
+            configuration = container.conductor_config
         self.configuration = configuration
 
     def get_workflow_client(self) -> WorkflowClient:

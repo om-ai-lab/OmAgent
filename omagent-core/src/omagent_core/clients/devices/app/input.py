@@ -30,8 +30,7 @@ class AppInput(InputBase):
         if input_prompt is not None:
             self._send_input_message(workflow_instance_id, input_prompt)
 
-        configuration = Configuration()
-        client = OrkesWorkflowClient(configuration=configuration)
+        client = OrkesWorkflowClient(configuration=container.conductor_config)
 
         result = {}
         # ensure consumer group exists

@@ -1,16 +1,17 @@
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any
 
 import yaml
 from pydantic import Field, field_validator
 
-from ..utils.logger import logging
-from ..models.llms.schemas import Message
-from ..utils.registry import registry
-from ..models.llms.base import BaseLLM, BaseLLMBackend
-from ..models.llms.prompt.prompt import PromptTemplate
+from omagent_core.utils.logger import logging
+from omagent_core.models.llms.schemas import Message
+from omagent_core.utils.registry import registry
+from omagent_core.models.llms.base import BaseLLM, BaseLLMBackend
+from omagent_core.models.llms.prompt.prompt import PromptTemplate
 from .base import BaseTool
+from omagent_core.base import BotBase
 
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -77,6 +78,24 @@ class ToolManager(BaseLLMBackend):
                     type(tools)
                 )
             )
+    
+    def model_post_init(self, __context: Any) -> None:
+        for _, attr_value in self.__dict__.items():
+            if isinstance(attr_value, BotBase):
+                attr_value._parent = self
+        for tool in self.tools.values():
+            tool._parent = self
+                
+    @property 
+    def workflow_instance_id(self) -> str:
+        if hasattr(self, '_parent'):
+            return self._parent.workflow_instance_id
+        return None
+        
+    @workflow_instance_id.setter
+    def workflow_instance_id(self, value: str):
+        if hasattr(self, '_parent'):
+            self._parent.workflow_instance_id = value
 
     def add_tool(self, tool: BaseTool):
         self.tools[tool.name] = tool
@@ -98,7 +117,7 @@ class ToolManager(BaseLLMBackend):
 
     def execute(self, tool_name: str, args: Union[str, dict]):
         if tool_name not in self.tools:
-            raise KeyError("The tool {} is invalid, not in the tool list.")
+            raise KeyError(f"The tool {tool_name} is invalid, not in the tool list.")
         tool = self.tools.get(tool_name)
         if type(args) is str:
             try:
@@ -129,7 +148,7 @@ class ToolManager(BaseLLMBackend):
 
     async def aexecute(self, tool_name: str, args: Union[str, dict]):
         if tool_name not in self.tools:
-            raise KeyError("The tool {} is invalid, not in the tool list.")
+            raise KeyError(f"The tool {tool_name} is invalid, not in the tool list.")
         tool = self.tools.get(tool_name)
         if type(args) is str:
             try:
@@ -233,10 +252,12 @@ class ToolManager(BaseLLMBackend):
             }
             return "failed", content
         else:
+            tool_calls = [tool_calls[0]]
             toolcall_structure = {
                 "name": tool_calls[0]["function"]["name"],
                 "arguments": json.loads(tool_calls[0]["function"]["arguments"]),
             }
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool {toolcall_structure["name"]} executing.')
             tool_execution_res = []
             try:
                 for each_tool_call in tool_calls:

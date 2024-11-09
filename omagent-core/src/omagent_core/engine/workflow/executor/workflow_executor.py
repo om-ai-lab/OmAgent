@@ -3,7 +3,6 @@ from typing import Any, Dict, List
 
 from typing_extensions import Self, Optional
 
-from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.http.api.metadata_resource_api import MetadataResourceApi
 from omagent_core.engine.http.api.task_resource_api import TaskResourceApi
 from omagent_core.engine.http.api_client import ApiClient
@@ -15,8 +14,8 @@ from omagent_core.utils.container import container
 
 class WorkflowExecutor:
     def __init__(self) -> Self:
-        self.metadata_client = MetadataResourceApi(ApiClient(container.get_connector('conductor_config')))
-        self.task_client = TaskResourceApi(ApiClient(container.get_connector('conductor_config')))
+        self.metadata_client = MetadataResourceApi(ApiClient(container.conductor_config))
+        self.task_client = TaskResourceApi(ApiClient(container.conductor_config))
         self.workflow_client = workflow_client
 
     def register_workflow(self, workflow: WorkflowDef, overwrite: bool = None) -> object:

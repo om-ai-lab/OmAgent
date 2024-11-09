@@ -1,11 +1,12 @@
 from .stm_base import STMBase
 from omagent_core.utils.registry import registry
 from typing import Any
+from multiprocessing import Manager
 
 @registry.register_component()
 class DictSTM(STMBase):
     def model_post_init(self, __context: Any) -> None:
-        self._storage = {}
+        self._storage = Manager().dict()
 
     def __getitem__(self, key):
         """

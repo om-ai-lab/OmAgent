@@ -19,7 +19,7 @@ from ....models.llms.prompt.prompt import PromptTemplate
 from ....tool_system.manager import ToolManager
 from ....engine.worker.base import BaseWorker
 from ....engine.workflow.context import BaseWorkflowContext
-from ....engine.task.agent_task import AgentTask
+from ....engine.task.agent_task import TaskTree
 import time
 from ....utils.general import read_image
 
@@ -28,9 +28,9 @@ CURRENT_PATH = Path(__file__).parents[0]
 
 @registry.register_worker()
 class ClientInput(BaseWorker):
-    def _run(self, agent_task: dict, last_output: str, workflow_instance_id,  *args, **kwargs):
-        user_input = self.input.read_input(workflow_instance_id=workflow_instance_id, input_prompt=None)
-        task = AgentTask(**agent_task)
+    def _run(self, *args, **kwargs):
+        user_input = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt=None)
+        tree = TaskTree()
         chat_message = []
         agent_id = user_input['agent_id']
         messages = user_input['messages']
@@ -43,9 +43,8 @@ class ClientInput(BaseWorker):
                 image = read_image(each_content['data'])
             elif each_content['type'] == 'text':
                 text = each_content['data']
-        # if image is not None:
-        #     self.stm['image_cache'] = {f'<image_{idx}>' : image}
+        if image is not None:
+            self.stm(self.workflow_instance_id)['image_cache'] = {f'<image_0>' : image}
         if text is not None:
-            task.task = text
-        self.stm['agent_task'] = task
-        return {'agent_task': task.task_info(), 'last_output': None}
+            tree.add_node({"task": text})
+        return {'agent_task': tree.model_dump(), 'last_output': None}

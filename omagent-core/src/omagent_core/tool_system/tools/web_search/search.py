@@ -29,7 +29,7 @@ ARGSCHEMA = {
     },
     "num_results": {
         "type": "integer",
-        "description": "The number of results to return, default is 3, maximum is 5.",
+        "description": "The page number of results to return, default is 1, maximum is 3.",
         "required": True,
     },
 }
@@ -114,7 +114,7 @@ class WebSearch(BaseTool, BaseLLMBackend):
         :param string? region: The region code of the search, default to `en-US`. Available regions: `en-US`, `zh-CN`, `ja-JP`, `de-DE`, `fr-FR`, `en-GB`.
         :return string: The results of the search.
         """
-
+        self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Searching for "{search_query}".')
         if region is None:
             region = "en-US"
         if self.bing_api_key is None:

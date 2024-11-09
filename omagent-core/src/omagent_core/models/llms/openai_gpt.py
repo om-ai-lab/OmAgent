@@ -47,13 +47,13 @@ class OpenaiGPTLLM(BaseLLM):
     def _call(self, records: List[Message], **kwargs) -> Dict:
         if self.api_key is None or self.api_key == "":
             raise ValueError("api_key is required")
-
-        if len(self.stm.get('image_cache', [])):
+        
+        if self.stm(self.workflow_instance_id).get('image_cache') is not None and len(self.stm(self.workflow_instance_id)['image_cache']):
             for record in records:
                 record.combine_image_message(
                     image_cache={
                         key: encode_image(value)
-                        for key, value in self.stm['image_cache'].items()
+                        for key, value in self.stm(self.workflow_instance_id)['image_cache'].items()
                     }
                 )
         elif len(kwargs.get("images", [])):
@@ -81,6 +81,55 @@ class OpenaiGPTLLM(BaseLLM):
             )
         else:
             res = self.client.chat.completions.create(
+                model=self.model_id,
+                messages=body["messages"],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+                response_format=body.get("response_format", None),
+                tools=body.get("tools", None),
+            )
+        res = res.model_dump()
+        body.update({"response": res})
+        # self.callback.send_block(body)
+        return res
+
+    async def _acall(self, records: List[Message], **kwargs) -> Dict:
+        if self.api_key is None or self.api_key == "":
+            raise ValueError("api_key is required")
+
+        if self.stm(self.workflow_instance_id).get('image_cache') is not None and len(self.stm(self.workflow_instance_id)['image_cache']):
+            for record in records:
+                record.combine_image_message(
+                    image_cache={
+                        key: encode_image(value)
+                        for key, value in self.stm.image_cache.items()
+                    }
+                )
+        elif len(kwargs.get("images", [])):
+            image_cache = {}
+            for index, each in enumerate(kwargs["images"]):
+                image_cache[f"<image_{index}>"] = each
+            for record in records:
+                record.combine_image_message(
+                    image_cache={
+                        key: encode_image(value) for key, value in image_cache.items()
+                    }
+                )
+        body = self._msg2req(records)
+        if kwargs.get("tool_choice"):
+            body["tool_choice"] = kwargs["tool_choice"]
+        if kwargs.get("tools"):
+            body["tools"] = kwargs["tools"]
+
+        if self.vision:
+            res = await self.aclient.chat.completions.create(
+                model=self.model_id,
+                messages=body["messages"],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+            )
+        else:
+            res = await self.aclient.chat.completions.create(
                 model=self.model_id,
                 messages=body["messages"],
                 temperature=self.temperature,

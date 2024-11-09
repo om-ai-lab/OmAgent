@@ -38,6 +38,18 @@ TaskDivider:
         env_var: CACHE
 Conclude:
   name: Conclude
+  component_stm:
+    value: null
+    env_var: COMPONENT_STM
+  component_ltm:
+    value: null
+    env_var: COMPONENT_LTM
+  component_callback:
+    value: null
+    env_var: COMPONENT_CALLBACK
+  component_input:
+    value: null
+    env_var: COMPONENT_INPUT
   poll_interval:
     value: 100
     description: Worker poll interval in millisecond
@@ -46,8 +58,24 @@ Conclude:
     value: null
     description: The domain of workflow
     env_var: DOMAIN
+  concurrency:
+    value: 5
+    description: The concurrency of worker
+    env_var: CONCURRENCY
   output_parser:
-    name: BaseOutputParser
+    name: StrParser
+    component_stm:
+      value: null
+      env_var: COMPONENT_STM
+    component_ltm:
+      value: null
+      env_var: COMPONENT_LTM
+    component_callback:
+      value: null
+      env_var: COMPONENT_CALLBACK
+    component_input:
+      value: null
+      env_var: COMPONENT_INPUT
     regex:
       value: null
       env_var: REGEX
@@ -55,7 +83,19 @@ Conclude:
       value: 0
       env_var: REGEX_GROUP
   llm:
-    name: BaseLLM
+    name: OpenaiGPTLLM
+    component_stm:
+      value: null
+      env_var: COMPONENT_STM
+    component_ltm:
+      value: null
+      env_var: COMPONENT_LTM
+    component_callback:
+      value: null
+      env_var: COMPONENT_CALLBACK
+    component_input:
+      value: null
+      env_var: COMPONENT_INPUT
     cache:
       value: false
       env_var: CACHE

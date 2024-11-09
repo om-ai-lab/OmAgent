@@ -2,19 +2,16 @@ from omagent_core.utils.registry import registry
 from omagent_core.utils.container import container
 from omagent_core.engine.configuration.configuration import Configuration
 
-container.register_connector(Configuration, 'conductor_config')
-print(1111, container.get_connector('conductor_config'))
-
 from omagent_core.engine.http.models import Task, TaskResult
 from omagent_core.engine.http.models.task_result_status import TaskResultStatus
 from omagent_core.engine.workflow.task.simple_task import SimpleTask,simple_task
 from omagent_core.engine.workflow.task.switch_task import SwitchTask
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
+
 from omagent_core.engine.workflow.executor.workflow_executor import WorkflowExecutor
 from omagent_core.engine.automator.task_handler import TaskHandler
 from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.http.models import StartWorkflowRequest
-from omagent_core.utils.compile import compile
 from omagent_core.models.llms.base import BaseLLMBackend, BaseLLM
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
@@ -29,6 +26,10 @@ import yaml
 
 from omagent_core.engine.worker.base import BaseWorker
 
+container.compile_config(Path('./'))
+
+container.from_config('container.yaml')
+print(11111111111111111111111111111111, container.conductor_config)
 
 # class SimpleWorker(WorkerInterface):
 #     def execute(self, task: Task) -> TaskResult:
@@ -137,7 +138,6 @@ workflow >> task_conclude
 
 # workflow >> task >> task2 >> task3 >> task4
 
-compile(workflow, Path('./'), True)
 
 # worker通过config来初始化，可以使用 omagent-core/src/omagent_core/utils/compile.py 编译worker的config模版
 

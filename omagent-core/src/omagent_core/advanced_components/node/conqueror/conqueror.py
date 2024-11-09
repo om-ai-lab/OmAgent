@@ -19,14 +19,13 @@ from ....utils.registry import registry
 from ....models.llms.base import BaseLLMBackend
 from ....models.llms.prompt.prompt import PromptTemplate
 from ....tool_system.manager import ToolManager
-from ....engine.task.agent_task import AgentTask, TaskStatus
+from ....engine.task.agent_task import TaskTree, TaskStatus
 from ....engine.worker.base import BaseWorker
 from ....models.llms.base import StrParser
 import json_repair
 from ....models.llms.openai_gpt import OpenaiGPTLLM
 from ....utils.container import container
 from collections import defaultdict
-import pickle
 
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -45,65 +44,42 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
     )
     tool_manager: ToolManager
 
-    def _run(self, agent_task: dict, last_output: str, workflow_instance_id: str, *args, **kwargs):
-        # task: AgentTask = task
-        if self.stm.get('agent_task'):
-            task = self.stm['agent_task']
-        else:
-            task = AgentTask(**agent_task)
-        task.status = TaskStatus.RUNNING
-        if not self.stm.get('former_results'):
-            self.stm['former_results'] = {}
-        llm_detail = {
-            "api_keys": {
-                self.llm.model_id: [
-                    {
-                        "llm_key": self.llm.api_key,
-                        "endpoint": self.llm.endpoint,
-                        "max_token": self.llm.max_tokens,
-                        "temperature": self.llm.temperature,
-                        "response_format": self.llm.response_format,
-                    }
-                ]
-            }
-        }
-        chat_structure = {
-            "current_stage": self.__class__.__name__,
-            "task": task.task,
-            "task_depth": task.task_depth(),
-            "llm_detail": llm_detail,
-        }
-        # self.callback.send_block(agent_id=workflow_instance_id, msg=chat_structure)
+    def _run(self, agent_task: dict, last_output: str, *args, **kwargs):
+        task = TaskTree(**agent_task)
+        current_node = task.get_current_node()
+        current_node.status = TaskStatus.RUNNING
+        if not self.stm(self.workflow_instance_id).get('former_results'):
+            self.stm(self.workflow_instance_id)['former_results'] = {}
         payload = {
-            "task": task.task,
+            "task": current_node.task,
             "tools": self.tool_manager.generate_prompt(),
             "sibling_tasks": [
                 (
                     {
-                        "task": each["task"],
-                        "criticism": each["criticism"],
-                        "milestones": each["milestones"],
+                        "task": each.task,
+                        "criticism": each.criticism,
+                        "milestones": each.milestones,
                     }
-                    if each["id"] > task.id
+                    if each.id > current_node.id
                     else None
                 )
-                for each in task.sibling_info()[1:]
+                for each in task.get_siblings(current_node.id)
             ],
             "parent_task": (
                 [
                     {
-                        "task": each["task"],
-                        "criticism": each["criticism"],
-                        "milestones": each["milestones"],
+                        "task": each.task,
+                        "criticism": each.criticism,
+                        "milestones": each.milestones,
                     }
-                    for each in [task.parent.task_info()]
+                    for each in [task.get_parent(current_node.id)]
                 ][0]
-                if task.parent
+                if task.get_parent(current_node.id)
                 else []
             ),
-            "former_results": self.stm['former_results'],
-            "extra_info": self.stm.get("extra"),
-            "img_placeholders": "".join(list(self.stm.get("image_cache", {}).keys()))
+            "former_results": self.stm(self.workflow_instance_id)['former_results'],
+            "extra_info": self.stm(self.workflow_instance_id).get("extra"),
+            "img_placeholders": "".join(list(self.stm(self.workflow_instance_id).get("image_cache", {}).keys()))
         }
         chat_complete_res = self.infer(input_list=[payload])
         content = chat_complete_res[0]["choices"][0]["message"].get("content")
@@ -113,76 +89,60 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
         new_data = {first_key: content[first_key]}
         content = new_data
 
-        # self.callback.send_block(agent_id=workflow_instance_id, msg=content)
         if content.get("agent_answer"):
             last_output = content
-            if task.parent:
-                if task.id not in [
-                    each_child.id for each_child in task.parent.children
-                ]:
-                    self.stm['former_results'] = {}
-            former_results = self.stm['former_results']
-            former_results[task.task] = content
-            self.stm['former_results'] = former_results
-            task.result = content["agent_answer"]
-            task.status = TaskStatus.SUCCESS
-            direct_output_structure = {
-                "tool_status": task.status,
-                "tool_result": task.result,
-            }
-            self.callback.send_block(agent_id=workflow_instance_id, msg=f'Current task "{task.task}" has direct output: \n{content["agent_answer"]}')
-            self.stm['agent_task'] = task
-            return {"agent_task": task.task_info(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
+            if task.get_parent(current_node.id):
+                if current_node.id not in [each.id for each in task.get_children(task.get_parent(current_node.id).id)]:
+                    self.stm(self.workflow_instance_id)['former_results'] = {}
+            former_results = self.stm(self.workflow_instance_id)['former_results']
+            former_results[current_node.task] = content
+            self.stm(self.workflow_instance_id)['former_results'] = former_results
+            current_node.result = content["agent_answer"]
+            current_node.status = TaskStatus.SUCCESS
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" agent answer: {content["agent_answer"]}')
+            return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
 
         elif content.get("divide"):
-            task.result = content["divide"]
-            task.status = TaskStatus.RUNNING
+            current_node.result = content["divide"]
+            current_node.status = TaskStatus.RUNNING
             last_output = (
                 "Task is too complex to complete. Agent provided reason: {}".format(
                     content["divide"]
                 )
             )
-            direct_output_structure = {
-                "tool_status": task.status,
-                "tool_result": task.result,
-            }
-            self.callback.send_block(agent_id=workflow_instance_id, msg=f'Current task "{task.task}" needs to be divided: \n{content["divide"]}')
-            self.stm['agent_task'] = task
-            return {"agent_task": task.task_info(), "switch_case_value": "complex", "last_output": last_output, "kwargs": kwargs}
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" needs to be divided.')
+            return {"agent_task": task.model_dump(), "switch_case_value": "complex", "last_output": last_output, "kwargs": kwargs}
 
         elif content.get("tool_call"):
-            self.callback.send_block(agent_id=workflow_instance_id, msg=f'Current tool call task: \n{content["tool_call"]}')
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" needs to be executed by tool.')
             execution_status, execution_results = self.tool_manager.execute_task(
                 content["tool_call"], related_info=self.stm['former_results']
             )
-            former_results = self.stm['former_results']
+            former_results = self.stm(self.workflow_instance_id)['former_results']
             former_results['tool_call'] = content['tool_call']
             if execution_status == "success":
                 last_output = execution_results
-                if task.parent:
-                    if task.id not in [
-                        each_child.id for each_child in task.parent.children
-                    ]:
-                        self.stm['former_results'] = {}
+                if task.get_parent(current_node.id):
+                    if current_node.id not in [each.id for each in task.get_children(task.get_parent(current_node.id).id)]:
+                        self.stm(self.workflow_instance_id)['former_results'] = {}
                 former_results.pop("tool_call", None)
-                former_results[task.task] = execution_results
-                self.stm['former_results'] = former_results
-                task.result = execution_results
-                task.status = TaskStatus.SUCCESS
+                former_results[current_node.task] = execution_results
+                self.stm(self.workflow_instance_id)['former_results'] = former_results
+                current_node.result = execution_results
+                current_node.status = TaskStatus.SUCCESS
                 toolcall_success_output_structure = {
-                    "tool_status": task.status,
-                    "tool_result": task.result,
+                    "tool_status": current_node.status,
+                    "tool_result": current_node.result,
                 }
-                self.callback.send_block(agent_id=workflow_instance_id, msg=toolcall_success_output_structure)
-                self.stm['agent_task'] = task
-                return {"agent_task": task.task_info(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
+                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call success.')
+                return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
             else:
-                task.result = execution_results
-                task.status = TaskStatus.FAILED
-                former_results['tool_call_error'] = f"tool_call {content['tool_call']} raise error: {task.result}"
-                self.stm['former_results'] = former_results
-                self.stm['agent_task'] = task
-                return {"agent_task": task.task_info(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
+                current_node.result = execution_results
+                current_node.status = TaskStatus.FAILED
+                former_results['tool_call_error'] = f"tool_call {content['tool_call']} raise error: {current_node.result}"
+                self.stm(self.workflow_instance_id)['former_results'] = former_results
+                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call failed.')
+                return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
 
         else:
             raise ValueError("LLM generation is not valid.")

@@ -6,7 +6,6 @@ from typing_extensions import Self
 from omagent_core.engine.http.models.workflow_task import WorkflowTask
 from omagent_core.engine.workflow.task.task import TaskInterface, get_task_interface_list_as_workflow_task_list
 from omagent_core.engine.workflow.task.task_type import TaskType
-from omagent_core.engine.task.agent_task import AgentTask
 
 
 def get_for_loop_condition(task_ref_name: str, iterations: int) -> str:
@@ -69,7 +68,7 @@ class InfiniteLoopTask(DoWhileTask):
         )
 
 class DnCLoopTask(DoWhileTask):
-    def __init__(self, task_ref_name: str, tasks: List[TaskInterface], pre_loop_exit: TaskInterface=None, post_loop_exit: TaskInterface=None) -> Self:
+    def __init__(self, task_ref_name: str, tasks: List[TaskInterface], pre_loop_exit: TaskInterface=None, post_loop_exit: List[TaskInterface]=None) -> Self:
         if pre_loop_exit is not None and post_loop_exit is not None:
             real_tasks = pre_loop_exit + tasks + post_loop_exit
         elif pre_loop_exit is not None:
