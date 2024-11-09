@@ -136,7 +136,7 @@ class AppCallback(CallbackBase):
         stream_name = f"{agent_id}_running"
         data = {"agent_id": agent_id, "progress": progress, "message": message}
         payload = {"payload": json.dumps(data, ensure_ascii=False)}
-        container.get_connector("RedisStreamHandler").send_to_stream(
+        self.redis_stream_client._client.xadd(
             stream_name, payload
         )
 

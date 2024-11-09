@@ -13,7 +13,7 @@ from omagent_core.utils.logger import logging
 
 @registry.register_worker()
 class ImageIndexListener(BaseWorker):
-    def _run(self, workflow_instance_id: str):
+    def _run(self):
         stream_name = f"image_process"
         group_name = "omappagent"  # consumer group name
         consumer_name = f"image_agent"  # consumer name
@@ -25,7 +25,7 @@ class ImageIndexListener(BaseWorker):
         result = {}
         # ensure consumer group exists
         try:
-            container.get_component("RedisStreamHandler").redis_stream_client._client.xgroup_create(
+            container.get_connector("redis_stream_client")._client.xgroup_create(
                 stream_name, group_name, id="0", mkstream=True
             )
         except Exception as e:
@@ -35,33 +35,33 @@ class ImageIndexListener(BaseWorker):
         flag = False
         while True:
             try:
-                logging.info(f"Checking workflow status: {workflow_instance_id}")
-                workflow_status = client.get_workflow_status(workflow_instance_id)
+                # logging.info(f"Checking workflow status: {self.workflow_instance_id}")
+                workflow_status = client.get_workflow_status(self.workflow_instance_id)
                 if workflow_status.status not in running_status:
-                    logging.info(f"Workflow {workflow_instance_id} is not running, exiting...")
+                    logging.info(f"Workflow {self.workflow_instance_id} is not running, exiting...")
                     break
 
                 # read new messages from consumer group
-                messages = container.get_component("RedisStreamHandler").redis_stream_client._client.xreadgroup(
+                messages = container.get_connector("redis_stream_client")._client.xreadgroup(
                     group_name, consumer_name, {stream_name: ">"}, count=1
                 )
                 messages = [
                     (stream, [(message_id, {k.decode('utf-8'): v.decode('utf-8') for k, v in message.items()}) for message_id, message in message_list])
                     for stream, message_list in messages
                 ]
-                logging.info(f"Messages: {messages}")
+                # logging.info(f"Messages: {messages}")
 
                 for stream, message_list in messages:
                     for message_id, message in message_list:
                         flag = self.process_message(message, result)
                         # confirm message has been processed
-                        container.get_component("RedisStreamHandler").redis_stream_client._client.xack(
+                        container.get_connector("redis_stream_client")._client.xack(
                             stream_name, group_name, message_id
                         )
                 if flag:
                     break
                 # Sleep for the specified interval before checking for new messages again
-                logging.info(f"Sleeping for {poll_interval} seconds, waiting for {stream_name} ...")
+                # logging.info(f"Sleeping for {poll_interval} seconds, waiting for {stream_name} ...")
                 time.sleep(poll_interval)
             except Exception as e:
                 logging.error(f"Error while listening to stream: {e}")
