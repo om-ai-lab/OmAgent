@@ -136,7 +136,12 @@ class Container:
             raise ValueError("Input component is not registered. Please use register_input to register.")
         return self.get_component(self._input_name)
 
-    def compile_config(self, description: bool = True, env_var: bool = True) -> None:
+    def compile_config(self, output_path: Path, description: bool = True, env_var: bool = True) -> None:
+        if (output_path / "container.yaml").exists():
+            print("container.yaml already exists, skip compiling")
+            config = yaml.load(open(output_path / "container.yaml", "r"), Loader=yaml.FullLoader)
+            return config
+        
         config = {"conductor_config": TEMPLATE_CONFIG, "connectors": {}, "components": {}}
         exclude_fields = ["_parent", "component_stm", "component_ltm", "component_callback", "component_input"]
         for name, connector in self._connectors.items():
@@ -144,6 +149,9 @@ class Container:
         exclude_fields.extend(self._connectors.keys())
         for name, component in self._components.items():
             config["components"][name] = component.__class__.get_config_template(description=description, env_var=env_var, exclude_fields=exclude_fields)
+            
+        with open(output_path / "container.yaml", "w") as f:
+            f.write(yaml.dump(config, sort_keys=False, allow_unicode=True))
 
         return config
 
