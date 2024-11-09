@@ -164,6 +164,17 @@ class BaseTool(BotBase, ABC):
     func: Optional[Callable] = None
     args_schema: Optional[ArgSchema]
     special_params: Dict = {}
+    
+    @property 
+    def workflow_instance_id(self) -> str:
+        if hasattr(self, '_parent'):
+            return self._parent.workflow_instance_id
+        return None
+        
+    @workflow_instance_id.setter
+    def workflow_instance_id(self, value: str):
+        if hasattr(self, '_parent'):
+            self._parent.workflow_instance_id = value
 
     def _run(self, **input) -> str:
         """Implement this function or pass 'func' arg when initializing."""

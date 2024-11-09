@@ -8,9 +8,9 @@ class Container:
         self._connectors: Dict[str, BaseModel] = {}
         self._components: Dict[str, BaseModel] = {}
         self._stm_name: Optional[str] = None
-        self._ltm: Optional[str] = None
-        self._callback: Optional[str] = None
-        self._input: Optional[str] = None
+        self._ltm_name: Optional[str] = None
+        self._callback_name: Optional[str] = None
+        self._input_name: Optional[str] = None
 
     def register_connector(
         self,
@@ -132,14 +132,14 @@ class Container:
             raise ValueError("Input component is not registered. Please use register_input to register.")
         return self.get_component(self._input_name)
 
-    def compile_config(self) -> None:
+    def compile_config(self, description: bool = True, env_var: bool = True) -> None:
         config = {"connectors": {}, "components": {}}
 
         for name, connector in self._connectors.items():
-            config["connectors"][name] = connector.__class__.get_config_template()
+            config["connectors"][name] = connector.__class__.get_config_template(description=description, env_var=env_var)
 
         for name, component in self._components.items():
-            config["components"][name] = component.__class__.get_config_template()
+            config["components"][name] = component.__class__.get_config_template(description=description, env_var=env_var)
 
         return config
 

@@ -63,6 +63,19 @@ class BaseWorker(BotBase, ABC):
 
         self.api_client = ApiClient()
         self.worker_id = deepcopy(self.get_identity())
+        
+        self._workflow_instance_id = None
+        for _, attr_value in self.__dict__.items():
+            if isinstance(attr_value, BotBase):
+                attr_value._parent = self
+                
+    @property 
+    def workflow_instance_id(self) -> str:
+        return self._workflow_instance_id
+        
+    @workflow_instance_id.setter
+    def workflow_instance_id(self, value: str):
+        self._workflow_instance_id = value
 
     @abstractmethod
     def _run(self, workflow_instance_id, *args, **kwargs) -> Any:
@@ -72,6 +85,7 @@ class BaseWorker(BotBase, ABC):
         task_input = {}
         task_output = None
         task_result: TaskResult = self.get_task_result_from_task(task)
+        self.workflow_instance_id = task.workflow_instance_id
 
         try:
             if is_callable_input_parameter_a_task(
@@ -82,8 +96,6 @@ class BaseWorker(BotBase, ABC):
             else:
                 params = inspect.signature(self._run).parameters
                 for input_name in params:
-                    if input_name == 'workflow_instance_id':
-                        continue
                     typ = params[input_name].annotation
                     default_value = params[input_name].default
                     if input_name in task.input_data:
@@ -107,13 +119,12 @@ class BaseWorker(BotBase, ABC):
                     
                     task_output = loop.run_until_complete(
                         asyncio.gather(
-                            self._run(workflow_instance_id=task.workflow_instance_id, **task_input),
+                            self._run(**task_input),
                             return_exceptions=True
                         )
                     )[0]
                 else:
-                    task_output = self._run(workflow_instance_id=task.workflow_instance_id, **task_input)
-
+                    task_output = self._run(**task_input)
             if type(task_output) == TaskResult:
                 task_output.task_id = task.task_id
                 task_output.workflow_instance_id = task.workflow_instance_id
@@ -140,7 +151,8 @@ class BaseWorker(BotBase, ABC):
             task_result.status = TaskResultStatus.FAILED
             if len(ne.args) > 0:
                 task_result.reason_for_incompletion = ne.args[0]
-
+        self.workflow_instance_id = None
+        
         if dataclasses.is_dataclass(type(task_result.output_data)):
             task_output = dataclasses.asdict(task_result.output_data)
             task_result.output_data = task_output
@@ -152,7 +164,6 @@ class BaseWorker(BotBase, ABC):
             )
             if not isinstance(task_result.output_data, dict):
                 task_result.output_data = {"result": task_result.output_data}
-
         return task_result
 
     def get_identity(self) -> str:
