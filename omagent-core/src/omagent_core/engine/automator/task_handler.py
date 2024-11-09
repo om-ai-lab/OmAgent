@@ -60,7 +60,10 @@ class TaskHandler:
                 logger.info(f'loading module {module}')
                 importlib.import_module(module)
 
-        workers += [registry.get_worker(config['name'])(**config) for config in worker_config]
+        for config in worker_config:
+            worker_cls = registry.get_worker(config['name'])
+            concurrency = config.get('concurrency', BaseWorker.model_fields['concurrency'].default)
+            workers.extend([worker_cls(**config) for _ in range(concurrency)])
         
         self.__create_task_runner_processes(workers, container.get_connector('conductor_config'), metrics_settings)
         self.__create_metrics_provider_process(metrics_settings)

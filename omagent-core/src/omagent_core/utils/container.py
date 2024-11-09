@@ -74,7 +74,7 @@ class Container:
     def get_component(self, component_name: str) -> BaseModel:
         if component_name not in self._components:
             raise KeyError(
-                f"There is no handler named '{component_name}' in container."
+                f"There is no component named '{component_name}' in container. You need to register it first."
             )
         return self._components[component_name]
 
@@ -97,6 +97,8 @@ class Container:
 
     @property
     def stm(self) -> BaseModel:
+        if self._stm_name is None:
+            raise ValueError("STM component is not registered. Please use register_stm to register.")
         return self.get_component(self._stm_name)
 
         
@@ -106,6 +108,8 @@ class Container:
         
     @property
     def ltm(self) -> BaseModel:
+        if self._ltm_name is None:
+            raise ValueError("LTM component is not registered. Please use register_ltm to register.")
         return self.get_component(self._ltm_name)
     
     def register_callback(self, callback: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
@@ -114,6 +118,8 @@ class Container:
         
     @property
     def callback(self) -> BaseModel:
+        if self._callback_name is None:
+            raise ValueError("Callback component is not registered. Please use register_callback to register.")
         return self.get_component(self._callback_name)
     
     def register_input(self, input: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
@@ -122,6 +128,8 @@ class Container:
         
     @property
     def input(self) -> BaseModel:
+        if self._input_name is None:
+            raise ValueError("Input component is not registered. Please use register_input to register.")
         return self.get_component(self._input_name)
 
     def compile_config(self) -> None:

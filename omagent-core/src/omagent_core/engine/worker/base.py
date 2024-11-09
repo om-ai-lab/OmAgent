@@ -54,6 +54,7 @@ def is_callable_return_value_of_type(
 class BaseWorker(BotBase, ABC):
     poll_interval: float = Field(default=100, description="Worker poll interval in millisecond")
     domain: Optional[str] = Field(default=None, description="The domain of workflow")
+    concurrency: int = Field(default=5, description="The concurrency of worker")
     
     def model_post_init(self, __context: Any) -> None:
         self.task_definition_name = self.name
