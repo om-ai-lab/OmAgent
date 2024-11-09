@@ -1,6 +1,4 @@
 from omagent_core.utils.container import container
-from omagent_core.engine.configuration.configuration import Configuration
-container.register_connector(name='conductor_config', connector=Configuration)
 from omagent_core.engine.http.models import Task, TaskResult
 from omagent_core.engine.http.models.task_result_status import TaskResultStatus
 from omagent_core.engine.workflow.task.simple_task import SimpleTask,simple_task
@@ -11,7 +9,6 @@ from omagent_core.engine.workflow.task.do_while_task import DoWhileTask, LoopTas
 from omagent_core.engine.workflow.executor.workflow_executor import WorkflowExecutor
 from omagent_core.engine.automator.task_handler import TaskHandler
 from omagent_core.engine.http.models import StartWorkflowRequest
-from omagent_core.utils.compile import compile
 from omagent_core.models.llms.base import BaseLLMBackend, BaseLLM
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
@@ -22,7 +19,6 @@ import asyncio
 from omagent_core.utils.logger import logging
 from typing import List,Any
 from pydantic import Field
-import yaml
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.registry import registry
 from omagent_core.engine.task.agent_task import TaskTree
@@ -43,7 +39,7 @@ container.register_stm(stm='RedisSTM')
 container.register_callback(callback=AppCallback)
 container.register_input(input=AppInput)
 stm = container.get_component('RedisSTM')
-
+container.compile_config(Path('./'))
 
 workflow = ConductorWorkflow(name='dnc')
 
@@ -76,8 +72,8 @@ dncloop_task = DnCLoopTask(task_ref_name='dncloop_task', tasks=[conqueror_task, 
 workflow >> client_input_task >> init_set_variable_task >> dncloop_task >> conclude_task
 # workflow >> init_set_variable_task >> dncloop_task >> conclude_task
 
-compile(workflow, Path('./'), True)
 container.from_config(Path('./container.yaml'))
+workflow.register(overwrite=True)
 
 # worker通过config来初始化，可以使用 omagent-core/src/omagent_core/utils/compile.py 编译worker的config模版
 
