@@ -14,34 +14,6 @@ from omagent_core.utils.container import container
 import itertools
 
 
-# recursive processing of sub-workflows
-def process_tasks(
-    tasks: List[TaskInterface],
-    worker_list: Set[str] = set(),
-) -> Set[str]:
-    for task in tasks:
-        if isinstance(task, SimpleTask):
-            worker_list.add(task.name)
-        elif isinstance(task, SwitchTask):
-            if task._default_case:
-                process_tasks(task._default_case, worker_list)
-            if task._decision_cases:
-                process_tasks(itertools.chain(*task._decision_cases.values()), worker_list)
-
-        elif isinstance(task, ForkTask):
-            if task._forked_tasks:
-                process_tasks(itertools.chain(*task._forked_tasks), worker_list)
-        elif isinstance(task, DoWhileTask):
-            if task._loop_over:
-                process_tasks(task._loop_over, worker_list)
-        elif isinstance(task, InlineSubWorkflowTask):
-            # recursive compilation of sub-workflows
-            process_tasks(task._workflow._tasks, worker_list)
-        else:
-            raise ValueError(f"Unsupported task type {type(task)}")
-
-    return worker_list
-
 
 def compile(
     workflow: ConductorWorkflow,
@@ -58,30 +30,17 @@ def compile(
         overwrite: Whether to overwrite the existing workflow
     """
     output_path = Path(output_path) if isinstance(output_path, str) else output_path
-    worker_config = {}
-
-    worker_list = process_tasks(workflow._tasks)
-
-    for worker_name in worker_list:
-        worker = registry.get_worker(worker_name)
-        worker_config[worker_name] = worker.get_config_template(
-            description=description, env_var=env_var
-        )
-
-    print(worker_config)
-    worker_config = yaml.dump(
-        worker_config, allow_unicode=True, sort_keys=False
-    )
 
     workflow.register(overwrite=overwrite)
     print(
         f"see the workflow definition here: {container.get_connector('conductor_config').ui_host}/workflowDef/{workflow.name}\n"
     )
-    with open(output_path / "worker.yaml", "w") as f:
-        f.write(worker_config)
-        
-    container_config = container.compile_config()
-    with open(output_path / "container.yaml", "w") as f:
-        f.write(yaml.dump(container_config, sort_keys=False, allow_unicode=True))
 
-    return {"worker_config": worker_config, "container_config": container_config}
+    if not (output_path / "container.yaml").exists():
+        container_config = container.compile_config(description=description, env_var=env_var)
+        with open(output_path / "container.yaml", "w") as f:
+            f.write(yaml.dump(container_config, sort_keys=False, allow_unicode=True))
+    else:
+        container_config = yaml.load(open(output_path / "container.yaml", "r"), Loader=yaml.FullLoader)
+
+    return {"container_config": container_config}
