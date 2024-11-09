@@ -1,4 +1,0 @@
-name: Conclude
-llm: ${sub| gpt}
-output_parser: 
-  name: StrParser
