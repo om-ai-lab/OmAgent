@@ -79,6 +79,7 @@ class Registry:
             root_path.joinpath("tool_system"),
             root_path.joinpath("services"),
             root_path.joinpath("memories"),
+            root_path.joinpath("clients"),
         ]
                 
         for path in default_path:
