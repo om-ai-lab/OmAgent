@@ -973,7 +973,7 @@ class WorkflowResourceApi(object):
         auth_settings = ['api_key']  # noqa: E501
 
         return self.api_client.call_api(
-            '/workflow/{workflowId}/status', 'GET',
+            '/workflow/{workflowId}', 'GET',
             path_params,
             query_params,
             header_params,

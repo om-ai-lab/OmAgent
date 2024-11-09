@@ -32,13 +32,7 @@ class BaseLLM(BotBase, ABC):
         """Run the LLM on the given prompt and input."""
         raise NotImplementedError("Async generation not implemented for this LLM.")
 
-    @retry(
-        stop=(
-            stop_after_delay(EnvVar.STOP_AFTER_DELAY)
-            | stop_after_attempt(EnvVar.STOP_AFTER_ATTEMPT)
-        ),
-        reraise=True,
-    )
+
     def generate(self, records: List[Message], **kwargs) -> str:
         """Run the LLM on the given prompt and input."""
         if self.cache:
@@ -95,7 +89,7 @@ class BaseLLMBackend(BotBase, ABC):
     output_parser: Optional[BaseOutputParser] = Field(
         default=None, validate_default=True
     )
-    prompts: List[PromptTemplate]
+    prompts: List[PromptTemplate] = []
     llm: BaseLLM
     token_usage: ClassVar[dict] = defaultdict(int)
 
@@ -167,7 +161,8 @@ class BaseLLMBackend(BotBase, ABC):
         for prompt in prompts:
             output = self.llm.generate(prompt, **kwargs)
             for key, value in output["usage"].items():
-                self.token_usage[key] += value
+                if value is not None:
+                    self.token_usage[key] += value
             for choice in output["choices"]:
                 if choice.get("message"):
                     choice["message"]["content"] = self.output_parser.parse(

@@ -1,0 +1,74 @@
+connectors:
+  conductor_config:
+    name: Configuration
+    CONDUCTOR_SERVER_URL:
+      value: http://localhost:8080
+      description: The Conductor Server API endpoint
+      env_var: CONDUCTOR_SERVER_URL
+    auth_key:
+      value: null
+      description: The authorization key
+      env_var: AUTH_KEY
+    CONDUCTOR_AUTH_SECRET:
+      value: null
+      description: The authorization secret
+      env_var: CONDUCTOR_AUTH_SECRET
+    auth_token_ttl_min:
+      value: 45
+      description: The authorization token refresh interval in minutes.
+      env_var: AUTH_TOKEN_TTL_MIN
+    debug:
+      value: false
+      description: Debug mode
+      env_var: DEBUG
+  redis_stm_client:
+    name: RedisConnector
+    redis_host:
+      value: localhost
+      env_var: REDIS_HOST
+    redis_port:
+      value: 6379
+      env_var: REDIS_PORT
+    redis_password:
+      value: null
+      env_var: REDIS_PASSWORD
+    redis_username:
+      value: null
+      env_var: REDIS_USERNAME
+    redis_db:
+      value: 0
+      env_var: REDIS_DB
+components:
+  RedisSTM:
+    name: RedisSTM
+    redis_stm_client:
+      name: RedisConnector
+      redis_host:
+        value: localhost
+        env_var: REDIS_HOST
+      redis_port:
+        value: 6379
+        env_var: REDIS_PORT
+      redis_password:
+        value: null
+        env_var: REDIS_PASSWORD
+      redis_username:
+        value: null
+        env_var: REDIS_USERNAME
+      redis_db:
+        value: 0
+        env_var: REDIS_DB
+    storage_name:
+      value: dnc_test
+      env_var: STORAGE_NAME
+  DefaultCallback:
+    name: DefaultCallback
+    bot_id:
+      value: ''
+      env_var: BOT_ID
+    start_time:
+      value: 2024-11-08_16:00:17
+      env_var: START_TIME
+    folder_name:
+      value: ./running_logs/2024-11-08_16:00:17
+      env_var: FOLDER_NAME

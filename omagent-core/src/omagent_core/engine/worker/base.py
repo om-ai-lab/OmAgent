@@ -55,7 +55,7 @@ class BaseWorker(BotBase, ABC):
     poll_interval: float = Field(default=100, description="Worker poll interval in millisecond")
     domain: Optional[str] = Field(default=None, description="The domain of workflow")
     
-    def model_post_init(self, *args, **kwargs) -> None:
+    def model_post_init(self, __context: Any) -> None:
         self.task_definition_name = self.name
         self.next_task_index = 0
         self._task_definition_name_cache = None
@@ -81,6 +81,8 @@ class BaseWorker(BotBase, ABC):
             else:
                 params = inspect.signature(self._run).parameters
                 for input_name in params:
+                    if input_name == 'workflow_instance_id':
+                        continue
                     typ = params[input_name].annotation
                     default_value = params[input_name].default
                     if input_name in task.input_data:

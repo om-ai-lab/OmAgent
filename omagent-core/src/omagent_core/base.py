@@ -1,36 +1,21 @@
 import contextvars
 from abc import ABC
-from collections import defaultdict, deque
-from typing import ClassVar, Dict, Optional, Union, Any
+from typing import Optional, Union, Any
 
-from pydantic import BaseModel, Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings
+from omagent_core.utils.container import container
 
-from .clients.base.callback import BaseCallback, DefaultCallback
 
 REQUEST_ID = contextvars.ContextVar("request_id")
 
 
-class STM(BaseModel):
-    class Config:
-        """Configuration for this pydantic object."""
-
-        extra = "allow"
-        arbitrary_types_allowed = True
-
-    image_cache: Dict = {}
-    token_usage: Dict = {}
-    former_results: Dict = {}
-    history: Dict = defaultdict(lambda: deque(maxlen=3))
-
-    def has(self, key: str) -> bool:
-        return key in self.__annotations__ or key in self.model_extra
-
-
 class BotBase(BaseSettings, ABC):
     name: Optional[str] = Field(default=None, validate_default=True)
-    stm_pool: ClassVar[Dict[str, STM]] = {}
-    callback: Optional[BaseCallback] = DefaultCallback()
+    stm: Optional['BotBase'] = None
+    ltm: Optional['BotBase'] = None
+    callback: Optional['BotBase'] = None
+    input: Optional['BotBase'] = None
 
     class Config:
         """Configuration for this pydantic object."""
@@ -38,9 +23,7 @@ class BotBase(BaseSettings, ABC):
         extra = "allow"
         arbitrary_types_allowed = True
 
-    # @property
-    # def name(self) -> str:
-    #     return self.__class__.__name__
+
     @field_validator("name", mode="before")
     @classmethod
     def get_type(cls, name) -> str:
@@ -48,22 +31,38 @@ class BotBase(BaseSettings, ABC):
             return cls.__name__
         else:
             return name
-
-    @property
-    def request_id(self) -> str:
-        return REQUEST_ID.get()
-
-    @property
-    def stm(self) -> STM:
-        if self.request_id not in self.stm_pool:
-            self.stm_pool[self.request_id] = STM()
-        return self.stm_pool[self.request_id]
-
-    def set_request_id(self, request_id: str) -> None:
-        REQUEST_ID.set(request_id)
-
-    def free_stm(self) -> None:
-        self.stm_pool.pop(self.request_id, None)
+        
+    @field_validator("stm", mode="before")
+    def get_stm(cls, stm):
+        if stm is None:
+            return container.stm
+        if isinstance(stm, str):
+            return container.get_component(stm)
+        return stm
+    
+    @field_validator("ltm", mode="before")
+    def get_ltm(cls, ltm):
+        if ltm is None:
+            return container.ltm
+        if isinstance(ltm, str):
+            return container.get_component(ltm)
+        return ltm
+    
+    @field_validator("callback", mode="before")
+    def get_callback(cls, callback):
+        if callback is None:
+            return container.callback
+        if isinstance(callback, str):
+            return container.get_component(callback)
+        return callback
+    
+    @field_validator("input", mode="before")
+    def get_input(cls, input):
+        if input is None:
+            return container.input
+        if isinstance(input, str):
+            return container.get_component(input)
+        return input
 
     @classmethod
     def get_config_template(
@@ -91,11 +90,9 @@ class BotBase(BaseSettings, ABC):
 
             field_type = field.annotation
 
-            # 处理Union类型
             if hasattr(field_type, "__origin__") and field_type.__origin__ is Union:
                 types = field_type.__args__
                 if any(is_botbase_subclass(t) for t in types):
-                    # 如果Union中包含BotBase子类，取第一个子类进行递归
                     for t in types:
                         if is_botbase_subclass(t):
                             template[field_name] = t.get_config_template()
@@ -103,7 +100,6 @@ class BotBase(BaseSettings, ABC):
                     continue
                 elif not all(is_simple_type(t) for t in types):
                     continue
-            # 处理BotBase子类
             elif is_botbase_subclass(field_type):
                 template[field_name] = field_type.get_config_template()
                 continue
@@ -111,8 +107,8 @@ class BotBase(BaseSettings, ABC):
                 continue
 
             field_info = {"value": None}
-            if description:
-                field_info["description"] = field.description or ""
+            if description and field.description:
+                field_info["description"] = field.description
             if env_var:
                 field_info["env_var"] = (
                     field.alias.upper() if field.alias else field_name.upper()
@@ -125,33 +121,27 @@ class BotBase(BaseSettings, ABC):
             else:
                 field_info["value"] = field.default
 
-            template[field_name] = field_info
+            template[field.alias if field.alias else field_name] = field_info
             template["name"] = cls.__name__
         return template
 
     
     @classmethod
-    def from_config(cls, config_data: str) -> "BotBase":
+    def from_config(cls, config_data: dict) -> "BotBase":
         def clean_config_dict(config_dict: dict) -> dict:
-            """递归清理配置字典，移除所有的'description'和'env_var'键"""
+            """Recursively clean up the configuration dictionary, removing all 'description' and 'env_var' keys"""
             cleaned = {}
             for key, value in config_dict.items():
                 if isinstance(value, dict):
                     if 'value' in value:
-                        # 如果是配置项字典，直接取value值
                         cleaned[key] = value['value']
                     else:
-                        # 如果是嵌套字典，递归处理
                         cleaned[key] = clean_config_dict(value)
                 else:
                     cleaned[key] = value
             return cleaned
         
-        print(666666666, config_data)
         class_config = config_data.get(cls.__name__, {})
-        print(7777777,cls.__name__,  class_config)
-        
         clean_class_config = clean_config_dict(class_config)
-        print(8888888, clean_class_config)
 
         return cls(**clean_class_config)

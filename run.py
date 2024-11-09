@@ -1,21 +1,21 @@
-from pathlib import Path
+from examples.step1_simpleVQA.agent.simple_vqa.simple_vqa import SimpleVQA
+from omagent_core.clients.devices.cli.client import DefaultClient
+from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
+from omagent_core.engine.workflow.task.simple_task import simple_task
 
-from omagent_core.engine.workflow.context import BaseWorkflowContext
-from omagent_core.engine.task.agent_task import AgentTask
 from omagent_core.utils.logger import logging
-from omagent_core.utils.build import Builder
-from omagent_core.utils.registry import registry
+import sys
+import os
+from pathlib import Path
+CURRENT_PATH = Path(__file__).parents[0]
+sys.path.append(os.path.abspath(CURRENT_PATH.joinpath('../../')))
 
 
-def run_agent(task):
-    logging.init_logger("omagent", "omagent", level="INFO")
-    registry.import_module(project_root=Path(__file__).parent, custom=["./examples"])
-    bot_builder = Builder.from_file("examples/video_understanding")
-    input = BaseWorkflowContext(bot_id="1", task=AgentTask(id=0, task=task))
+logging.init_logger("omagent", "omagent", level="INFO")
 
-    bot_builder.run_bot(input)
-    return input.last_output
+workflow = ConductorWorkflow(name='example1')
+task1 = simple_task(task_def_name='SimpleVQA', task_reference_name='simple_vqa')
+workflow >> task1
 
-
-if __name__ == "__main__":
-    run_agent("")
+agent_client = DefaultClient(interactor=workflow, config_path='../examples/step1_simpleVQA/configs')
+agent_client.start_interactor()

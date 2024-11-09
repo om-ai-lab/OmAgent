@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-from typing import Optional
+from typing import Optional, Any
 
 from pydantic import Field
 
@@ -9,8 +9,9 @@ from omagent_core.engine.configuration.settings.authentication_settings import (
     AuthenticationSettings,
 )
 from omagent_core.base import BotBase
+from omagent_core.utils.registry import registry
 
-
+@registry.register_connector()
 class Configuration(BotBase):
     base_url: str = Field(
         default="http://localhost:8080",
@@ -28,7 +29,7 @@ class Configuration(BotBase):
     )
     debug: bool = Field(default=False, description='Debug mode')
 
-    def model_post_init(self, *args, **kwargs) -> None:
+    def model_post_init(self, __context: Any) -> None:
         self.__log_level = logging.DEBUG if self.debug else logging.INFO
         self.AUTH_TOKEN = None
         self.temp_folder_path = None

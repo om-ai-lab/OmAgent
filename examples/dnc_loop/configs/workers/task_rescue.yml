@@ -1,0 +1,5 @@
+name: TaskRescue
+llm: ${sub|text_res}
+tool_manager: ${sub|all_tools}
+output_parser: 
+  name: StrParser

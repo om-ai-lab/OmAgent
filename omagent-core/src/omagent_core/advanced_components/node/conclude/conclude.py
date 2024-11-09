@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List
 
 from ....models.llms.base import BaseLLMBackend
-from ....engine.node import BaseProcessor
+from ....engine.worker.base import BaseWorker
 from ....engine.workflow.context import BaseWorkflowContext
 from ....models.llms.prompt import PromptTemplate
 from ....memories.ltms.ltm import LTM
@@ -12,8 +12,8 @@ from pydantic import Field
 CURRENT_PATH = root_path = Path(__file__).parents[0]
 
 
-@registry.register_node()
-class Conclude(BaseLLMBackend, BaseProcessor):
+@registry.register_worker()
+class Conclude(BaseLLMBackend, BaseWorker):
     prompts: List[PromptTemplate] = Field(
         default=[
             PromptTemplate.from_file(
@@ -25,32 +25,17 @@ class Conclude(BaseLLMBackend, BaseProcessor):
         ]
     )
 
-    def _run(self, args: BaseWorkflowContext, ltm: LTM) -> BaseWorkflowContext:
+    def _run(self, last_output: str, workflow_instance_id: str, *args, **kwargs):
+        task = self.stm['agent_task']
         chat_complete_res = self.simple_infer(
-            task=args.task.find_root_task().task,
-            result=args.last_output,
-            img_placeholders="".join(list(self.stm.image_cache.keys())),
+            task=task.find_root_task().task,
+            result=last_output,
+            img_placeholders="".join(list(self.stm.get('image_cache', {}).keys())),
         )
-        self.callback.send_block(
-            f'Answer: {chat_complete_res["choices"][0]["message"]["content"]}'
+        self.callback.send_answer(agent_id=workflow_instance_id, msg=f'Answer: {chat_complete_res["choices"][0]["message"]["content"]}'
         )
-        args.last_output = chat_complete_res["choices"][0]["message"]["content"]
-        args.stm = self.token_usage.items()
+        last_output = chat_complete_res["choices"][0]["message"]["content"]
         for key, value in self.token_usage.items():
             print(f"Usage of {key}: {value}")
-        return args
-
-    async def _arun(self, args: BaseWorkflowContext, ltm: LTM) -> BaseWorkflowContext:
-        chat_complete_res = await self.simple_ainfer(
-            task=args.task.find_root_task().task,
-            result=args.last_output,
-            img_placeholders="".join(list(self.stm.image_cache.keys())),
-        )
-        self.callback.send_block(
-            f'Answer: {chat_complete_res["choices"][0]["message"]["content"]}'
-        )
-        args.last_output = chat_complete_res["choices"][0]["message"]["content"]
-        args.stm = self.token_usage.items()
-        for key, value in self.token_usage.items():
-            print(f"Usage of {key}: {value}")
-        return args
+        print(last_output)
+        return {'last_output': last_output}

@@ -13,6 +13,7 @@ from omagent_core.engine.workflow.task.switch_task import SwitchTask
 from omagent_core.engine.workflow.task.task import TaskInterface
 from omagent_core.engine.workflow.task.task_type import TaskType
 from omagent_core.engine.workflow.task.timeout_policy import TimeoutPolicy
+import itertools
 
 
 class ConductorWorkflow:
@@ -390,7 +391,7 @@ class ConductorWorkflow:
         suffix = str(uuid())
 
         fork_task = ForkTask(
-            task_ref_name="forked_" + suffix, forked_tasks=forked_tasks
+            task_ref_name="forked_" + suffix, forked_tasks=forked_tasks, join_on=[each.task_reference_name for each in itertools.chain(*forked_tasks)]
         )
         self._tasks.append(fork_task)
         return self
