@@ -23,6 +23,17 @@ T = TypeVar("T", str, dict, list)
 class BaseLLM(BotBase, ABC):
     cache: bool = False
     lru_cache: LRUCache = Field(default=LRUCache(EnvVar.LLM_CACHE_NUM))
+    
+    @property 
+    def workflow_instance_id(self) -> str:
+        if hasattr(self, '_parent'):
+            return self._parent.workflow_instance_id
+        return None
+        
+    @workflow_instance_id.setter
+    def workflow_instance_id(self, value: str):
+        if hasattr(self, '_parent'):
+            self._parent.workflow_instance_id = value
 
     @abstractmethod
     def _call(self, records: List[Message], **kwargs) -> str:
@@ -95,7 +106,7 @@ class BaseLLMBackend(BotBase, ABC):
 
     @field_validator("output_parser", mode="before")
     @classmethod
-    def set_output_parser(cls, output_parser: Union[BaseOutputParser, Dict]):
+    def set_output_parser(cls, output_parser: Union[BaseOutputParser, Dict, None]):
         if output_parser is None:
             return StrParser()
         elif isinstance(output_parser, BaseOutputParser):

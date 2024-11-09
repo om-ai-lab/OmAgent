@@ -1,7 +1,19 @@
 connectors:
   conductor_config:
     name: Configuration
-    CONDUCTOR_SERVER_URL:
+    component_stm:
+      value: null
+      env_var: COMPONENT_STM
+    component_ltm:
+      value: null
+      env_var: COMPONENT_LTM
+    component_callback:
+      value: null
+      env_var: COMPONENT_CALLBACK
+    component_input:
+      value: null
+      env_var: COMPONENT_INPUT
+    base_url:
       value: http://localhost:8080
       description: The Conductor Server API endpoint
       env_var: CONDUCTOR_SERVER_URL

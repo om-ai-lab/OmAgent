@@ -1,4 +1,4 @@
-from typing import Dict, List, Type
+from typing import Dict, List, Type, Optional
 from pydantic import BaseModel
 from omagent_core.utils.registry import registry
 
@@ -7,10 +7,10 @@ class Container:
     def __init__(self):
         self._connectors: Dict[str, BaseModel] = {}
         self._components: Dict[str, BaseModel] = {}
-        self._stm = None
-        self._ltm = None
-        self._callback = None
-        self._input = None
+        self._stm_name: Optional[str] = None
+        self._ltm_name: Optional[str] = None
+        self._callback_name: Optional[str] = None
+        self._input_name: Optional[str] = None
 
     def register_connector(
         self,
@@ -58,12 +58,12 @@ class Container:
             raise ValueError(f"Invalid component type: {type(component)}")
 
         if (name in self._components or component_name in self._components) and not overwrite:
-            return
+            return name or component_name
 
         required_connectors = self._get_required_connectors(component_cls)
         if required_connectors:
             for connector, cls_name in required_connectors:
-                if connector not in self._connectors:
+                if connector not in self._connectors.keys():
                     connector_cls = registry.get_connector(cls_name)
                     self.register_connector(connector_cls, connector)
                 config[connector] = self._connectors[connector]
@@ -74,7 +74,7 @@ class Container:
     def get_component(self, component_name: str) -> BaseModel:
         if component_name not in self._components:
             raise KeyError(
-                f"There is no handler named '{component_name}' in container."
+                f"There is no component named '{component_name}' in container. You need to register it first."
             )
         return self._components[component_name]
 
@@ -93,48 +93,57 @@ class Container:
     
     def register_stm(self, stm: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
         name = self.register_component(stm, name, config, overwrite)
-        self._stm = self._components[name]
+        self._stm_name = name
 
     @property
     def stm(self) -> BaseModel:
-            return self._stm
+        if self._stm_name is None:
+            raise ValueError("STM component is not registered. Please use register_stm to register.")
+        return self.get_component(self._stm_name)
+
         
     def register_ltm(self, ltm: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
         name = self.register_component(ltm, name, config, overwrite)
-        self._ltm = self._components[name]
+        self._ltm_name = name
         
     @property
     def ltm(self) -> BaseModel:
-            return self._ltm
+        if self._ltm_name is None:
+            raise ValueError("LTM component is not registered. Please use register_ltm to register.")
+        return self.get_component(self._ltm_name)
     
     def register_callback(self, callback: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
         name = self.register_component(callback, name, config, overwrite)
-        self._callback = self._components[name]
+        self._callback_name = name
         
     @property
     def callback(self) -> BaseModel:
-            return self._callback
+        if self._callback_name is None:
+            raise ValueError("Callback component is not registered. Please use register_callback to register.")
+        return self.get_component(self._callback_name)
     
     def register_input(self, input: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
         name = self.register_component(input, name, config, overwrite)
-        self._input = self._components[name]
+        self._input_name = name
         
     @property
     def input(self) -> BaseModel:
-            return self._input
+        if self._input_name is None:
+            raise ValueError("Input component is not registered. Please use register_input to register.")
+        return self.get_component(self._input_name)
 
-    def compile_config(self) -> None:
+    def compile_config(self, description: bool = True, env_var: bool = True) -> None:
         config = {"connectors": {}, "components": {}}
 
         for name, connector in self._connectors.items():
-            config["connectors"][name] = connector.__class__.get_config_template()
+            config["connectors"][name] = connector.__class__.get_config_template(description=description, env_var=env_var)
 
         for name, component in self._components.items():
-            config["components"][name] = component.__class__.get_config_template()
+            config["components"][name] = component.__class__.get_config_template(description=description, env_var=env_var)
 
         return config
 
-    def update_from_config(self, config_data: dict) -> None:
+    def from_config(self, config_data: dict) -> None:
         """Update container from configuration
 
         Args:
@@ -161,7 +170,6 @@ class Container:
             for name, config in config_data["connectors"].items():
                 connector_cls = registry.get_connector(config.pop("name"))
                 if connector_cls:
-                    print(111, name, config)
                     self.register_connector(
                         name=name, connector=connector_cls, overwrite=True, **config
                     )
