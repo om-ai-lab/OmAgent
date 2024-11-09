@@ -46,11 +46,8 @@ class ApiClient(object):
             header_value=None,
             cookie=None
     ):
-        if configuration is None:
-            configuration = container.conductor_config
-        self.configuration = configuration
 
-        self.rest_client = rest.RESTClientObject(connection=configuration.http_connection)
+        self.rest_client = rest.RESTClientObject(connection=container.conductor_config.http_connection)
 
         self.default_headers = self.__get_default_headers(
             header_name, header_value
@@ -96,7 +93,7 @@ class ApiClient(object):
             _return_http_data_only=None, collection_formats=None,
             _preload_content=True, _request_timeout=None):
 
-        config = self.configuration
+        config = container.conductor_config
 
         # header parameters
         header_params = header_params or {}
@@ -135,7 +132,7 @@ class ApiClient(object):
 
         # auth setting
         auth_headers = None
-        if self.configuration.authentication_settings is not None and resource_path != '/token':
+        if container.conductor_config.authentication_settings is not None and resource_path != '/token':
             auth_headers = self.__get_authentication_headers()
         self.update_params_for_auth(
             header_params,
@@ -148,7 +145,7 @@ class ApiClient(object):
             body = self.sanitize_for_serialization(body)
 
         # request url
-        url = self.configuration.host + resource_path
+        url = container.conductor_config.host + resource_path
 
         # perform request and return response
         response_data = self.request(
@@ -528,7 +525,7 @@ class ApiClient(object):
         :param response:  RESTResponse.
         :return: file path.
         """
-        fd, path = tempfile.mkstemp(dir=self.configuration.temp_folder_path)
+        fd, path = tempfile.mkstemp(dir=container.conductor_config.temp_folder_path)
         os.close(fd)
         os.remove(path)
 
@@ -650,44 +647,44 @@ class ApiClient(object):
         return instance
 
     def __get_authentication_headers(self):
-        if self.configuration.AUTH_TOKEN is None:
+        if container.conductor_config.AUTH_TOKEN is None:
             return None
 
         now = round(time.time() * 1000)
-        time_since_last_update = now - self.configuration.token_update_time
+        time_since_last_update = now - container.conductor_config.token_update_time
 
-        if time_since_last_update > self.configuration.auth_token_ttl_msec:
+        if time_since_last_update > container.conductor_config.auth_token_ttl_msec:
             # time to refresh the token
             logger.debug(f'refreshing authentication token')
             token = self.__get_new_token()
-            self.configuration.update_token(token)
+            container.conductor_config.update_token(token)
 
         return {
             'header': {
-                'X-Authorization': self.configuration.AUTH_TOKEN
+                'X-Authorization': container.conductor_config.AUTH_TOKEN
             }
         }
 
     def __refresh_auth_token(self) -> None:
-        if self.configuration.AUTH_TOKEN is not None:
+        if container.conductor_config.AUTH_TOKEN is not None:
             return
-        if self.configuration.authentication_settings is None:
+        if container.conductor_config.authentication_settings is None:
             return
         token = self.__get_new_token()
-        self.configuration.update_token(token)
+        container.conductor_config.update_token(token)
 
     def __force_refresh_auth_token(self) -> None:
         """
         Forces the token refresh.  Unlike the __refresh_auth_token method above
         """
-        if self.configuration.authentication_settings is None:
+        if container.conductor_config.authentication_settings is None:
             return
         token = self.__get_new_token()
-        self.configuration.update_token(token)
+        container.conductor_config.update_token(token)
 
     def __get_new_token(self) -> str:
         try:
-            if self.configuration.authentication_settings.key_id is None or self.configuration.authentication_settings.key_secret is None:
+            if container.conductor_config.authentication_settings.key_id is None or container.conductor_config.authentication_settings.key_secret is None:
                 logger.error('Authentication Key or Secret is set.  Failed to get the auth token')
                 return None
 
@@ -697,8 +694,8 @@ class ApiClient(object):
                     'Content-Type': self.select_header_content_type(['*/*'])
                 },
                 body={
-                    'keyId': self.configuration.authentication_settings.key_id,
-                    'keySecret': self.configuration.authentication_settings.key_secret
+                    'keyId': container.conductor_config.authentication_settings.key_id,
+                    'keySecret': container.conductor_config.authentication_settings.key_secret
                 },
                 _return_http_data_only=True,
                 response_type='Token'
@@ -714,7 +711,7 @@ class ApiClient(object):
         }
         if header_name is not None:
             headers[header_name] = header_value
-        parsed = urllib3.util.parse_url(self.configuration.host)
+        parsed = urllib3.util.parse_url(container.conductor_config.host)
         if parsed.auth is not None:
             encrypted_headers = urllib3.util.make_headers(
                 basic_auth=parsed.auth
