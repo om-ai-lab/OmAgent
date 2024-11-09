@@ -8,6 +8,7 @@ from ....models.llms.prompt import PromptTemplate
 from ....memories.ltms.ltm import LTM
 from ....utils.registry import registry
 from pydantic import Field
+from ....engine.task.agent_task import TaskTree
 
 CURRENT_PATH = root_path = Path(__file__).parents[0]
 
@@ -25,10 +26,10 @@ class Conclude(BaseLLMBackend, BaseWorker):
         ]
     )
 
-    def _run(self, last_output: str, workflow_instance_id: str, *args, **kwargs):
-        task = self.stm['agent_task']
+    def _run(self, agent_task: dict, last_output: str, workflow_instance_id: str, *args, **kwargs):
+        task = TaskTree(**agent_task)
         chat_complete_res = self.simple_infer(
-            task=task.find_root_task().task,
+            task=task.get_root().task,
             result=last_output,
             img_placeholders="".join(list(self.stm.get('image_cache', {}).keys())),
         )

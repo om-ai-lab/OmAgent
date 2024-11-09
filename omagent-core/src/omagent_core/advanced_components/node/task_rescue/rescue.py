@@ -20,6 +20,7 @@ from ....utils.env import EnvVar
 from ....utils.registry import registry
 from ....tool_system.manager import ToolManager
 from omagent_core.engine.worker.base import BaseWorker
+from ....engine.task.agent_task import TaskTree
 
 
 CURRENT_PATH = root_path = Path(__file__).parents[0]
@@ -44,7 +45,7 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
         if toolcall_content is not None:
             former_results = self.stm['former_results']
             tool_call_error = former_results.pop("tool_call_error", None)
-            task = self.stm['agent_task']
+            task = TaskTree(**agent_task)
             chat_complete_res = self.simple_infer(
                 task=task.task,
                 failed_detail=tool_call_error,
@@ -60,10 +61,10 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
                 former_results.pop("failed_detail", None)
                 former_results['rescue_detail'] = rescue_execution_results
                 self.stm['former_results'] = former_results
-                return args, "success"
+                return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
             else:
                 self.stm['former_results'] = former_results
                 task.status = TaskStatus.RUNNING
-                return args, "failure"
+                return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
         else:
-            return args, "failure"
+            return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}

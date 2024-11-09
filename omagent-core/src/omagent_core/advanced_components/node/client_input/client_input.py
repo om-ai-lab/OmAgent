@@ -19,7 +19,7 @@ from ....models.llms.prompt.prompt import PromptTemplate
 from ....tool_system.manager import ToolManager
 from ....engine.worker.base import BaseWorker
 from ....engine.workflow.context import BaseWorkflowContext
-from ....engine.task.agent_task import AgentTask
+from ....engine.task.agent_task import TaskTree
 import time
 from ....utils.general import read_image
 
@@ -30,7 +30,7 @@ CURRENT_PATH = Path(__file__).parents[0]
 class ClientInput(BaseWorker):
     def _run(self, agent_task: dict, last_output: str, workflow_instance_id,  *args, **kwargs):
         user_input = self.input.read_input(workflow_instance_id=workflow_instance_id, input_prompt=None)
-        task = AgentTask(**agent_task)
+        task = TaskTree(**agent_task)
         chat_message = []
         agent_id = user_input['agent_id']
         messages = user_input['messages']

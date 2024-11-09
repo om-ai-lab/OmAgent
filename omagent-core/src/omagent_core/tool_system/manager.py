@@ -98,7 +98,7 @@ class ToolManager(BaseLLMBackend):
 
     def execute(self, tool_name: str, args: Union[str, dict]):
         if tool_name not in self.tools:
-            raise KeyError("The tool {} is invalid, not in the tool list.")
+            raise KeyError(f"The tool {tool_name} is invalid, not in the tool list.")
         tool = self.tools.get(tool_name)
         if type(args) is str:
             try:
@@ -129,7 +129,7 @@ class ToolManager(BaseLLMBackend):
 
     async def aexecute(self, tool_name: str, args: Union[str, dict]):
         if tool_name not in self.tools:
-            raise KeyError("The tool {} is invalid, not in the tool list.")
+            raise KeyError(f"The tool {tool_name} is invalid, not in the tool list.")
         tool = self.tools.get(tool_name)
         if type(args) is str:
             try:

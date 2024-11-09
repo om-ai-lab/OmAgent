@@ -19,9 +19,8 @@ from ....models.llms.prompt.prompt import PromptTemplate
 from ....tool_system.manager import ToolManager
 from ....engine.worker.base import BaseWorker
 from ....engine.workflow.context import BaseWorkflowContext
-from ....engine.task.agent_task import AgentTask
+from ....engine.task.agent_task import TaskTree
 import json_repair
-import pickle
 
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -41,41 +40,29 @@ class TaskDivider(BaseLLMBackend, BaseWorker):
     tool_manager: ToolManager
 
     def _run(self, agent_task: dict, last_output: str, workflow_instance_id: str, *args, **kwargs):
-        # task = AgentTask(**agent_task)
-        task = self.stm['agent_task']
-        if task.task_depth() >= EnvVar.MAX_TASK_DEPTH:
+        task = TaskTree(**agent_task)
+        current_node = task.get_current_node()
+        if task.get_depth(current_node.id) >= EnvVar.MAX_TASK_DEPTH:
             last_output = "failed: Max subtask depth reached"
             divide_failed_structure = {
-                "parent_task": task.task,
+                "parent_task": current_node.task,
                 "failed_reason": "Max subtask depth reached",
             }
             self.callback.send_block(agent_id=workflow_instance_id, msg=divide_failed_structure)
-            self.stm['agent_task'] = task
-            return {"agent_task": task.task_info(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
+            return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
 
         chat_complete_res = self.simple_infer(
-            parent_task=task.task,
-            uplevel_tasks=task.parent.sibling_info() if task.parent else [],
+            parent_task=current_node.task,
+            uplevel_tasks=task.get_parent(current_node.id) if task.get_parent(current_node.id) else [],
             former_results=last_output,
             tools=self.tool_manager.generate_prompt(),
         )
         chat_complete_res = json_repair.loads(chat_complete_res['choices'][0]['message']['content'])
         if chat_complete_res.get("tasks"):
-            task.add_subtasks(chat_complete_res["tasks"])
-            divided_detail_structure = {
-                "parent_task": task.task,
-                "children_tasks": [
-                    {
-                        f"subtask_{idx}": child.task,
-                        f"subtask_{idx} milestones": " & ".join(child.milestones),
-                    }
-                    for idx, child in enumerate(task.children)
-                ],
-            }
-            subtasks_info = "\n".join([f"{idx}: {each['task']}" for idx, each in enumerate(task.children_info())])
-            self.callback.send_block(agent_id=workflow_instance_id, msg=f'Current task "{task.task}" has been divided into {len(task.children)} subtasks: \n{subtasks_info}')
-            self.stm['agent_task'] = task
-            return {"agent_task": task.task_info(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
+            task.add_subtasks(current_node.id, chat_complete_res["tasks"])
+            subtasks_info = "\n".join([f"{idx}: {each.task}" for idx, each in enumerate(task.get_children(current_node.id))])
+            self.callback.send_block(agent_id=workflow_instance_id, msg=f'Current task "{current_node.task}" has been divided into {len(task.get_children(current_node.id))} subtasks: \n{subtasks_info}')
+            return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
 
         elif chat_complete_res.get("failed_reason"):
             last_output = (
@@ -83,8 +70,7 @@ class TaskDivider(BaseLLMBackend, BaseWorker):
                     chat_complete_res.get("failed_reason", "No reason generated.")
                 )
             )
-            self.stm['agent_task'] = task
-            return {"agent_task": task.task_info(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
+            return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
         else:
             raise ValueError("LLM generation is not valid.")
 
