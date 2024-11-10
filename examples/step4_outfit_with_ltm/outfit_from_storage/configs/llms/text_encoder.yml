@@ -1,0 +1,3 @@
+name: OpenaiTextEmbeddingV3
+endpoint: openai_text_encoder_api_endpoint
+api_key: encoder_api_key

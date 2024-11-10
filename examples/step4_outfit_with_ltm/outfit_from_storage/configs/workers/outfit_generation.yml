@@ -1,0 +1,2 @@
+name: OutfitGeneration
+llm: ${sub| text_res}
