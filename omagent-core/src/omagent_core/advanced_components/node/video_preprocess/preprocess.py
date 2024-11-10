@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 
 from omagent_core.models.llms.base import BaseLLMBackend
-from omagent_core.engine.node import BaseProcessor
+from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.models.llms.prompt.parser import DictParser
 from omagent_core.models.llms.prompt import PromptTemplate
 from omagent_core.memories.ltms.ltm import LTM
@@ -24,8 +24,8 @@ CURRENT_PATH = root_path = Path(__file__).parents[0]
 PARSER = DictParser()
 
 
-@registry.register_node()
-class VideoPreprocessor(BaseLLMBackend, BaseProcessor):
+@registry.register_worker()
+class VideoPreprocessor(BaseLLMBackend, BaseWorker):
     prompts: List[PromptTemplate] = Field(
         default=[
             PromptTemplate.from_file(

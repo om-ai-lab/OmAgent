@@ -1,7 +1,7 @@
 import json
 import re
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Any
 
 from pydantic import Field
 from tenacity import (
@@ -17,15 +17,16 @@ from ....utils.registry import registry
 from ....models.llms.base import BaseLLMBackend
 from ....models.llms.prompt.prompt import PromptTemplate
 from ....tool_system.manager import ToolManager
-from ....engine.node.decider import BaseDecider
+from ....engine.worker.base import BaseWorker
 from ....engine.workflow.context import BaseWorkflowContext
-from ....engine.task.agent_task import AgentTask
+from ....engine.task.agent_task import TaskTree
+import json_repair
 
 CURRENT_PATH = Path(__file__).parents[0]
 
 
-@registry.register_node()
-class TaskDivider(BaseLLMBackend, BaseDecider):
+@registry.register_worker()
+class TaskDivider(BaseLLMBackend, BaseWorker):
     prompts: List[PromptTemplate] = Field(
         default=[
             PromptTemplate.from_file(
@@ -38,99 +39,63 @@ class TaskDivider(BaseLLMBackend, BaseDecider):
     )
     tool_manager: ToolManager
 
-    @retry(
-        stop=(
-            stop_after_delay(EnvVar.STOP_AFTER_DELAY)
-            | stop_after_attempt(EnvVar.STOP_AFTER_ATTEMPT)
-        ),
-        retry=retry_if_exception_message(message="LLM generation is not valid."),
-        reraise=True,
-    )
-    def _run(self, args: BaseWorkflowContext, ltm: LTM) -> Tuple[BaseWorkflowContext, str]:
-        task: AgentTask = args.task
-        if task.task_depth() >= EnvVar.MAX_TASK_DEPTH:
-            args.last_output = "failed: Max subtask depth reached"
-            divide_failed_structure = {
-                "parent_task": task.task,
-                "failed_reason": "Max subtask depth reached",
-            }
-            self.callback.send_block(divide_failed_structure)
-            return args, "failed"
+    def _run(self, agent_task: dict, last_output: str, *args, **kwargs):
+        """Task divider that breaks down complex tasks into multiple subtasks.
 
+        Args:
+            agent_task (dict): Dictionary containing the current task tree information
+            last_output (str): Output from the previous task execution
+            *args: Variable positional arguments
+            **kwargs: Variable keyword arguments
+
+        Returns:
+            dict: A dictionary containing:
+                - agent_task: Updated task tree
+                - switch_case_value: Task division status ("success"/"failed")
+                - last_output: Latest output result
+                - kwargs: Additional keyword arguments
+
+        Description:
+            1. Checks if task depth exceeds maximum limit
+            2. Calls LLM to divide current task into subtasks
+            3. Updates task tree structure
+            4. Returns division results and status
+        """
+        task = TaskTree(**agent_task)
+        current_node = task.get_current_node()
+        # Check if task depth exceeds maximum limit
+        if task.get_depth(current_node.id) >= EnvVar.MAX_TASK_DEPTH:
+            last_output = "failed: Max subtask depth reached"
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Divider', message=f'Max subtask depth reached.')
+            return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
+
+        # Call LLM to divide current task into subtasks
         chat_complete_res = self.simple_infer(
-            parent_task=task.task,
-            uplevel_tasks=task.parent.sibling_info() if task.parent else [],
-            former_results=args.last_output,
+            parent_task=current_node.task,
+            uplevel_tasks=task.get_parent(current_node.id) if task.get_parent(current_node.id) else [],
+            former_results=last_output,
             tools=self.tool_manager.generate_prompt(),
         )
-        chat_complete_res = self._extract_from_result(chat_complete_res)
-        if chat_complete_res.get("tasks"):
-            task.add_subtasks(chat_complete_res["tasks"])
-            divided_detail_structure = {
-                "parent_task": task.task,
-                "children_tasks": [
-                    {
-                        f"subtask_{idx}": child.task,
-                        f"subtask_{idx} milestones": " & ".join(child.milestones),
-                    }
-                    for idx, child in enumerate(task.children)
-                ],
-            }
-            self.callback.send_block(divided_detail_structure)
-            return args, "success"
+        chat_complete_res = json_repair.loads(chat_complete_res['choices'][0]['message']['content'])
 
+        # Update task tree structure
+        if chat_complete_res.get("tasks"):
+            task.add_subtasks(current_node.id, chat_complete_res["tasks"])
+            subtasks_info = "\n".join([f"{idx}: {each.task}" for idx, each in enumerate(task.get_children(current_node.id))])
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Divider', message=f'Task "{current_node.task}" has been divided into {len(task.get_children(current_node.id))} subtasks: \n{subtasks_info}')
+            return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
+
+        # Handle failed task division
         elif chat_complete_res.get("failed_reason"):
-            args.last_output = (
+            last_output = (
                 "failed: Subtask generation failed. Agent provided reason: {}".format(
                     chat_complete_res.get("failed_reason", "No reason generated.")
                 )
             )
-            return args, "failed"
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Divider', message=f'Subtask generation failed.')
+            return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
+        
+        # Handle invalid LLM generation
         else:
             raise ValueError("LLM generation is not valid.")
 
-    @retry(
-        stop=(
-            stop_after_delay(EnvVar.STOP_AFTER_DELAY)
-            | stop_after_attempt(EnvVar.STOP_AFTER_ATTEMPT)
-        ),
-        retry=retry_if_exception_message(message="LLM generation is not valid."),
-        reraise=True,
-    )
-    async def _arun(self, args: BaseWorkflowContext, ltm: LTM) -> Tuple[BaseWorkflowContext, str]:
-        task: AgentTask = args.task
-        if task.task_depth() >= EnvVar.MAX_TASK_DEPTH:
-            args.last_output = "failed: Max subtask depth reached"
-            return args, "failed"
-
-        chat_complete_res = await self.simple_ainfer(
-            parent_task=task.task,
-            uplevel_tasks=task.sibling_info(),
-            former_results=args.last_output,
-        )
-        chat_complete_res = self._extract_from_result(chat_complete_res)
-        if chat_complete_res.get("tasks"):
-            task.add_subtasks(chat_complete_res["tasks"])
-            return args, "success"
-
-        elif chat_complete_res.get("failed_reason"):
-            args.last_output = (
-                "failed: Subtask generation failed. Agent provided reason: {}".format(
-                    chat_complete_res.get("failed_reason", "No reason generated.")
-                )
-            )
-            return args, "failed"
-        else:
-            raise ValueError("LLM generation is not valid.")
-
-    def _extract_from_result(self, result: str) -> dict:
-        try:
-            string = result["choices"][0]["message"]["content"]
-            pattern = r"```json\s+(.*?)\s+```"
-            match = re.search(pattern, string, re.DOTALL)
-            if match:
-                return json.loads(match.group(1))
-            else:
-                return json.loads(string)
-        except Exception as error:
-            raise ValueError("LLM generation is not valid.")

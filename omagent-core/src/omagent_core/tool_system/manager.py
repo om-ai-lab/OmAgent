@@ -117,7 +117,7 @@ class ToolManager(BaseLLMBackend):
 
     def execute(self, tool_name: str, args: Union[str, dict]):
         if tool_name not in self.tools:
-            raise KeyError("The tool {} is invalid, not in the tool list.")
+            raise KeyError(f"The tool {tool_name} is invalid, not in the tool list.")
         tool = self.tools.get(tool_name)
         if type(args) is str:
             try:
@@ -148,7 +148,7 @@ class ToolManager(BaseLLMBackend):
 
     async def aexecute(self, tool_name: str, args: Union[str, dict]):
         if tool_name not in self.tools:
-            raise KeyError("The tool {} is invalid, not in the tool list.")
+            raise KeyError(f"The tool {tool_name} is invalid, not in the tool list.")
         tool = self.tools.get(tool_name)
         if type(args) is str:
             try:
@@ -234,13 +234,13 @@ class ToolManager(BaseLLMBackend):
 
         return cls(**config)
 
-    def execute_task(self, task, related_info={}, function=None):
+    def execute_task(self, task, related_info='', function=None):
         if self.llm == None:
             raise ValueError(
                 "The execute_task method requires the llm field to be initialized."
             )
         chat_complete_res = self.infer(
-            [{"task": task, "related_info": list(related_info.keys())}],
+            [{"task": task, "related_info": related_info}],
             tools=self.generate_schema(),
         )[0]
         content = chat_complete_res["choices"][0]["message"].get("content")
@@ -250,14 +250,14 @@ class ToolManager(BaseLLMBackend):
                 "status": "failed",
                 "content": content,
             }
-            # self.callback.send_block(toolcall_failed_structure)
             return "failed", content
         else:
+            tool_calls = [tool_calls[0]]
             toolcall_structure = {
                 "name": tool_calls[0]["function"]["name"],
                 "arguments": json.loads(tool_calls[0]["function"]["arguments"]),
             }
-            # self.callback.send_block(toolcall_structure)
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool {toolcall_structure["name"]} executing.')
             tool_execution_res = []
             try:
                 for each_tool_call in tool_calls:
@@ -283,7 +283,6 @@ class ToolManager(BaseLLMBackend):
                         for each_tool_call in tool_calls
                     ],
                 }
-                # self.callback.send_block(toolcall_structure)
                 return "success", tool_execution_res
             except ValueError as error:
                 toolcall_failed_structure = {
@@ -302,7 +301,6 @@ class ToolManager(BaseLLMBackend):
                     ],
                     "error": str(error),
                 }
-                # self.callback.send_block(toolcall_failed_structure)
                 return "failed", str(error)
 
     async def aexecute_task(self, task, related_info=None, function=None):
@@ -321,14 +319,12 @@ class ToolManager(BaseLLMBackend):
                 "status": "failed",
                 "content": content,
             }
-            self.callback.send_block(toolcall_failed_structure)
             return "failed", content
         else:
             toolcall_structure = {
                 "name": tool_calls[0]["function"]["name"],
                 "arguments": json.loads(tool_calls[0]["function"]["arguments"]),
             }
-            self.callback.send_block(toolcall_structure)
             tool_execution_res = []
             try:
                 for each_tool_call in tool_calls:
@@ -354,7 +350,6 @@ class ToolManager(BaseLLMBackend):
                         for each_tool_call in tool_calls
                     ],
                 }
-                self.callback.send_block(toolcall_structure)
                 return "success", tool_execution_res
             except ValueError as error:
                 toolcall_failed_structure = {
@@ -373,5 +368,4 @@ class ToolManager(BaseLLMBackend):
                     ],
                     "error": str(error),
                 }
-                self.callback.send_block(toolcall_failed_structure)
                 return "failed", str(error)

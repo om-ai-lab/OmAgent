@@ -1,2 +1,2 @@
 Task: {{task}}
-The tasks that have been completed: {{related_info}}
+Related info of this task: {{related_info}}

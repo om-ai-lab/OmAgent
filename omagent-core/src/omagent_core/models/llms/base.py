@@ -43,13 +43,7 @@ class BaseLLM(BotBase, ABC):
         """Run the LLM on the given prompt and input."""
         raise NotImplementedError("Async generation not implemented for this LLM.")
 
-    @retry(
-        stop=(
-            stop_after_delay(EnvVar.STOP_AFTER_DELAY)
-            | stop_after_attempt(EnvVar.STOP_AFTER_ATTEMPT)
-        ),
-        reraise=True,
-    )
+
     def generate(self, records: List[Message], **kwargs) -> str:
         """Run the LLM on the given prompt and input."""
         if self.cache:

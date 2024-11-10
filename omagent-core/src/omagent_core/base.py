@@ -119,7 +119,7 @@ class BotBase(BaseSettings, ABC):
             else:
                 field_info["value"] = field.default
 
-            template[field_name] = field_info
+            template[field.alias if field.alias else field_name] = field_info
             template["name"] = cls.__name__
         return template
 
