@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Callable, Any, Dict
 from functools import partial
 
+
 CATEGORIES = ["prompt", "llm", "node", "worker", "tool", "encoder", "connector", "component"]
 
 
@@ -72,7 +73,13 @@ class Registry:
         """
         return self._get(category, name)
 
-    def import_module(self, project_root: str = None, custom: List[str] = []):
+    def import_module(self, project_path: List[str]|str = None):
+        """Import modules from default paths and optional project paths.
+        
+        Args:
+            project_path: Optional path or list of paths to import modules from
+        """
+        # Handle default paths
         root_path = Path(__file__).parents[1]
         default_path = [
             root_path.joinpath("models"),
@@ -91,9 +98,15 @@ class Registry:
                     ".", 1
                 )[0].replace("/", ".")
                 importlib.import_module(module)
-        if project_root:
-            for path in custom:
+
+        # Handle project paths
+        if project_path:
+            if isinstance(project_path, (str, Path)):
+                project_path = [project_path]
+            
+            for path in project_path:
                 path = Path(path).absolute()
+                project_root = path.parent
                 for module in path.rglob("*.[ps][yo]"):
                     module = str(module)
                     if "__init__" in module:
