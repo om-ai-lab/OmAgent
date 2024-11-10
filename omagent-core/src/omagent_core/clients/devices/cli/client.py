@@ -40,7 +40,10 @@ class DefaultClient:
         self._workers = workers
 
     def start_interactor(self):
+        absolute_path = Path(self._config_path).resolve()
+        print(f"绝对路径: {absolute_path}")
         worker_config = build_from_file(self._config_path)
+        print("worker_config:",worker_config)
         self._task_handler_interactor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_interactor.start_processes()
         workflow_instance_id = self._interactor.start_workflow_with_input(workflow_input={})
@@ -49,6 +52,8 @@ class DefaultClient:
         consumer_name = f"{workflow_instance_id}_agent"  # consumer name
         group_name = "omappagent"  # replace with your consumer group name
         poll_interval = 1
+
+        self.first_input(workflow_instance_id=workflow_instance_id, input_prompt="What can I do for you?")
 
         client = OrkesWorkflowClient(configuration=container.conductor_config)
         
@@ -217,4 +222,42 @@ class DefaultClient:
         """
         import re
         return bool(re.match(r'^https?://', url))
+    
+    def first_input(self, workflow_instance_id: str, input_prompt = ""):
+        contents = []
+        while True:
+            print(f"{Fore.GREEN}{input_prompt}(Waiting for input, press Enter twice to finish):{Style.RESET_ALL}")
+            user_input_lines = []
+            while True:
+                line = input(f"{Fore.GREEN}>>>{Style.RESET_ALL}")
+                if line == "":
+                    break
+                user_input_lines.append(line)
+            logging.info(f"User input lines: {user_input_lines}")
+            
+        
+            for user_input in user_input_lines:
+                if self.is_url(user_input) or self.is_file(user_input):
+                    contents.append({
+                        "type": "image_url",
+                        "data": user_input
+                    })
+                else:
+                    contents.append({
+                        "type": "text",
+                        "data": user_input
+                    })
+            if len(contents) > 0:
+                break
+        result = {
+            "agent_id": workflow_instance_id,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": contents
+                }
+            ],
+            "kwargs": {}    
+        }
+        container.get_connector('redis_stream_client')._client.xadd(f"{workflow_instance_id}_input", {"payload":json.dumps(result, ensure_ascii=False) })
 

@@ -27,20 +27,21 @@ class SimpleVQA(BaseWorker, BaseLLMBackend):
     def _run(self, user_instruction:str, *args, **kwargs):
         # Initialize empty list for chat messages
         chat_message = []
-
-        # Retrieve cached image from workflow shared memory
-        img = self.stm(self.workflow_instance_id)['image_cache']['<image_0>']
         
         # Add text question as first message
         chat_message.append(Message(role="user", message_type='text', content=user_instruction))
+
+        # Retrieve cached image from workflow shared memory
+        if self.stm(self.workflow_instance_id).get('image_cache', None):
+            img = self.stm(self.workflow_instance_id)['image_cache']['<image_0>']
         
-        # Add base64 encoded image as second message
-        chat_message.append(Message(role="user", message_type='image', content=[Content(
-                                    type="image_url",
-                                    image_url={
-                                        "url": f"data:image/jpeg;base64,{encode_image(img)}"
-                                    },
-                                )]))
+            # Add base64 encoded image as second message
+            chat_message.append(Message(role="user", message_type='image', content=[Content(
+                                        type="image_url",
+                                        image_url={
+                                            "url": f"data:image/jpeg;base64,{encode_image(img)}"
+                                        },
+                                    )]))
         
         # Get response from LLM model
         chat_complete_res = self.llm.generate(records=chat_message)
