@@ -4,9 +4,9 @@ build-backend = "hatchling.build"
 
 [project]
 name = "omagent_core"
-version = "0.0.1"
+version = "0.2.0"
 authors = [
-    { name = "panregedit", email = "panregedit@gmail.com" },
+    { name = "OM AI Lab", email = "OmAIglobal2024@gmail.com" },
 ]
 description = "Core package for OmAgent"
 readme = "README.md"

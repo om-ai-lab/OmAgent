@@ -3,7 +3,7 @@
 </div>
 
 <p align="center">
-  <img src="docs/images/icon.png" width="300"/>
+  <img src="docs/images/intro.png" width="600"/>
 </p>
 
 <p align="center">
@@ -16,10 +16,11 @@
 </p>
 
 <p align="center">
-    <a>English</a> | <a href="README_ZH.md">中文</a> | <a href="README_JP.md">日本語</a> | <a href="README_FR.md">Français</a>
+    <a>English</a> | <a href="README_ZH.md">中文</a>
 </p>
 
 ## 🗓️ Updates
+* 11/12/2024: OmAgent v0.2.0 is officially released! We have completely rebuilt the underlying framework of OmAgent, making it more flexible and easy to extend. The new version added the concept of devices, making it easier to develop quickly for smart hardware.
 * 10/20/2024: We are actively engaged in developing version 2.0.0 🚧 Exciting new features are underway! You are welcome to join us on X and Discord~
 * 09/20/2024: Our paper has been accepted by EMNLP 2024. See you in Miami!🏝
 * 07/04/2024: The OmAgent open-source project has been unveiled. 🎉
@@ -29,135 +30,154 @@
 
 
 ## 📖 Introduction
-OmAgent is a sophisticated multimodal intelligent agent system, dedicated to harnessing the power of multimodal large language models and other multimodal algorithms to accomplish intriguing tasks. The OmAgent project encompasses a lightweight intelligent agent framework, omagent_core, meticulously designed to address multimodal challenges. With this framework, we have constructed an intricate long-form video comprehension system—OmAgent. Naturally, you have the liberty to employ it to realize any of your innovative ideas.  
-OmAgent comprises three core components:  
-- **Video2RAG**: The concept behind this component is to transform the comprehension of long videos into a multimodal RAG task. The advantage of this approach is that it transcends the limitations imposed by video length; however, the downside is that such preprocessing may lead to the loss of substantial video detail.  
-- **DnCLoop**: Inspired by the classical algorithmic paradigm of Divide and Conquer, we devised a recursive general-task processing logic. This method iteratively refines complex problems into a task tree, ultimately transforming intricate tasks into a series of solvable, simpler tasks.  
-- **Rewinder Tool**: To address the issue of information loss in the Video2RAG process, we have designed a "progress bar" tool named Rewinder that can be autonomously used by agents. This enables the agents to revisit any video details, allowing them to seek out the necessary information.  
+OmAgent is an open-source agent framework designed to streamlines the development of on-device multimodal agents. Our goal is to enable agents that can empower various hardware devices, ranging from smart phone, smart wearables (e.g. glasses), IP cameras to futuristic robots. As a result, OmAgent creates an abstraction over various types of device and simplifies the process of connecting these devices to the state-of-the-art multimodal foundation models and agent algorithms, to allow everyone build the most interesting on-device agents. Moreover, OmAgent focuses on optimize the end-to-end computing pipeline, on in order to provides the most real-time user interaction experience out of the box. 
 
-<p align="center">
-  <img src="docs/images/OmAgent.png" width="700"/>
-</p>
+In conclusion, key features of OmAgent include:
 
-For more details, check out our paper **[OmAgent: A Multi-modal Agent Framework for Complex Video Understanding with Task Divide-and-Conquer](https://arxiv.org/abs/2406.16620)**
+- **Easy Connection to Diverse Devices**: we make it really simple to connect to physical devices, e.g. phone, glasses and more, so that agent/model developers can build the applications that not running on web page, but running on devices. We welcome contribution to support more devices! 
+
+- **Speed-optimized SOTA Mutlimodal Models**: OmAgent integrates the SOTA commercial and open-source foundation models to provide application developers the most powerful intelligence. Moreover, OmAgent streamlines the audio/video processing and computing process to easily enable natural and fluid interaction between the device and the users. 
+
+- **SOTA Multimodal Agent Algorithms**: OmAgent provides an easy workflow orchestration interface for researchers and developers implement the latest agent algorithms, e.g. ReAct, DnC and more. We welcome contributions of any new agent algorithm to enable more complex problem solving abilities.
+
+- **Scalability and Flexibility**: OmAgent provides an intuitive interface for building scalable agents, enabling developers to construct agents tailored to specific roles and highly adaptive to various applications.  
 
 ## 🛠️ How To Install
-- python >= 3.10
-- Install omagent_core
+
+### 1. Deploy the Workflow Orchestration Engine  
+OmAgent utilizes [Conductor](https://github.com/conductor-oss/conductor) as its workflow orchestration engine. Conductor is an open-source, distributed, and scalable workflow engine that supports a variety of programming languages and frameworks. By default, it uses Redis for persistence and Elasticsearch (7.x) as the indexing backend.  
+It is recommended to deploy Conductor using Docker:
+```bash
+docker compose -f docker/conductor/docker-compose.yml up -d
+```
+- Once deployed, you can access the Conductor UI at `http://localhost:5000`.
+- The Conductor API can be accessed via `http://localhost:8080`.
+
+### 2. Install OmAgent  
+- **Python Version**: Ensure Python 3.10 or higher is installed.
+- **Install `omagent_core`**:
   ```bash
-  cd omagent-core
-  pip install -e .
+  pip install -e omagent-core
   ```
-- Other requirements
+- **Install dependencies for the sample project**:
   ```bash
-  cd ..
   pip install -r requirements.txt
   ```
-## 🚀 Quick Start
 
-### General Task Processing
-1. Create a configuration file and set some necessary variables
-   ```shell
-   cd workflows/general && vim config.yaml
+- **Install Optional Components**: 
+  - Install Milvus VectorDB for enhanced support of long-term memory.
+OmAgent uses Milvus Lite as the default vector database for storing vector data related to long-term memory. To utilize the full Milvus service, you may deploy the [Milvus vector database](https://milvus.io/docs/install_standalone-docker.md) via Docker.
+
+### 3. Connect Devices  
+If you wish to use smart devices to access your agents, we provide a smartphone app and corresponding backend, allowing you to focus on agent functionality without worrying about complex device connection issues.  
+- Deploy the app backend  
+  TODO
+- Download, install, and debug the smartphone app  
+  TODO
+
+## 🚀 Quick Start 
+### Hello World
+1. **Adjust Python Path**: The script modifies the Python path to ensure it can locate necessary modules. Verify the path is correct for your setup:
+
+   ```python
+   CURRENT_PATH = Path(__file__).parents[0]
+   sys.path.append(os.path.abspath(CURRENT_PATH.joinpath('../../')))
+   ```
+   - **CURRENT_PATH**: This is the path to the current directory.
+   - **sys.path.append**: This adds the path to the current directory to the Python path. This is to allow importing packages from the examples directory later.
+
+
+2. **Initialize Logging**: The script sets up logging to track application events. You can adjust the logging level (`INFO`, `DEBUG`, etc.) as needed:
+
+   ```python
+   logging.init_logger("omagent", "omagent", level="INFO")
    ```
 
-   | Configuration Name      | Usage                                                                                 |
-   |-------------------------|---------------------------------------------------------------------------------------|
-   | custom_openai_endpoint  | API address for calling OpenAI GPT or other MLLM, format: ```{custom_openai_endpoint}/chat/completions``` |
-   | custom_openai_key       | api_key provided by the MLLM provider                                                 |
-   | bing_api_key            | Bing's api key, used for websearch                                                    |
+3. **Create and Execute Workflow**: The script creates a workflow and adds a task to it. It then starts the agent client to execute the workflow:
 
+   ```python
+    from examples.step1_simpleVQA.agent.simple_vqa.simple_vqa import SimpleVQA
+    from examples.step1_simpleVQA.agent.input_interface.input_interface import InputIterface
 
-2. Set up ```run.py```
-    ```python
-    def run_agent(task):
-        logging.init_logger("omagent", "omagent", level="INFO")
-        registry.import_module(project_root=Path(__file__).parent, custom=["./engine"])
-        bot_builder = Builder.from_file("workflows/general") # General task processing workflow configuration directory
-        input = BaseWorkflowContext(bot_id="1", task=AgentTask(id=0, task=task))
-    
-        bot_builder.run_bot(input)
-        return input.last_output
+    workflow = ConductorWorkflow(name='example1')
+    task1 = simple_task(task_def_name='InputIterface', task_reference_name='input_task')
+    task2 = simple_task(task_def_name='SimpleVQA', task_reference_name='simple_vqa', inputs={'user_instruction': task1.output('user_instruction')})
+    workflow >> task1 >> task2
     
     
-    if __name__ == "__main__":
-        run_agent("Your Query") # Enter your query
-    ```
-3. Start OmAgent by running ```python run.py```.
-
-### Video Understanding Task
-#### Environment Preparation
-- **```Optional```** OmAgent, uses Milvus Lite as a vector database to store vector data by default. If you wish to use the full Milvus service, you can deploy it [milvus vector database](https://milvus.io/docs/install_standalone-docker.md) using docker. The vector database is used to store video feature vectors and retrieve relevant vectors based on queries to reduce MLLM computation. Not installed docker? Refer to [docker installation guide](https://docs.docker.com/get-docker/).
-    ```shell
-       # Download milvus startup script
-       curl -sfL https://raw.githubusercontent.com/milvus-io/milvus/master/scripts/standalone_embed.sh -o standalone_embed.sh
-       # Start milvus in standalone mode
-       bash standalone_embed.sh start
-    ```
-    Fill in the relevant configuration information after the deployment ```workflows/video_understanding/config.yml```  
+    workflow.register(True)
     
-- **```Optional```** Configure the face recognition algorithm. The face recognition algorithm can be called as a tool by the agent, but it is optional. You can disable this feature by modifying the ```workflows/video_understanding/tools/video_tools.json``` configuration file and removing the FaceRecognition section. The default face recognition database is stored in the ```data/face_db``` directory, with different folders corresponding to different individuals.
-- **```Optional```** Open Vocabulary Detection (OVD) service, used to enhance OmAgent's ability to recognize various objects. The OVD tools depend on this service, but it is optional. You can disable OVD tools by following these steps. Remove the following from ```workflows/video_understanding/tools/video_tools.json```
-    ```json 
-       {
-            "name": "ObjectDetection",
-            "ovd_endpoint": "$<ovd_endpoint::http://host_ip:8000/inf_predict>",
-            "model_id": "$<ovd_model_id::OmDet-Turbo_tiny_SWIN_T>"
-       }
-    ```
-  
-  If using ovd tools, we use [OmDet](https://github.com/om-ai-lab/OmDet/tree/main) for demonstration.
-  1. Install OmDet and its environment according to the [OmDet Installation Guide](https://github.com/om-ai-lab/OmDet/blob/main/install.md).
-  2. Install requirements to turn OmDet Inference into API calls
-     ```text
-      pip install pydantic fastapi uvicorn
-     ```
-  3. Create a ```wsgi.py``` file to expose OmDet Inference as an API
-     ```shell
-      cd OmDet && vim wsgi.py
-     ```
-     Copy the [OmDet Inference API code](docs/ovd_api_doc.md) to wsgi.py
-  4. Start OmDet Inference API, the default port is 8000
-     ```shell
-     python wsgi.py
-     ```
-- Download some interesting videos
-
-#### Running Preparation
-1. Create a configuration file and set some necessary environment variables
-   ```shell
-   cd workflows/video_understanding && vim config.yaml
+    agent_client = DefaultClient(interactor=workflow, config_path='examples/step1_simpleVQA/configs', workers=[InputIterface()])
+    agent_client.start_interactor()
    ```
-2. Configure the API addresses and API keys for MLLM and tools.
 
-   | Configuration Name       | Usage                                                                                   |
-   |--------------------------|-----------------------------------------------------------------------------------------|
-   | custom_openai_endpoint   | API address for calling OpenAI GPT or other MLLM, format: ```{custom_openai_endpoint}/chat/completions``` |
-   | custom_openai_key        | api_key provided by the respective API provider                                          |
-   | bing_api_key             | Bing's api key, used for web search                                                      |
-   | ovd_endpoint             | ovd tool API address. If using OmDet, the address should be ```http://host:8000/inf_predict``` |
-   | ovd_model_id             | Model ID used by the ovd tool. If using OmDet, the model ID should be ```OmDet-Turbo_tiny_SWIN_T``` |
+   - **Workflow**: Defines the sequence of tasks. 'name' is the name of the workflow， please make sure it is unique.
+   - **Task**: Represents a unit of work, in this case, we use SimpleVQA from the examples. 'task_def_name' represents the corresponding class name, 'task_reference_name' represents the name in the conductor.
+   - **AppClient**: Starts the agent client to execute the workflow. Here we use AppClient, if you want to use CLI, please use DefaultClient.
+   - **agent_client.start_interactor()**: This will start the worker corresponding to the registered task, in this case, it will start SimpleVQA and wait for the conductor's scheduling.
 
-   
-2. Set up ```run.py```
-    ```python
-    def run_agent(task):
-        logging.init_logger("omagent", "omagent", level="INFO")
-        registry.import_module(project_root=Path(__file__).parent, custom=["./engine"])
-        bot_builder = Builder.from_file("workflows/video_understanding") # Video understanding task workflow configuration directory
-        input = BaseWorkflowContext(bot_id="1", task=AgentTask(id=0, task=task))
-    
-        bot_builder.run_bot(input)
-        return input.last_output
-    
-    
-    if __name__ == "__main__":
-        run_agent("") # You will be prompted to enter the query in the console
-    ```
-3. Start OmAgent by running ```python run.py```. Enter the path of the video you want to process, wait a moment, then enter your query, and OmAgent will answer based on the query.
+4. **Run the Script**  
+  Execute the script using Python:  
+   ```bash
+   python run_app.py
+   ```  
+    **Ensure the workflow engine is running before executing the script.**
+
+
+### 🏗 Architecture
+The design architecture of OmAgent adheres to three fundamental principles:  
+1. Graph-based workflow orchestration;   
+2. Native multimodality;   
+3. Device-centricity.   
+
+With OmAgent, one has the opportunity to craft a bespoke intelligent agent program.  
+
+For a deeper comprehension of OmAgent, let us elucidate key terms:  
+
+<p align="center">
+  <img src="docs/images/architecture.jpg" width="700"/>
+</p>  
+
+- **Devices**: Central to OmAgent's vision is the empowerment of intelligent hardware devices through artificial intelligence agents, rendering devices a pivotal component of OmAgent's essence. By leveraging the downloadable mobile application we have generously provided, your mobile device can become the inaugural foundational node linked to OmAgent. Devices serve to intake environmental stimuli, such as images and sounds, potentially offering responsive feedback. We have evolved a streamlined backend process to manage the app-centric business logic, thereby enabling developers to concentrate on constructing the intelligence agent's logical framework.  
+
+- **Workflow**: Within the OmAgent Framework, the architectural structure of intelligent agents is articulated through graphs. Developers possess the liberty to innovate, configure, and sequence node functionalities at will. Presently, we have opted for Conductor as the workflow orchestration engine, lending support to intricate operations like switch-case, fork-join, and do-while.  
+
+- **Task and Worker**: Throughout the OmAgent workflow development journey, Task and Worker stand as pivotal concepts. Worker embodies the actual operational logic of workflow nodes, whereas Task oversees the orchestration of the workflow's logic. Tasks are categorized into Operators, managing workflow logic (e.g., looping, branching), and Simple Tasks, representing nodes customized by developers. Each Simple Task is correlated with a Worker; when the workflow progresses to a given Simple Task, the task is dispatched to the corresponding worker for execution.   
+
+
+### Basic Principles of Building an Agent
+- **Modularity**: Break down the agent's functionality into discrete workers, each responsible for a specific task.
+
+- **Reusability**: Design workers to be reusable across different workflows and agents.
+
+- **Scalability**: Use workflows to scale the agent's capabilities by adding more workers or adjusting the workflow sequence.
+
+- **Interoperability**: Workers can interact with various backends, such as LLMs, databases, or APIs, allowing agents to perform complex operations.
+
+- **Asynchronous Execution**: The workflow engine and task handler manage the execution asynchronously, enabling efficient resource utilization.  
+
+
+## Examples
+We provide exemplary projects to demonstrate the construction of intelligent agents using OmAgent. You can find a comprehensive list in the [examples](./examples/) directory. Here is the reference sequence:
+
+1. [step1_simpleVQA](./examples/step1_simpleVQA) illustrates the creation of a simple multimodal VQA agent with OmAgent. [Documentation](docs/examples/simple_qa.md)
+
+2. [step2_outfit_with_switch](./examples/step2_outfit_with_switch) demonstrates how to build an agent with switch-case branches using OmAgent. [Documentation](docs/examples/outfit_with_switch.md)
+
+3. [step3_outfit_with_loop](./examples/step3_outfit_with_loop) shows the construction of an agent incorporating loops using OmAgent. [Documentation](docs/examples/outfit_with_loop.md)
+
+4. [step4_outfit_with_ltm](./examples/step4_outfit_with_ltm) exemplifies using OmAgent to create an agent equipped with long-term memory. [Documentation](docs/examples/outfit_with_ltm.md)
+
+5. [dnc_loop](./examples/dnc_loop) demonstrates the development of an agent utilizing the DnC algorithm to tackle complex problems. [Documentation](docs/examples/dnc_loop.md)
+
+6. [video_understanding](./examples/video_understanding) showcases the creation of a video understanding agent for interpreting video content using OmAgent. [Documentation](docs/examples/video_understanding.md)
+
+
+## API Documentation
+The API documentation is available [here](https://om-ai-lab.github.io/OmAgentDocs/).
 
 ## 🔗 Related works
-If you are intrigued by multimodal algorithms, large language models, and agent technologies, we invite you to delve deeper into our research endeavors:  
+If you are intrigued by multimodal large language models, and agent technologies, we invite you to delve deeper into our research endeavors:  
 🔆 [How to Evaluate the Generalization of Detection? A Benchmark for Comprehensive Open-Vocabulary Detection](https://arxiv.org/abs/2308.13177) (AAAI24)   
 🏠 [GitHub Repository](https://github.com/om-ai-lab/OVDEval/tree/main)
 
@@ -175,3 +195,6 @@ If you find our repository beneficial, please cite our paper:
   year={2024}
 }
 ```
+
+## Star History
+[![Star History Chart](https://api.star-history.com/svg?repos=om-ai-lab/OmAgent&type=Date)](https://star-history.com/#om-ai-lab/OmAgent&Date)
