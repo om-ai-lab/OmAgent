@@ -21,7 +21,6 @@ class SimpleVQA(BaseWorker, BaseLLMBackend):
     3. Sends messages to LLM to generate a response
     4. Returns response and sends it via callback
     """
-    output_parser: StrParser
     llm: OpenaiGPTLLM
 
     def _run(self, user_instruction:str, *args, **kwargs):

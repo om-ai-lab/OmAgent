@@ -9,7 +9,7 @@ from omagent_core.utils.logger import logging
 logging.init_logger("omagent", "omagent", level="INFO")
 
 # Import agent-specific components
-from agent.input_interface.input_interface import InputIterface
+from agent.input_interface.input_interface import InputInterface 
 
 # Set current working directory path
 CURRENT_PATH = root_path = Path(__file__).parents[0]
@@ -17,6 +17,7 @@ CURRENT_PATH = root_path = Path(__file__).parents[0]
 # Import registered modules
 registry.import_module(project_path=CURRENT_PATH.joinpath('agent'))
 
+container.register_stm("RedisSTM")
 # Load container configuration from YAML file
 container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 
@@ -27,7 +28,7 @@ workflow = ConductorWorkflow(name='step1_simpleVQA')
 
 # Configure workflow tasks:
 # 1. Input interface for user interaction
-task1 = simple_task(task_def_name='InputIterface', task_reference_name='input_task')
+task1 = simple_task(task_def_name='InputInterface', task_reference_name='input_task')
 # 2. Simple VQA processing based on user input
 task2 = simple_task(task_def_name='SimpleVQA', task_reference_name='simple_vqa', inputs={'user_instruction': task1.output('user_instruction')})
 
@@ -39,5 +40,5 @@ workflow.register(True)
 
 # Initialize and start app client with workflow configuration
 config_path = CURRENT_PATH.joinpath('configs')
-agent_client = AppClient(interactor=workflow, config_path=config_path, workers=[InputIterface()])
+agent_client = AppClient(interactor=workflow, config_path=config_path, workers=[InputInterface()])
 agent_client.start_interactor()
