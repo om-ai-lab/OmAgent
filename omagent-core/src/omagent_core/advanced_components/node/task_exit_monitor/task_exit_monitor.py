@@ -29,6 +29,32 @@ CURRENT_PATH = Path(__file__).parents[0]
 class TaskExitMonitor(BaseWorker):
 
     def _run(self, agent_task: dict, last_output: str, *args, **kwargs):
+        """A task exit monitor that determines task completion and loop exit conditions.
+
+        This component acts as a monitor that:
+        - Takes a task tree and checks the status of each task node
+        - Determines if the current task branch is complete
+        - Decides whether to continue to next sibling/child task or exit
+        - Manages the traversal and completion of the entire task tree
+        - Controls the dynamic task execution loop
+
+        The monitor is responsible for:
+        1. Checking if current task failed -> exit loop
+        2. If current task has children -> move to first child
+        3. If current task has next sibling -> move to next sibling 
+        4. If at root with no siblings -> exit loop
+        5. If parent has no next sibling -> exit loop
+        6. Otherwise -> move to parent's next sibling
+
+        Args:
+            agent_task (dict): The task tree containing all tasks and their status
+            last_output (str): The output from previous task execution
+            *args: Additional arguments
+            **kwargs: Additional keyword arguments
+
+        Returns:
+            dict: Contains updated task tree, exit flag, and last output
+        """
         task = TaskTree(**agent_task)
         current_node = task.get_current_node()
         if current_node.status == "failed":
