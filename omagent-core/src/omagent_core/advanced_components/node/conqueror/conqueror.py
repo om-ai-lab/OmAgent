@@ -45,9 +45,34 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
     tool_manager: ToolManager
 
     def _run(self, agent_task: dict, last_output: str, *args, **kwargs):
+        """A task conqueror that executes and manages complex task trees.
+
+        This component acts as a task conqueror that:
+        - Takes a hierarchical task tree and processes each task node
+        - Maintains context and state between task executions
+        - Leverages LLM to determine next actions and generate responses
+        - Manages task dependencies and relationships between parent/sibling tasks
+        - Tracks task completion status and progression through the tree
+
+        The conqueror is responsible for breaking down complex tasks into manageable
+        subtasks and ensuring they are executed in the correct order while maintaining
+        overall context and goal alignment.
+
+        Args:
+            agent_task (dict): The task tree definition and current state
+            last_output (str): The output from previous task execution
+            *args: Additional arguments
+            **kwargs: Additional keyword arguments
+
+        Returns:
+            dict: Processed response containing next actions or task completion results
+        """
         task = TaskTree(**agent_task)
         current_node = task.get_current_node()
         current_node.status = TaskStatus.RUNNING
+
+        # Initialize former_results in shared memory if not present
+        # former_results is used to store the results of the tasks which are in the same depth that have been executed
         if not self.stm(self.workflow_instance_id).get('former_results'):
             self.stm(self.workflow_instance_id)['former_results'] = {}
         payload = {
@@ -81,14 +106,18 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
             "extra_info": self.stm(self.workflow_instance_id).get("extra"),
             "img_placeholders": "".join(list(self.stm(self.workflow_instance_id).get("image_cache", {}).keys()))
         }
+        
+        # Call LLM to get next actions or task completion results
         chat_complete_res = self.infer(input_list=[payload])
         content = chat_complete_res[0]["choices"][0]["message"].get("content")
         content = json_repair.loads(content)
 
+        # Handle the case where the LLM returns a dictionary with multiple keys
         first_key = next(iter(content))
         new_data = {first_key: content[first_key]}
         content = new_data
 
+        # LLM returns the direct answer of the task
         if content.get("agent_answer"):
             last_output = content
             if task.get_parent(current_node.id):
@@ -102,6 +131,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
             self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" agent answer: {content["agent_answer"]}')
             return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
 
+        # LLM returns the reason why the task needs to be divided
         elif content.get("divide"):
             current_node.result = content["divide"]
             current_node.status = TaskStatus.RUNNING
@@ -113,13 +143,18 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
             self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" needs to be divided.')
             return {"agent_task": task.model_dump(), "switch_case_value": "complex", "last_output": last_output, "kwargs": kwargs}
 
+        # LLM returns the tool call information
         elif content.get("tool_call"):
             self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" needs to be executed by tool.')
+
+            # Call tool_manager to decide which tool to use and execute the tool
             execution_status, execution_results = self.tool_manager.execute_task(
                 content["tool_call"], related_info=self.stm['former_results']
             )
             former_results = self.stm(self.workflow_instance_id)['former_results']
             former_results['tool_call'] = content['tool_call']
+
+            # Handle the case where the tool call is successful
             if execution_status == "success":
                 last_output = execution_results
                 if task.get_parent(current_node.id):
@@ -136,6 +171,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                 }
                 self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call success.')
                 return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
+            # Handle the case where the tool call is failed
             else:
                 current_node.result = execution_results
                 current_node.status = TaskStatus.FAILED
@@ -143,7 +179,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                 self.stm(self.workflow_instance_id)['former_results'] = former_results
                 self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call failed.')
                 return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
-
+        # Handle the case where the LLM generation is not valid
         else:
             raise ValueError("LLM generation is not valid.")
         
