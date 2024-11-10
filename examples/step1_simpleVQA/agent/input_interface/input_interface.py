@@ -35,10 +35,11 @@ class InputIterface(BaseWorker):
         logging.info(f'User_instruction: {user_instruction}\nImage_path: {image_path}')
         
         # Load image from file system
-        img = read_image(input_source=image_path)
-        
-        # Store image in workflow shared memory with standard key
-        image_cache = {'<image_0>' : img}
-        self.stm(self.workflow_instance_id)['image_cache'] = image_cache
+        if image_path:
+            img = read_image(input_source=image_path)
+            
+            # Store image in workflow shared memory with standard key
+            image_cache = {'<image_0>' : img}
+            self.stm(self.workflow_instance_id)['image_cache'] = image_cache
 
         return {'user_instruction': user_instruction}
