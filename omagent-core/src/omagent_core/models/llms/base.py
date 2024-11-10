@@ -97,9 +97,7 @@ T = TypeVar("T", str, dict, list)
 class BaseLLMBackend(BotBase, ABC):
     """Prompts prepare and LLM infer"""
 
-    output_parser: Optional[BaseOutputParser] = Field(
-        default=None, validate_default=True
-    )
+    output_parser: Optional[BaseOutputParser] = None
     prompts: List[PromptTemplate] = []
     llm: BaseLLM
     token_usage: ClassVar[dict] = defaultdict(int)

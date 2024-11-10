@@ -22,7 +22,7 @@ from omagent_core.utils.logger import logging
 
 registry.import_module()
 
-container.register_stm(stm='RedisSTM')
+# container.register_stm(stm='RedisSTM')
 container.register_callback(callback=DefaultCallback)
 container.register_input(input=AppInput)
 
@@ -41,7 +41,7 @@ class DefaultClient:
 
     def start_interactor(self):
         absolute_path = Path(self._config_path).resolve()
-        print(f"绝对路径: {absolute_path}")
+        print(f"{absolute_path}")
         worker_config = build_from_file(self._config_path)
         print("worker_config:",worker_config)
         self._task_handler_interactor = TaskHandler(worker_config=worker_config, workers=self._workers)

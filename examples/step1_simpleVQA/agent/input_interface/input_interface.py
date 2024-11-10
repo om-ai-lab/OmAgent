@@ -9,7 +9,7 @@ CURRENT_PATH = Path(__file__).parents[0]
 
 
 @registry.register_worker()
-class InputIterface(BaseWorker):
+class InputInterface(BaseWorker):
     """Input interface processor that handles user instructions and image input.
     
     This processor:

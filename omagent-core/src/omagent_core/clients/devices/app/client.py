@@ -13,7 +13,7 @@ from omagent_core.services.connectors.redis import RedisConnector
 registry.import_module()
 
 container.register_connector(name='redis_stream_client', connector=RedisConnector)
-container.register_stm(stm='RedisSTM')
+# container.register_stm(stm='RedisSTM')
 container.register_callback(callback=AppCallback)
 container.register_input(input=AppInput)
 
