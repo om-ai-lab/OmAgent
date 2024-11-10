@@ -1,0 +1,4 @@
+name: SimpleVQA
+output_parser:
+  name: StrParser
+llm: ${sub|gpt}
