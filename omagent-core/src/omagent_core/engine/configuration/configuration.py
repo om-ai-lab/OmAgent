@@ -14,7 +14,7 @@ from omagent_core.engine.configuration.settings.authentication_settings import (
 TEMPLATE_CONFIG = {
     "name": "Configuration",
     "base_url": {
-        "value": "http://12345:8080",
+        "value": "http://localhost:8080",
         "description": "The Conductor Server API endpoint",
         "env_var": "CONDUCTOR_SERVER_URL",
     },
@@ -44,7 +44,7 @@ class Configuration(BaseSettings):
         extra = "allow"
 
     base_url: str = Field(
-        default="http://192.168.1.100:8080",
+        default="http://localhost:8080",
         description="The Conductor Server API endpoint"
     )
     auth_key: Optional[str] = Field(default=None, description="The authorization key")
