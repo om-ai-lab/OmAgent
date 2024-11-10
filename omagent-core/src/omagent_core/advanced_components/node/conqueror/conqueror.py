@@ -1,7 +1,7 @@
 import json
 import re
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Any
 
 from colorama import Fore, Style
 from pydantic import Field
@@ -19,14 +19,19 @@ from ....utils.registry import registry
 from ....models.llms.base import BaseLLMBackend
 from ....models.llms.prompt.prompt import PromptTemplate
 from ....tool_system.manager import ToolManager
-from ....engine.node.decider import BaseDecider
-from ....engine.task.agent_task import AgentTask, TaskStatus
+from ....engine.task.agent_task import TaskTree, TaskStatus
+from ....engine.worker.base import BaseWorker
+from ....models.llms.base import StrParser
+import json_repair
+from ....models.llms.openai_gpt import OpenaiGPTLLM
+from ....utils.container import container
+from collections import defaultdict
 
 CURRENT_PATH = Path(__file__).parents[0]
 
 
-@registry.register_node()
-class TaskConqueror(BaseLLMBackend, BaseDecider):
+@registry.register_worker()
+class TaskConqueror(BaseLLMBackend, BaseWorker):
     prompts: List[PromptTemplate] = Field(
         default=[
             PromptTemplate.from_file(
@@ -39,265 +44,142 @@ class TaskConqueror(BaseLLMBackend, BaseDecider):
     )
     tool_manager: ToolManager
 
-    @retry(
-        stop=(
-            stop_after_delay(EnvVar.STOP_AFTER_DELAY)
-            | stop_after_attempt(EnvVar.STOP_AFTER_ATTEMPT)
-        ),
-        retry=retry_if_exception_message(message="LLM generation is not valid."),
-        reraise=True,
-    )
-    def _run(self, args: BaseWorkflowContext, ltm: LTM) -> Tuple[BaseWorkflowContext, str]:
-        task: AgentTask = args.task
-        task.status = TaskStatus.RUNNING
+    def _run(self, agent_task: dict, last_output: str, *args, **kwargs):
+        """A task conqueror that executes and manages complex task trees.
 
-        llm_detail = {
-            "api_keys": {
-                self.llm.model_id: [
-                    {
-                        "llm_key": self.llm.api_key,
-                        "endpoint": self.llm.endpoint,
-                        "max_token": self.llm.max_tokens,
-                        "temperature": self.llm.temperature,
-                        "response_format": self.llm.response_format,
-                    }
-                ]
-            }
-        }
-        chat_structure = {
-            "current_stage": self.__class__.__name__,
-            "task": task.task,
-            "task_depth": task.task_depth(),
-            "llm_detail": llm_detail,
-        }
-        self.callback.send_block(chat_structure)
-        chat_complete_res = self.simple_infer(
-            task=task.task,
-            tools=self.tool_manager.generate_prompt(),
-            sibling_tasks=[
+        This component acts as a task conqueror that:
+        - Takes a hierarchical task tree and processes each task node
+        - Maintains context and state between task executions
+        - Leverages LLM to determine next actions and generate responses
+        - Manages task dependencies and relationships between parent/sibling tasks
+        - Tracks task completion status and progression through the tree
+
+        The conqueror is responsible for breaking down complex tasks into manageable
+        subtasks and ensuring they are executed in the correct order while maintaining
+        overall context and goal alignment.
+
+        Args:
+            agent_task (dict): The task tree definition and current state
+            last_output (str): The output from previous task execution
+            *args: Additional arguments
+            **kwargs: Additional keyword arguments
+
+        Returns:
+            dict: Processed response containing next actions or task completion results
+        """
+        task = TaskTree(**agent_task)
+        current_node = task.get_current_node()
+        current_node.status = TaskStatus.RUNNING
+
+        # Initialize former_results in shared memory if not present
+        # former_results is used to store the results of the tasks which are in the same depth that have been executed
+        if not self.stm(self.workflow_instance_id).get('former_results'):
+            self.stm(self.workflow_instance_id)['former_results'] = {}
+        payload = {
+            "task": current_node.task,
+            "tools": self.tool_manager.generate_prompt(),
+            "sibling_tasks": [
                 (
                     {
-                        "task": each["task"],
-                        "criticism": each["criticism"],
-                        "milestones": each["milestones"],
+                        "task": each.task,
+                        "criticism": each.criticism,
+                        "milestones": each.milestones,
                     }
-                    if each["id"] > task.id
+                    if each.id > current_node.id
                     else None
                 )
-                for each in task.sibling_info()[1:]
+                for each in task.get_siblings(current_node.id)
             ],
-            parent_task=(
+            "parent_task": (
                 [
                     {
-                        "task": each["task"],
-                        "criticism": each["criticism"],
-                        "milestones": each["milestones"],
+                        "task": each.task,
+                        "criticism": each.criticism,
+                        "milestones": each.milestones,
                     }
-                    for each in [task.parent.task_info()]
+                    for each in [task.get_parent(current_node.id)]
                 ][0]
-                if task.parent
+                if task.get_parent(current_node.id)
                 else []
             ),
-            former_results=self.stm.former_results,
-        )
-        content = chat_complete_res["choices"][0]["message"].get("content")
-        content = self._extract_from_result(content)
+            "former_results": self.stm(self.workflow_instance_id)['former_results'],
+            "extra_info": self.stm(self.workflow_instance_id).get("extra"),
+            "img_placeholders": "".join(list(self.stm(self.workflow_instance_id).get("image_cache", {}).keys()))
+        }
+        
+        # Call LLM to get next actions or task completion results
+        chat_complete_res = self.infer(input_list=[payload])
+        content = chat_complete_res[0]["choices"][0]["message"].get("content")
+        content = json_repair.loads(content)
 
+        # Handle the case where the LLM returns a dictionary with multiple keys
         first_key = next(iter(content))
         new_data = {first_key: content[first_key]}
         content = new_data
 
-        self.callback.send_block(content)
+        # LLM returns the direct answer of the task
         if content.get("agent_answer"):
-            args.last_output = content
-            if task.parent:
-                if task.id not in [
-                    each_child.id for each_child in task.parent.children
-                ]:
-                    self.stm.former_results = {}
-            self.stm.former_results[task.task] = content
-            task.result = content["agent_answer"]
-            task.status = TaskStatus.SUCCESS
-            direct_output_structure = {
-                "tool_status": task.status,
-                "tool_result": task.result,
-            }
-            self.callback.send_block(direct_output_structure)
-            return args, "success"
-        elif content.get("impossible_to_accomplish"):
-            task.result = content["impossible_to_accomplish"]
-            task.status = TaskStatus.FAILED
-            args.last_output = "failed: Task is impossible to accomplish. Agent provided reason: {}".format(
-                content["impossible_to_accomplish"]
-            )
-            direct_output_structure = {
-                "tool_status": task.status,
-                "tool_result": task.result,
-            }
-            self.callback.send_block(direct_output_structure)
-            return args, "failed"
+            last_output = content
+            if task.get_parent(current_node.id):
+                if current_node.id not in [each.id for each in task.get_children(task.get_parent(current_node.id).id)]:
+                    self.stm(self.workflow_instance_id)['former_results'] = {}
+            former_results = self.stm(self.workflow_instance_id)['former_results']
+            former_results[current_node.task] = content
+            self.stm(self.workflow_instance_id)['former_results'] = former_results
+            current_node.result = content["agent_answer"]
+            current_node.status = TaskStatus.SUCCESS
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" agent answer: {content["agent_answer"]}')
+            return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
 
+        # LLM returns the reason why the task needs to be divided
         elif content.get("divide"):
-            task.result = content["divide"]
-            task.status = TaskStatus.RUNNING
-            args.last_output = (
+            current_node.result = content["divide"]
+            current_node.status = TaskStatus.RUNNING
+            last_output = (
                 "Task is too complex to complete. Agent provided reason: {}".format(
                     content["divide"]
                 )
             )
-            direct_output_structure = {
-                "tool_status": task.status,
-                "tool_result": task.result,
-            }
-            self.callback.send_block(direct_output_structure)
-            return args, "complex"
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" needs to be divided.')
+            return {"agent_task": task.model_dump(), "switch_case_value": "complex", "last_output": last_output, "kwargs": kwargs}
 
+        # LLM returns the tool call information
         elif content.get("tool_call"):
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" needs to be executed by tool.')
+
+            # Call tool_manager to decide which tool to use and execute the tool
             execution_status, execution_results = self.tool_manager.execute_task(
-                content["tool_call"], related_info=self.stm.former_results
+                content["tool_call"], related_info=self.stm['former_results']
             )
+            former_results = self.stm(self.workflow_instance_id)['former_results']
+            former_results['tool_call'] = content['tool_call']
+
+            # Handle the case where the tool call is successful
             if execution_status == "success":
-                args.last_output = execution_results
-                if task.parent:
-                    if task.id not in [
-                        each_child.id for each_child in task.parent.children
-                    ]:
-                        self.stm.former_results = {}
-                self.stm.former_results[task.task] = execution_results
-                task.result = execution_results
-                task.status = TaskStatus.SUCCESS
+                last_output = execution_results
+                if task.get_parent(current_node.id):
+                    if current_node.id not in [each.id for each in task.get_children(task.get_parent(current_node.id).id)]:
+                        self.stm(self.workflow_instance_id)['former_results'] = {}
+                former_results.pop("tool_call", None)
+                former_results[current_node.task] = execution_results
+                self.stm(self.workflow_instance_id)['former_results'] = former_results
+                current_node.result = execution_results
+                current_node.status = TaskStatus.SUCCESS
                 toolcall_success_output_structure = {
-                    "tool_status": task.status,
-                    "tool_result": task.result,
+                    "tool_status": current_node.status,
+                    "tool_result": current_node.result,
                 }
-                self.callback.send_block(toolcall_success_output_structure)
-                return args, "success"
+                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call success.')
+                return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
+            # Handle the case where the tool call is failed
             else:
-                task.result = execution_results
-                task.status = TaskStatus.FAILED
-                self.stm.former_results["failed_detail"] = task.result
-                self.stm.former_results["tool_call"] = content["tool_call"]
-                return args, "failed"
-
+                current_node.result = execution_results
+                current_node.status = TaskStatus.FAILED
+                former_results['tool_call_error'] = f"tool_call {content['tool_call']} raise error: {current_node.result}"
+                self.stm(self.workflow_instance_id)['former_results'] = former_results
+                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call failed.')
+                return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
+        # Handle the case where the LLM generation is not valid
         else:
             raise ValueError("LLM generation is not valid.")
-
-    @retry(
-        stop=(
-            stop_after_delay(EnvVar.STOP_AFTER_DELAY)
-            | stop_after_attempt(EnvVar.STOP_AFTER_ATTEMPT)
-        ),
-        retry=retry_if_exception_message(message="LLM generation is not valid."),
-        reraise=True,
-    )
-    async def _arun(self, args: BaseWorkflowContext, ltm: LTM) -> Tuple[BaseWorkflowContext, str]:
-        task: AgentTask = args.task
-        task.status = TaskStatus.RUNNING
-
-        llm_detail = {
-            "api_keys": {
-                self.llm.model_id: [
-                    {
-                        "llm_key": self.llm.api_key,
-                        "endpoint": self.llm.endpoint,
-                        "max_token": self.llm.max_tokens,
-                        "temperature": self.llm.temperature,
-                        "response_format": self.llm.response_format,
-                    }
-                ]
-            }
-        }
-        chat_structure = {
-            "current_stage": self.__class__.__name__,
-            "task": task.task,
-            "task_depth": task.task_depth(),
-            "llm_detail": llm_detail,
-        }
-        self.callback.send_block(
-            f'{Fore.WHITE}\n{"-=" * 5}Current task{"=-" * 5}{Style.RESET_ALL}\n'
-            f"{Fore.BLUE}{json.dumps(chat_structure, indent=2, ensure_ascii=False)}{Style.RESET_ALL}"
-        )
-        chat_complete_res = await self.simple_ainfer(
-            task=task.task,
-            tools=self.tool_manager.generate_prompt(),
-            sibling_tasks=task.sibling_info(),
-            parent_task=task.parent.task_info() if task.parent else None,
-            former_results=args.last_output,
-        )
-        content = chat_complete_res["choices"][0]["message"].get("content")
-        content = self._extract_from_result(content)
-
-        self.callback.send_block(content)
-        if content.get("agent_answer"):
-            args.last_output = content
-            task.result = content["agent_answer"]
-            task.status = TaskStatus.SUCCESS
-            direct_output_structure = {
-                "tool_status": task.status,
-                "tool_result": task.result,
-            }
-            self.callback.send_block(direct_output_structure)
-            return args, "success"
-        elif content.get("impossible_to_accomplish"):
-            task.result = content["impossible_to_accomplish"]
-            task.status = TaskStatus.FAILED
-            args.last_output = "failed: Task is impossible to accomplish. Agent provided reason: {}".format(
-                content["impossible_to_accomplish"]
-            )
-            direct_output_structure = {
-                "tool_status": task.status,
-                "tool_result": task.result,
-            }
-            self.callback.send_block(direct_output_structure)
-            return args, "failed"
-
-        elif content.get("divide"):
-            task.result = content["divide"]
-            task.status = TaskStatus.FAILED
-            args.last_output = (
-                "Task is too complex to complete. Agent provided reason: {}".format(
-                    content["divide"]
-                )
-            )
-            direct_output_structure = {
-                "tool_status": task.status,
-                "tool_result": task.result,
-            }
-            self.callback.send_block(direct_output_structure)
-            return args, "complex"
-
-        elif content.get("tool_call"):
-            execution_status, execution_results = await self.tool_manager.aexecute_task(
-                content["tool_call"]
-            )
-            if execution_status == "success":
-                args.last_output = execution_results
-                task.result = execution_results
-                task.status = TaskStatus.SUCCESS
-                return args, "success"
-            else:
-                task.result = execution_results
-                task.status = TaskStatus.FAILED
-                args.last_output = "This task cannot be solved directly and all at once using a tool. Agent provided reason: {}".format(
-                    execution_results
-                )
-                direct_output_structure = {
-                    "tool_status": task.status,
-                    "tool_result": task.result,
-                }
-                self.callback.send_block(direct_output_structure)
-                return args, "complex"
-
-        else:
-            raise ValueError("LLM generation is not valid.")
-
-    def _extract_from_result(self, result: str) -> dict:
-        try:
-            pattern = r"```json\s+(.*?)\s+```"
-            match = re.search(pattern, result, re.DOTALL)
-            if match:
-                return json.loads(match.group(1))
-            else:
-                return json.loads(result)
-        except Exception as error:
-            raise ValueError("LLM generation is not valid.")
+        

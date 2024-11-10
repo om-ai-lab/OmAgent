@@ -17,7 +17,7 @@ ARGSCHEMA = {
 class WriteFileContent(BaseTool):
     args_schema: ArgSchema = ArgSchema(**ARGSCHEMA)
     description: str = (
-        "Write data to a file excluding python code, replacing the file if it already exists."
+        "Write data to a file, replacing the file if it already exists."
     )
 
     def _run(self, file_path: str, content: str, file_mode: str = "w") -> str:

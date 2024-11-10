@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from abc import ABC
 from typing import Any, Dict, Optional
 
-from ..task.agent_task import AgentTask
+from ..task.agent_task import TaskNode
 
 class BaseWorkflowContext(BaseModel, ABC):
     class Config:
@@ -13,4 +13,4 @@ class BaseWorkflowContext(BaseModel, ABC):
 
     last_output: Any = None
     kwargs: dict = {}
-    task: AgentTask
+    task: TaskNode
