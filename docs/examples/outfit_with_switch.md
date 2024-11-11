@@ -1,6 +1,37 @@
 # Outfit Recommendation with Switch Example
 
 This example demonstrates how to use the framework for outfit recommendation tasks with switch_case functionality. The example code can be found in the `examples/step2_outfit_with_switch` directory.
+```bash
+   cd examples/step2_outfit_with_switch
+```
+
+## Overview
+
+This example implements an outfit recommendation workflow that uses switch-case functionality to conditionally include weather information in the recommendation process. The workflow consists of the following key components:
+
+1. **Input Interface**
+   - Handles user input containing clothing requests and image data
+   - Processes and caches any uploaded images
+   - Extracts the user's outfit request instructions
+
+2. **Weather Decision Logic**
+   - WeatherDecider: Analyzes the user's request to determine if weather information is needed
+   - Makes a binary decision (0 or 1) based on context in the user's request
+   - Controls whether weather data should be fetched
+
+3. **Conditional Weather Search**
+   - WeatherSearcher: Only executes if WeatherDecider returns 0 (weather info needed)
+   - Uses web search functionality to fetch current weather conditions
+   - Integrates weather data into the recommendation context
+
+4. **Outfit Recommendation**
+   - Generates final clothing suggestions based on:
+     - User's original request
+     - Weather information (if available)
+     - Any provided image context
+   - Provides complete outfit recommendations
+
+The workflow follows this sequence:
 
 ## Prerequisites
 
@@ -22,7 +53,7 @@ The container.yaml file is a configuration file that manages dependencies and se
    This will create a container.yaml file with default settings under `examples/step2_outfit_with_switch`.
 
 
-2. Configure your LLM settings in `configs/llms/gpt.yml`:
+2. Configure your LLM settings in `configs/llms/gpt.yml` and `configs/llms/text_res.yml`:
    - Set your OpenAI API key or compatible endpoint through environment variable or by directly modifying the yml file
    ```bash
    export custom_openai_key="your_openai_api_key"
@@ -57,30 +88,13 @@ The container.yaml file is a configuration file that manages dependencies and se
    python run_app.py
    ```
 
-## Example Usage
-
-The system accepts two types of input:
-
-1. Image Input:
-   - Upload an image of your clothing item (e.g., a jacket, dress, or sweater)
-
-2. Text Query:
-   - After uploading the image, you can ask questions like:
-     - "What should I pair this with for today's weather in New York?"
-     - "I will go to work tommorrow morning, what should I wear?"
-     - "Suggest a complete outfit suitable for my next meeting?"
-
-The system will:
-1. Analyze your uploaded clothing item
-2. Search for real-time weather information for the specified location
-3. Consider both the clothing item and weather conditions
-4. Provide personalized outfit recommendations to complete your look
 
 ## Troubleshooting
 
 If you encounter issues:
-- Verify Redis is running and accessible
-- Check your OpenAI API key is valid
+- Verify Conductor and Redis are running and accessible
+- Check your OpenAI API key and Bing API key are valid
+- Check Redis Stream client and Redis STM client configuration
 - Ensure all dependencies are installed correctly
 - Review logs for any error messages
 

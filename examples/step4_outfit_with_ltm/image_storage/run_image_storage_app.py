@@ -22,7 +22,7 @@ container.register_ltm(ltm='MilvusLTM')
 container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 
 # Initialize image storage workflow
-workflow = ConductorWorkflow(name='step4_image_storage')
+workflow = ConductorWorkflow(name='step4_image_storage11')
 
 # Configure workflow tasks:
 # 1. Listen for new images
