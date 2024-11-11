@@ -1,16 +1,11 @@
 import datetime
 import inspect
-import json
-import os
+import re
 from abc import ABC, abstractmethod
-from collections import defaultdict
 from pathlib import Path
 from time import time
-from typing import Any, ClassVar
-from enum import Enum
 
-from colorama import Fore, Style
-from pydantic import BaseModel, model_validator
+from pydantic import model_validator
 
 from ..utils.error import VQLError
 from ..utils.logger import logging
@@ -51,6 +46,10 @@ class CallbackBase(BotBase, ABC):
     @abstractmethod
     def finish(self, **kwargs):
         pass
+
+    def filter_special_symbols_in_msg(self, msg):
+        msg = re.sub(r'[-*#]', '', msg)
+        return msg
 
     def remove_duplicates(self, sorted_list):
         if not sorted_list:
