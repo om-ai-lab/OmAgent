@@ -21,6 +21,7 @@ CURRENT_PATH = root_path = Path(__file__).parents[0]
 registry.import_module()
 
 # Load container configuration from YAML file
+container.register_stm("RedisSTM")
 container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 
 # Initialize simple VQA workflow
