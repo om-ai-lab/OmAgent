@@ -25,7 +25,7 @@ class ConductorWorkflow:
         self.version = version
         self.description = description
         self._tasks = []
-        self._owner_email = "Default"
+        self._owner_email = "default@omagent.ai"
         self._timeout_policy = None
         self._timeout_seconds = 60
         self._failure_workflow = ""
