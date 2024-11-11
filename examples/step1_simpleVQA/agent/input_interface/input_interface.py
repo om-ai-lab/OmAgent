@@ -21,7 +21,7 @@ class InputInterface(BaseWorker):
 
     def _run(self, *args, **kwargs):
         # Read user input through configured input interface
-        user_input = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt=None)
+        user_input = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt='Please tell me a question and a image.')
         
         image_path = None
         # Extract text and image content from input message

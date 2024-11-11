@@ -35,7 +35,7 @@ class OutfitImageInput(BaseWorker):
         Returns:
             None - Results are stored in workflow's short-term memory
         """
-        user_input = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt=None)
+        user_input = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt='Please input a image of a clothing item.')
         
         content = user_input['messages'][-1]['content']
         for content_item in content:
