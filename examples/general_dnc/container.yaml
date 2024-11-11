@@ -30,7 +30,7 @@ connectors:
       value: 6379
       env_var: PORT
     password:
-      value: Hzlh.com2020
+      value: null
       env_var: PASSWORD
     username:
       value: null
