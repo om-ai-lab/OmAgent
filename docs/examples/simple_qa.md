@@ -26,8 +26,12 @@ The container.yaml file is a configuration file that manages dependencies and se
 
 
 2. Configure your LLM settings in `configs/llms/gpt.yml`:
-   - Set your OpenAI API key or compatible endpoint
-   - Configure other model settings like temperature as needed
+   - Set your OpenAI API key or compatible endpoint through environment variable or by directly modifying the yml file
+   ```bash
+   export custom_openai_key="your_openai_api_key"
+   export custom_openai_endpoint="your_openai_endpoint"
+   ```
+   - Configure other model settings like temperature as needed through environment variable or by directly modifying the yml file
 
 3. Update settings in the generated `container.yaml`:
    - Modify Redis connection settings:
@@ -42,12 +46,12 @@ The container.yaml file is a configuration file that manages dependencies and se
 
    For terminal/CLI usage:
    ```bash
-   python examples/step1_simpleVQA/run_cli.py
+   python run_cli.py
    ```
 
    For app/GUI usage:
    ```bash
-   python examples/step1_simpleVQA/run_app.py
+   python run_app.py
    ```
 
 ## Example Usage
@@ -66,3 +70,9 @@ If you encounter issues:
 - Check your OpenAI API key is valid
 - Ensure all dependencies are installed correctly
 - Review logs for any error messages
+
+
+## Building the Example
+
+Coming soon! This section will provide detailed instructions for building and packaging the step1_simpleVQA example step by step.
+
