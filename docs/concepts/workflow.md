@@ -32,6 +32,12 @@ workflow >> switch_task >> {'case1': task1, 'case2': task2, 'default': task3} # 
 ```
 Note that the switch_task **MUST** output ```switch_case_value``` as indicator for branching.
 
+You can use a workflow as a task in another workflow.
+```python
+sub_workflow >> task1 >> task2
+workflow >> task3 >> sub_workflow >> task4
+```
+
 ## Registering a Workflow
 You can register a workflow by using ```register``` method.
 ```python
