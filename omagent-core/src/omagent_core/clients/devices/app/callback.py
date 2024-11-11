@@ -25,7 +25,10 @@ class AppCallback(CallbackBase):
         interaction_type,
         prompt_tokens,
         output_tokens,
+        filter_special_symbols=True,
     ):
+        if msg_type == MessageType.TEXT.value and filter_special_symbols:
+            msg = self.filter_special_symbols_in_msg(msg)
         message = {"role": "assistant", "type": msg_type, "content": msg}
         usage = {"prompt_tokens": prompt_tokens, "output_tokens": output_tokens}
         data = {
@@ -64,6 +67,7 @@ class AppCallback(CallbackBase):
         interaction_type,
         prompt_tokens,
         output_tokens,
+        filter_special_symbols=True
     ):
         stream_name = f"{agent_id}_output"
         group_name = "omappagent"  # replace with your consumer group name
@@ -78,13 +82,14 @@ class AppCallback(CallbackBase):
             interaction_type,
             prompt_tokens,
             output_tokens,
+            filter_special_symbols
         )
         self.send_to_group(stream_name, group_name, data)
 
-    def send_incomplete(self, agent_id, took, msg_type, msg, prompt_tokens=0, output_tokens=0):
+    def send_incomplete(self, agent_id, msg, took=0, msg_type=MessageType.TEXT.value, prompt_tokens=0, output_tokens=0, filter_special_symbols=True):
         self.send_base_message(
             agent_id,
-            0,
+            CodeEnum.SUCCESS.value,
             "",
             took,
             msg_type,
@@ -93,6 +98,7 @@ class AppCallback(CallbackBase):
             InteractionType.DEFAULT.value,
             prompt_tokens,
             output_tokens,
+            filter_special_symbols
         )
 
     def send_block(
@@ -104,6 +110,7 @@ class AppCallback(CallbackBase):
         interaction_type=InteractionType.DEFAULT.value,
         prompt_tokens=0,
         output_tokens=0,
+        filter_special_symbols=True
     ):
         self.send_base_message(
             agent_id,
@@ -116,9 +123,10 @@ class AppCallback(CallbackBase):
             interaction_type,
             prompt_tokens,
             output_tokens,
+            filter_special_symbols
         )
 
-    def send_answer(self, agent_id, msg, took=0, msg_type=MessageType.TEXT.value,  prompt_tokens=0, output_tokens=0):
+    def send_answer(self, agent_id, msg, took=0, msg_type=MessageType.TEXT.value,  prompt_tokens=0, output_tokens=0, filter_special_symbols=True):
         self.send_base_message(
             agent_id,
             CodeEnum.SUCCESS.value,
@@ -130,6 +138,7 @@ class AppCallback(CallbackBase):
             InteractionType.DEFAULT.value,
             prompt_tokens,
             output_tokens,
+            filter_special_symbols
         )
 
     def info(self, agent_id, progress, message):

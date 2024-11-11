@@ -18,7 +18,8 @@ class ImageIndexListener(BaseWorker):
         group_name = "omappagent"  # consumer group name
         consumer_name = f"image_agent"  # consumer name
         poll_interval: int = 1
-
+        current_timestamp = int(time.time() * 1000)
+        start_id = f"{current_timestamp}-0"
         client = OrkesWorkflowClient(configuration=container.conductor_config)
 
         result = {}
@@ -40,23 +41,20 @@ class ImageIndexListener(BaseWorker):
                     logging.info(f"Workflow {self.workflow_instance_id} is not running, exiting...")
                     break
 
-                # read new messages from consumer group
-                messages = container.get_connector("redis_stream_client")._client.xreadgroup(
-                    group_name, consumer_name, {stream_name: ">"}, count=1
-                )
+                # read new messages from redis stream
+                messages = self.redis_stream_client._client.xrevrange(stream_name, max='+', min=start_id, count=1)
+                # Convert byte data to string
                 messages = [
-                    (stream, [(message_id, {k.decode('utf-8'): v.decode('utf-8') for k, v in message.items()}) for message_id, message in message_list])
-                    for stream, message_list in messages
+                    (message_id, {k.decode('utf-8'): v.decode('utf-8') for k, v in message.items()}) for message_id, message in messages
                 ]
                 # logging.info(f"Messages: {messages}")
 
-                for stream, message_list in messages:
-                    for message_id, message in message_list:
-                        flag = self.process_message(message, result)
-                        # confirm message has been processed
-                        container.get_connector("redis_stream_client")._client.xack(
-                            stream_name, group_name, message_id
-                        )
+                for message_id, message in messages:
+                    flag = self.process_message(message, result)
+                    # confirm message has been processed
+                    container.get_connector("redis_stream_client")._client.xack(
+                        stream_name, group_name, message_id
+                    )
                 if flag:
                     break
                 # Sleep for the specified interval before checking for new messages again
