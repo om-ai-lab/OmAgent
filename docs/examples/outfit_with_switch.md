@@ -1,6 +1,7 @@
 # Outfit Recommendation with Switch Example
 
 This example demonstrates how to use the framework for outfit recommendation tasks with switch_case functionality. The example code can be found in the `examples/step2_outfit_with_switch` directory.
+
 ```bash
    cd examples/step2_outfit_with_switch
 ```
@@ -33,6 +34,7 @@ This example implements an outfit recommendation workflow that uses switch-case 
 
 The workflow follows this sequence:
 
+
 ## Prerequisites
 
 - Python 3.8+
@@ -53,7 +55,9 @@ The container.yaml file is a configuration file that manages dependencies and se
    This will create a container.yaml file with default settings under `examples/step2_outfit_with_switch`.
 
 
+
 2. Configure your LLM settings in `configs/llms/gpt.yml` and `configs/llms/text_res.yml`:
+
    - Set your OpenAI API key or compatible endpoint through environment variable or by directly modifying the yml file
    ```bash
    export custom_openai_key="your_openai_api_key"
@@ -89,12 +93,15 @@ The container.yaml file is a configuration file that manages dependencies and se
    ```
 
 
+
 ## Troubleshooting
 
 If you encounter issues:
+
 - Verify Conductor and Redis are running and accessible
 - Check your OpenAI API key and Bing API key are valid
 - Check Redis Stream client and Redis STM client configuration
+
 - Ensure all dependencies are installed correctly
 - Review logs for any error messages
 
