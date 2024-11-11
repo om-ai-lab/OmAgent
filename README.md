@@ -50,7 +50,7 @@ It is recommended to deploy Conductor using Docker:
 ```bash
 docker compose -f docker/conductor/docker-compose.yml up -d
 ```
-- Once deployed, you can access the Conductor UI at `http://localhost:5000`.
+- Once deployed, you can access the Conductor UI at `http://localhost:5001`. (Note: Mac system will occupy port 5000 by default, so we use 5001 here. You can specify other ports when deploying Conductor.)
 - The Conductor API can be accessed via `http://localhost:8080`.
 
 ### 2. Install OmAgent  
