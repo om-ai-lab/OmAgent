@@ -75,53 +75,53 @@ docker compose -f docker/conductor/docker-compose.yml up -d
 
 ## 🚀 快速开始 
 ### Hello World
-1. **调整Python路径**：该脚本修改Python路径，以确保可以定位必要的模块。请验证路径对于您的设置是否正确：
+### 1、配置
 
-   ```python
-   CURRENT_PATH = Path(__file__).parents[0]
-   sys.path.append(os.path.abspath(CURRENT_PATH.joinpath('../../')))
-   ```
-   - **CURRENT_PATH**：这是当前目录的路径。
-   - **sys.path.append**：这将当前目录的路径添加到Python路径中。这是为了允许稍后从示例目录导入包。
+`container.yaml` 文件是一个管理系统中不同组件的依赖和设置的配置文件。按以下步骤设置您的配置：
 
-2. **初始化日志记录**：该脚本设置日志记录以跟踪应用程序事件。您可以根据需要调整日志记录级别（`INFO`，`DEBUG`等）：
-
-   ```python
-   logging.init_logger("omagent", "omagent", level="INFO")
-   ```
-
-3. **创建和执行工作流**：该脚本创建一个工作流并向其中添加一个任务。然后启动智能体客户端以执行工作流：
-
-   ```python
-    from examples.step1_simpleVQA.agent.simple_vqa.simple_vqa import SimpleVQA
-    from examples.step1_simpleVQA.agent.input_interface.input_interface import InputIterface
-
-    workflow = ConductorWorkflow(name='example1')
-    task1 = simple_task(task_def_name='InputIterface', task_reference_name='input_task')
-    task2 = simple_task(task_def_name='SimpleVQA', task_reference_name='simple_vqa', inputs={'user_instruction': task1.output('user_instruction')})
-    workflow >> task1 >> task2
-    
-    
-    workflow.register(True)
-    
-    agent_client = DefaultClient(interactor=workflow, config_path='examples/step1_simpleVQA/configs', workers=[InputIterface()])
-    agent_client.start_interactor()
-   ```
-
-   - **Workflow**：定义任务序列。'name'是工作流的名称， 请保证唯一性。
-   - **Task**：表示工作单元，在本例中，我们使用来自示例的SimpleVQA。'task_def_name'表示对应的类名，'task_reference_name'表示在conductor中的名称。
-   - **AppClient**：启动智能体客户端以执行工作流。这里我们使用AppClient，如果您想使用CLI，请使用DefaultClient。
-   - **agent_client.start_interactor()**：这将启动与注册任务对应的工作器，在本例中，它将启动SimpleVQA并等待conductor的调度。
-
-4. 配置参数  
-   TODO:修改配置文件或设置环境变量
-5. **运行脚本**  
-  使用Python执行脚本：  
+1. 生成 `container.yaml` 文件：
    ```bash
+   cd examples/step2_outfit_with_switch
+   python compile_container.py
+   ```
+   这将在 `examples/step2_outfit_with_switch` 下创建一个具有默认设置的 `container.yaml` 文件。
+
+2. 在 `configs/llms/gpt.yml` 和 `configs/llms/text_res.yml` 中配置您的 LLM 设置：
+
+   - 通过环境变量或直接修改 yml 文件来设置您的 OpenAI API 密钥或兼容的 endpoint
+   ```bash
+   export custom_openai_key="your_openai_api_key"
+   export custom_openai_endpoint="your_openai_endpoint"
+   ```
+
+3. 更新生成的 `container.yaml` 中的设置：
+   - 配置 Redis 连接设置，主要是主机地址、端口、密码凭证，包括 `redis_stream_client` 和 `redis_stm_client` 部分都要进行设置。
+   - 在 `conductor_config` 下更新 Conductor 服务器的 URL
+   - 根据需要调整其他组件设置
+
+4. websearch 默认使用的是 duckduckgo，如果要更好的效果建议配置[bing搜索](https://www.microsoft.com/en-us/bing/apis/pricing)，修改 `configs/tools/websearch.yml` 文件，设置 `bing_api_key`。
+
+有关 `container.yaml` 配置的更多信息，请参阅 [container 模块](./docs/concepts/container.md)
+
+### 2、运行示例
+
+1. 运行 outfit with switch 示例：
+
+   对于终端/CLI 使用：输入和输出在终端窗口中
+   ```bash
+   cd examples/step2_outfit_with_switch
+   python run_cli.py
+   ```
+
+   对于app/GUI 使用：输入和输出在应用程序中
+   ```bash
+   cd examples/step2_outfit_with_switch
    python run_app.py
    ```
-   **在执行脚本之前，请确保工作流引擎已经部署并正在运行。**
 
+   OmAgent 的 app 的连接和使用方式请参考 [app使用文档](./docs/concepts/app.md)
+
+## 🏗 架构
 OmAgent的设计架构遵循三项基本原则：  
 1. 基于图的工作流编排；  
 2. 本地多模态；  

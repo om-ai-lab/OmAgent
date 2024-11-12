@@ -34,7 +34,10 @@ class OutfitImagePreprocessor(BaseLLMBackend, BaseWorker):
 
     def _run(self, image_data:dict, *args, **kwargs):
         # Clear existing LTM data before processing new images
-        self.ltm.clear()
+        try:
+            self.ltm.clear()
+        except Exception as e:
+            pass
         
         self.callback.info(agent_id=self.workflow_instance_id, progress="image_preprocess", message="image preprocess started")
         

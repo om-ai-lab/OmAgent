@@ -25,13 +25,17 @@ class DefaultCallback(CallbackBase):
         msg,
         **kwargs
     ):
+        if kwargs.get('filter_special_symbols', False):
+            msg = self.filter_special_symbols_in_msg(msg)
         logging.info(f"\n{Fore.BLUE}block:{msg}{Style.RESET_ALL}")
         
 
     def error(self, agent_id, error_code, error_info, **kwargs):
         logging.error(f"\n{Fore.RED}{error_info}{Style.RESET_ALL}")
 
-    def send_answer(self, agent_id, msg, **kwargs):
+    def send_answer(self, agent_id, msg, **kwargs):        
+        if kwargs.get('filter_special_symbols', False):
+            msg = self.filter_special_symbols_in_msg(msg)
         logging.info(f"\n{Fore.BLUE}answer:{msg}{Style.RESET_ALL}")
 
     def finish(self, **kwargs):
