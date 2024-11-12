@@ -42,7 +42,7 @@ class ImageIndexListener(BaseWorker):
                     break
 
                 # read new messages from redis stream
-                messages = self.redis_stream_client._client.xrevrange(stream_name, max='+', min=start_id, count=1)
+                messages = container.get_connector("redis_stream_client")._client.xrevrange(stream_name, max='+', min=start_id, count=1)
                 # Convert byte data to string
                 messages = [
                     (message_id, {k.decode('utf-8'): v.decode('utf-8') for k, v in message.items()}) for message_id, message in messages
