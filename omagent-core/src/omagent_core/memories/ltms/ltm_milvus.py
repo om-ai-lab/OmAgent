@@ -17,7 +17,9 @@ class MilvusLTM(LTMBase):
     dim: int = Field(default=128)
     
     def model_post_init(self, __context: Any) -> None:        
-
+        pass
+    
+    def _create_collection(self) -> None:
         # Check if collection exists
         if not self.milvus_ltm_client._client.has_collection(self.storage_name):
             index_params = self.milvus_ltm_client._client.prepare_index_params()
@@ -54,9 +56,6 @@ class MilvusLTM(LTMBase):
 
             # Create index separately after collection creation                        
             print(f"Created storage {self.storage_name} successfully")
-        else:
-
-            print(f"{self.storage_name} storage already exists")
 
     def __getitem__(self, key: Any) -> Any:
         key_str = str(key)
@@ -71,6 +70,8 @@ class MilvusLTM(LTMBase):
             raise KeyError(f"Key {key} not found")
     
     def __setitem__(self, key: Any, value: Any) -> None:
+        self._create_collection()
+
         key_str = str(key)
 
         # Check if value is a dictionary containing 'value' and 'embedding'

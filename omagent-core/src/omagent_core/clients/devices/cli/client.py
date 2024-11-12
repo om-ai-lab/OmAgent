@@ -33,11 +33,13 @@ class DefaultClient:
         processor: ConductorWorkflow = None,
         config_path: str = "./config",
         workers: list = [],
+        input_prompt: str = None
     ) -> None:
         self._interactor = interactor
         self._processor = processor
         self._config_path = config_path
         self._workers = workers
+        self._input_prompt = input_prompt
 
     def start_interactor(self):
         absolute_path = Path(self._config_path).resolve()
@@ -53,7 +55,8 @@ class DefaultClient:
         group_name = "omappagent"  # replace with your consumer group name
         poll_interval = 1
 
-        self.first_input(workflow_instance_id=workflow_instance_id, input_prompt="What can I do for you?")
+        if self._input_prompt:
+            self.first_input(workflow_instance_id=workflow_instance_id, input_prompt=self._input_prompt)
 
         client = OrkesWorkflowClient(configuration=container.conductor_config)
         
@@ -99,7 +102,7 @@ class DefaultClient:
                 if data_flag:
                     contents = []
                     while True:
-                        print(f"{Fore.GREEN}{content}(Waiting for input, press Enter twice to finish):{Style.RESET_ALL}")
+                        print(f"{Fore.GREEN}{content}(Waiting for input. Your input can only be text or image path each time, you can press Enter once to input multiple times. Press Enter twice to finish the entire input.):{Style.RESET_ALL}")
                         user_input_lines = []
                         while True:
                             line = input(f"{Fore.GREEN}>>>{Style.RESET_ALL}")
@@ -149,7 +152,7 @@ class DefaultClient:
         self._task_handler_processor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_processor.start_processes()
         workflow_instance_id = self._processor.start_workflow_with_input(workflow_input={})
-        user_input = input(f"{Fore.GREEN}Please input a folder path of images:\n>>>{Style.RESET_ALL}")
+        user_input = input(f"{Fore.GREEN}Please input a folder path of images:(WaitPress Enter to finish the entire input.):\n>>>{Style.RESET_ALL}")
         
         image_items = []
         idx = 0
@@ -226,7 +229,7 @@ class DefaultClient:
     def first_input(self, workflow_instance_id: str, input_prompt = ""):
         contents = []
         while True:
-            print(f"{Fore.GREEN}{input_prompt}(Waiting for input, press Enter twice to finish):{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}{input_prompt}(Waiting for input. Your input can only be text or image path each time, you can press Enter once to input multiple times. Press Enter twice to finish the entire input.):{Style.RESET_ALL}")
             user_input_lines = []
             while True:
                 line = input(f"{Fore.GREEN}>>>{Style.RESET_ALL}")

@@ -10,7 +10,7 @@
   <a href="https://twitter.com/intent/follow?screen_name=OmAI_lab" target="_blank">
     <img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/OmAI_lab">
   </a>
-  <a href="https://discord.gg/9JfTJ7bk" target="_blank">
+  <a href="https://discord.gg/Mkqs8z5U" target="_blank">
     <img alt="Discord" src="https://img.shields.io/discord/1296666215548321822?style=flat&logo=discord">
   </a>
 </p>
@@ -29,17 +29,17 @@
 
 
 ## 📖 介绍
-OmAgent 是一个开源的代理框架，旨在简化设备上多模态代理的开发。我们的目标是使代理能够增强各种硬件设备的功能，从智能手机、智能可穿戴设备（如眼镜）、IP 摄像头到未来的机器人。因此，OmAgent 对各种类型的设备进行抽象，并简化了将这些设备连接到最先进的多模态基础模型和代理算法的过程，以便每个人都能构建最有趣的设备上代理。此外，OmAgent 专注于优化端到端计算管道，以提供开箱即用的实时用户交互体验。
+OmAgent 是一个开源的智能体框架，旨在简化设备上多模态智能体的开发。我们的目标是使智能体能够增强各种硬件设备的功能，从智能手机、智能可穿戴设备（如眼镜）、IP 摄像头到未来的机器人。因此，OmAgent 对各种类型的设备进行抽象，并简化了将这些设备连接到最先进的多模态基础模型和智能体算法的过程，以便每个人都能构建最有趣的设备上智能体。此外，OmAgent 专注于优化端到端计算管道，以提供开箱即用的实时用户交互体验。
 
 总之，OmAgent 的关键特性包括：
 
-- **轻松连接多样化设备**：我们使连接物理设备变得非常简单，例如手机、眼镜等，以便代理/模型开发者可以构建不仅在网页上运行而是在设备上运行的应用程序。我们欢迎对更多设备的支持贡献！
+- **轻松连接多样化设备**：我们使连接物理设备变得非常简单，例如手机、眼镜等，以便智能体/模型开发者可以构建不仅在网页上运行而是在设备上运行的应用程序。我们欢迎对更多设备的支持贡献！
 
 - **速度优化的最先进多模态模型**：OmAgent 集成了最先进的商业和开源基础模型，为应用开发者提供最强大的智能。此外，OmAgent 简化了音频/视频处理和计算过程，轻松实现设备与用户之间自然流畅的交互。
 
-- **最先进的多模态代理算法**：OmAgent 为研究人员和开发者提供了一个简单的工作流编排接口，以实现最新的代理算法，例如 ReAct、DnC 等。我们欢迎任何新代理算法的贡献，以实现更复杂的问题解决能力。
+- **最先进的多模态智能体算法**：OmAgent 为研究人员和开发者提供了一个简单的工作流编排接口，以实现最新的智能体算法，例如 ReAct、DnC 等。我们欢迎任何新智能体算法的贡献，以实现更复杂的问题解决能力。
 
-- **可扩展性和灵活性**：OmAgent 提供了一个直观的界面，用于构建可扩展的代理，使开发者能够构建适合特定角色并高度适应各种应用的代理。
+- **可扩展性和灵活性**：OmAgent 提供了一个直观的界面，用于构建可扩展的智能体，使开发者能够构建适合特定角色并高度适应各种应用的智能体。
 
 ## 🛠️ 如何安装
 ### 1. 部署工作流编排引擎  
@@ -48,7 +48,7 @@ OmAgent 使用 [Conductor](https://github.com/conductor-oss/conductor) 作为工
 ```bash
 docker compose -f docker/conductor/docker-compose.yml up -d
 ```
-- 部署完成后可以通过访问 `http://localhost:5000` 访问Conductor UI。
+- 部署完成后可以通过访问 `http://localhost:5001` 访问Conductor UI。（注：Mac系统默认会占用5000端口，因此我们使用5001端口，你可以在部署Conductor的时候指定其它端口。）
 - 通过 `http://localhost:8080` 调用Conductor API。
 
 ### 2. 安装OmAgent  
@@ -69,64 +69,64 @@ docker compose -f docker/conductor/docker-compose.yml up -d
 ### 3. 连接设备  
 如果你希望使用智能设备来访问你的智能体，我们提供了智能手机APP以及对应的后端程序，这样你可以专注于实现智能体功能，而无需担心复杂的设备连接问题。  
 - APP后端部署  
-  TODO
+  APP后端包含后端程序以及Mysql数据库和minio对象存储两个中间件。安装部署方法请参考[这里](docs/concepts/app_backend.md)。
 - 手机APP下载安装以及调试  
-  TODO
+  当前我们提供了Android APP供大家下载测试，具体的获取和使用方法请参考[这里](docs/concepts/app.md)。IOS版本正在开发中， 很快会和大家见面。
 
 ## 🚀 快速开始 
 ### Hello World
-1. **调整Python路径**：该脚本修改Python路径，以确保可以定位必要的模块。请验证路径对于您的设置是否正确：
+### 1、配置
 
-   ```python
-   CURRENT_PATH = Path(__file__).parents[0]
-   sys.path.append(os.path.abspath(CURRENT_PATH.joinpath('../../')))
-   ```
-   - **CURRENT_PATH**：这是当前目录的路径。
-   - **sys.path.append**：这将当前目录的路径添加到Python路径中。这是为了允许稍后从示例目录导入包。
+`container.yaml` 文件是一个管理系统中不同组件的依赖和设置的配置文件。按以下步骤设置您的配置：
 
-2. **初始化日志记录**：该脚本设置日志记录以跟踪应用程序事件。您可以根据需要调整日志记录级别（`INFO`，`DEBUG`等）：
-
-   ```python
-   logging.init_logger("omagent", "omagent", level="INFO")
-   ```
-
-3. **创建和执行工作流**：该脚本创建一个工作流并向其中添加一个任务。然后启动代理客户端以执行工作流：
-
-   ```python
-    from examples.step1_simpleVQA.agent.simple_vqa.simple_vqa import SimpleVQA
-    from examples.step1_simpleVQA.agent.input_interface.input_interface import InputIterface
-
-    workflow = ConductorWorkflow(name='example1')
-    task1 = simple_task(task_def_name='InputIterface', task_reference_name='input_task')
-    task2 = simple_task(task_def_name='SimpleVQA', task_reference_name='simple_vqa', inputs={'user_instruction': task1.output('user_instruction')})
-    workflow >> task1 >> task2
-    
-    
-    workflow.register(True)
-    
-    agent_client = DefaultClient(interactor=workflow, config_path='examples/step1_simpleVQA/configs', workers=[InputIterface()])
-    agent_client.start_interactor()
-   ```
-
-   - **Workflow**：定义任务序列。'name'是工作流的名称， 请保证唯一性。
-   - **Task**：表示工作单元，在本例中，我们使用来自示例的SimpleVQA。'task_def_name'表示对应的类名，'task_reference_name'表示在conductor中的名称。
-   - **AppClient**：启动代理客户端以执行工作流。这里我们使用AppClient，如果您想使用CLI，请使用DefaultClient。
-   - **agent_client.start_interactor()**：这将启动与注册任务对应的工作器，在本例中，它将启动SimpleVQA并等待conductor的调度。
-
-4. 配置参数  
-   TODO:修改配置文件或设置环境变量
-5. **运行脚本**  
-  使用Python执行脚本：  
+1. 生成 `container.yaml` 文件：
    ```bash
+   cd examples/step2_outfit_with_switch
+   python compile_container.py
+   ```
+   这将在 `examples/step2_outfit_with_switch` 下创建一个具有默认设置的 `container.yaml` 文件。
+
+2. 在 `configs/llms/gpt.yml` 和 `configs/llms/text_res.yml` 中配置您的 LLM 设置：
+
+   - 通过环境变量或直接修改 yml 文件来设置您的 OpenAI API 密钥或兼容的 endpoint
+   ```bash
+   export custom_openai_key="your_openai_api_key"
+   export custom_openai_endpoint="your_openai_endpoint"
+   ```
+
+3. 更新生成的 `container.yaml` 中的设置：
+   - 配置 Redis 连接设置，主要是主机地址、端口、密码凭证，包括 `redis_stream_client` 和 `redis_stm_client` 部分都要进行设置。
+   - 在 `conductor_config` 下更新 Conductor 服务器的 URL
+   - 根据需要调整其他组件设置
+
+4. websearch 默认使用的是 duckduckgo，如果要更好的效果建议配置[bing搜索](https://www.microsoft.com/en-us/bing/apis/pricing)，修改 `configs/tools/websearch.yml` 文件，设置 `bing_api_key`。
+
+有关 `container.yaml` 配置的更多信息，请参阅 [container 模块](./docs/concepts/container.md)
+
+### 2、运行示例
+
+1. 运行 outfit with switch 示例：
+
+   对于终端/CLI 使用：输入和输出在终端窗口中
+   ```bash
+   cd examples/step2_outfit_with_switch
+   python run_cli.py
+   ```
+
+   对于app/GUI 使用：输入和输出在应用程序中
+   ```bash
+   cd examples/step2_outfit_with_switch
    python run_app.py
    ```
-   **在执行脚本之前，请确保工作流引擎已经部署并正在运行。**
 
+   OmAgent 的 app 的连接和使用方式请参考 [app使用文档](./docs/concepts/app.md)
+
+## 🏗 架构
 OmAgent的设计架构遵循三项基本原则：  
 1. 基于图的工作流编排；  
 2. 本地多模态；  
 3. 设备中心化。  
-通过OmAgent，您有机会打造一个定制的智能代理程序。  
+通过OmAgent，您有机会打造一个定制的智能智能体程序。  
 
 为了更深入地理解OmAgent，让我们阐明一些关键术语： 
 
@@ -135,26 +135,26 @@ OmAgent的设计架构遵循三项基本原则：
 </p>  
 
 
-**Devices**：OmAgent愿景的核心是通过人工智能代理赋予智能硬件设备力量，使设备成为OmAgent本质的关键组成部分。通过我们慷慨提供的可下载移动应用程序，您的移动设备可以成为连接到OmAgent的首个基础节点。设备用于接收环境刺激，如图像和声音，可能提供响应性反馈。我们已经发展了一个简化的后端流程来管理应用中心的业务逻辑，从而使开发人员能够集中精力构建智能代理的逻辑框架。  
+**Devices**：OmAgent愿景的核心是通过人工智能智能体赋予智能硬件设备力量，使设备成为OmAgent本质的关键组成部分。通过我们慷慨提供的可下载移动应用程序，您的移动设备可以成为连接到OmAgent的首个基础节点。设备用于接收环境刺激，如图像和声音，可能提供响应性反馈。我们已经发展了一个简化的后端流程来管理应用中心的业务逻辑，从而使开发人员能够集中精力构建智能智能体的逻辑框架。  
 
-**Workflow**：在OmAgent框架中，智能代理的架构结构通过图形进行表达。开发人员可以自由创新、配置和序列化节点功能。目前，我们选择了Conductor作为工作流编排引擎，支持诸如switch-case、fork-join和do-while等复杂操作。  
+**Workflow**：在OmAgent框架中，智能智能体的架构结构通过图形进行表达。开发人员可以自由创新、配置和序列化节点功能。目前，我们选择了Conductor作为工作流编排引擎，支持诸如switch-case、fork-join和do-while等复杂操作。  
 
 **Task and Worker**：在整个OmAgent工作流开发过程中，Task 和 Worker 是至关重要的概念。Worker 体现了工作流节点的实际操作逻辑，而 Task 负责编排工作流的逻辑。Task分为Operator，用于管理工作流逻辑（例如循环、分支）和 SimpleTask，代表由开发人员定制的节点。每个SimpleTask与一个Worker相关联；当工作流进展到特定的SimpleTask时，任务将被分派给相应的Worker进行执行。
 
-### 构建代理程序的基本原则
-- **模块化**：将代理程序的功能拆分为独立的工作者，每个工作者负责一个特定的任务。
+### 构建智能体程序的基本原则
+- **模块化**：将智能体程序的功能拆分为独立的工作者，每个工作者负责一个特定的任务。
 
-- **可重用性**：设计工作者以便在不同的工作流程和代理程序中可重用。
+- **可重用性**：设计工作者以便在不同的工作流程和智能体程序中可重用。
 
-- **可扩展性**：通过添加更多工作者或调整工作流程顺序，利用工作流程来扩展代理程序的功能。
+- **可扩展性**：通过添加更多工作者或调整工作流程顺序，利用工作流程来扩展智能体程序的功能。
 
-- **互操作性**：工作者可以与各种后端进行交互，如LLMs、数据库或API，从而使代理程序能够执行复杂操作。
+- **互操作性**：工作者可以与各种后端进行交互，如LLMs、数据库或API，从而使智能体程序能够执行复杂操作。
 
 - **异步执行**：工作流引擎和任务处理程序异步管理执行，实现资源的高效利用。
 
 ### 示例项目
 
-我们提供了一些示例项目来展示如何使用OmAgent构建智能代理程序。您可以在 [examples](./examples/) 目录中找到完整的示例列表。以下是参考顺序：
+我们提供了一些示例项目来展示如何使用OmAgent构建智能智能体程序。您可以在 [examples](./examples/) 目录中找到完整的示例列表。以下是参考顺序：
 1. [step1_simpleVQA](./examples/step1_simpleVQA) 展示了如何使用OmAgent构建一个简单的多模态VQA智能体。[文档](docs/examples/simple_qa.md)  
 2. [step2_outfit_with_switch](./examples/step2_outfit_with_switch) 展示了如何使用OmAgent构建一个带有switch-case分支的智能体。[文档](docs/examples/outfit_with_switch.md)  
 3. [step3_outfit_with_loop](./examples/step3_outfit_with_loop) 展示了如何使用OmAgent构建一个带有循环的智能体。[文档](docs/examples/outfit_with_loop.md)  

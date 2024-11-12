@@ -10,7 +10,7 @@
   <a href="https://twitter.com/intent/follow?screen_name=OmAI_lab" target="_blank">
     <img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/OmAI_lab">
   </a>
-  <a href="https://discord.gg/9JfTJ7bk" target="_blank">
+  <a href="https://discord.gg/Mkqs8z5U" target="_blank">
     <img alt="Discord" src="https://img.shields.io/discord/1296666215548321822?style=flat&logo=discord">
   </a>
 </p>
@@ -50,7 +50,7 @@ It is recommended to deploy Conductor using Docker:
 ```bash
 docker compose -f docker/conductor/docker-compose.yml up -d
 ```
-- Once deployed, you can access the Conductor UI at `http://localhost:5000`.
+- Once deployed, you can access the Conductor UI at `http://localhost:5001`. (Note: Mac system will occupy port 5000 by default, so we use 5001 here. You can specify other ports when deploying Conductor.)
 - The Conductor API can be accessed via `http://localhost:8080`.
 
 ### 2. Install OmAgent  
@@ -70,61 +70,63 @@ OmAgent uses Milvus Lite as the default vector database for storing vector data 
 
 ### 3. Connect Devices  
 If you wish to use smart devices to access your agents, we provide a smartphone app and corresponding backend, allowing you to focus on agent functionality without worrying about complex device connection issues.  
-- Deploy the app backend  
-  TODO
-- Download, install, and debug the smartphone app  
-  TODO
+- **Deploy the app backend**   
+    The APP backend comprises the backend program, along with two middleware components: the MySQL database and MinIO object storage. For installation and deployment instructions, please refer to [this link](docs/concepts/app_backend.md).
+- **Download, install, and debug the smartphone app**  
+  At present, we offer an Android APP available for download and testing. For detailed instructions on acquiring and using it, please refer to [here](docs/concepts/app.md). The iOS version is currently under development and will be available soon.
 
 ## 🚀 Quick Start 
 ### Hello World
-1. **Adjust Python Path**: The script modifies the Python path to ensure it can locate necessary modules. Verify the path is correct for your setup:
+### 1、Configuration
 
-   ```python
-   CURRENT_PATH = Path(__file__).parents[0]
-   sys.path.append(os.path.abspath(CURRENT_PATH.joinpath('../../')))
-   ```
-   - **CURRENT_PATH**: This is the path to the current directory.
-   - **sys.path.append**: This adds the path to the current directory to the Python path. This is to allow importing packages from the examples directory later.
+The container.yaml file is a configuration file that manages dependencies and settings for different components of the system. To set up your configuration:
 
-
-2. **Initialize Logging**: The script sets up logging to track application events. You can adjust the logging level (`INFO`, `DEBUG`, etc.) as needed:
-
-   ```python
-   logging.init_logger("omagent", "omagent", level="INFO")
-   ```
-
-3. **Create and Execute Workflow**: The script creates a workflow and adds a task to it. It then starts the agent client to execute the workflow:
-
-   ```python
-    from examples.step1_simpleVQA.agent.simple_vqa.simple_vqa import SimpleVQA
-    from examples.step1_simpleVQA.agent.input_interface.input_interface import InputIterface
-
-    workflow = ConductorWorkflow(name='example1')
-    task1 = simple_task(task_def_name='InputIterface', task_reference_name='input_task')
-    task2 = simple_task(task_def_name='SimpleVQA', task_reference_name='simple_vqa', inputs={'user_instruction': task1.output('user_instruction')})
-    workflow >> task1 >> task2
-    
-    
-    workflow.register(True)
-    
-    agent_client = DefaultClient(interactor=workflow, config_path='examples/step1_simpleVQA/configs', workers=[InputIterface()])
-    agent_client.start_interactor()
-   ```
-
-   - **Workflow**: Defines the sequence of tasks. 'name' is the name of the workflow， please make sure it is unique.
-   - **Task**: Represents a unit of work, in this case, we use SimpleVQA from the examples. 'task_def_name' represents the corresponding class name, 'task_reference_name' represents the name in the conductor.
-   - **AppClient**: Starts the agent client to execute the workflow. Here we use AppClient, if you want to use CLI, please use DefaultClient.
-   - **agent_client.start_interactor()**: This will start the worker corresponding to the registered task, in this case, it will start SimpleVQA and wait for the conductor's scheduling.
-
-4. **Run the Script**  
-  Execute the script using Python:  
+1. Generate the container.yaml file:
    ```bash
+   cd examples/step2_outfit_with_switch
+   python compile_container.py
+   ```
+   This will create a container.yaml file with default settings under `examples/step2_outfit_with_switch`.
+
+
+
+2. Configure your LLM settings in `configs/llms/gpt.yml` and `configs/llms/text_res.yml`:
+
+   - Set your OpenAI API key or compatible endpoint through environment variable or by directly modifying the yml file
+   ```bash
+   export custom_openai_key="your_openai_api_key"
+   export custom_openai_endpoint="your_openai_endpoint"
+   ```
+
+3. Update settings in the generated `container.yaml`:
+      - Configure Redis connection settings, including host, port, credentials, and both `redis_stream_client` and `redis_stm_client` sections.
+   - Update the Conductor server URL under conductor_config section
+   - Adjust any other component settings as needed
+
+4. Websearch uses duckduckgo by default. For better results, it is recommended to configure [Bing Search](https://www.microsoft.com/en-us/bing/apis/pricing) by modifying the `configs/tools/websearch.yml` file and setting the `bing_api_key`.
+
+For more information about the container.yaml configuration, please refer to the [container module](./docs/concepts/container.md)
+
+### 2、Running the Example
+
+1. Run the outfit with switch example:
+
+   For terminal/CLI usage: Input and output are in the terminal window
+   ```bash
+   cd examples/step2_outfit_with_switch
+   python run_cli.py
+   ```
+
+   For app/GUI usage: Input and output are in the app
+   ```bash
+   cd examples/step2_outfit_with_switch
    python run_app.py
-   ```  
-    **Ensure the workflow engine is running before executing the script.**
+   ```
+
+   For the connection and usage of the OmAgent app, please refer to the [app usage documentation](./docs/concepts/app.md)
 
 
-### 🏗 Architecture
+## 🏗 Architecture
 The design architecture of OmAgent adheres to three fundamental principles:  
 1. Graph-based workflow orchestration;   
 2. Native multimodality;   
@@ -138,11 +140,11 @@ For a deeper comprehension of OmAgent, let us elucidate key terms:
   <img src="docs/images/architecture.jpg" width="700"/>
 </p>  
 
-- **Devices**: Central to OmAgent's vision is the empowerment of intelligent hardware devices through artificial intelligence agents, rendering devices a pivotal component of OmAgent's essence. By leveraging the downloadable mobile application we have generously provided, your mobile device can become the inaugural foundational node linked to OmAgent. Devices serve to intake environmental stimuli, such as images and sounds, potentially offering responsive feedback. We have evolved a streamlined backend process to manage the app-centric business logic, thereby enabling developers to concentrate on constructing the intelligence agent's logical framework.  
+- **Devices**: Central to OmAgent's vision is the empowerment of intelligent hardware devices through artificial intelligence agents, rendering devices a pivotal component of OmAgent's essence. By leveraging the downloadable mobile application we have generously provided, your mobile device can become the inaugural foundational node linked to OmAgent. Devices serve to intake environmental stimuli, such as images and sounds, potentially offering responsive feedback. We have evolved a streamlined backend process to manage the app-centric business logic, thereby enabling developers to concentrate on constructing the intelligence agent's logical framework.  See [client](docs/concepts/client.md) for more details.
 
-- **Workflow**: Within the OmAgent Framework, the architectural structure of intelligent agents is articulated through graphs. Developers possess the liberty to innovate, configure, and sequence node functionalities at will. Presently, we have opted for Conductor as the workflow orchestration engine, lending support to intricate operations like switch-case, fork-join, and do-while.  
+- **Workflow**: Within the OmAgent Framework, the architectural structure of intelligent agents is articulated through graphs. Developers possess the liberty to innovate, configure, and sequence node functionalities at will. Presently, we have opted for Conductor as the workflow orchestration engine, lending support to intricate operations like switch-case, fork-join, and do-while. See [workflow](docs/concepts/workflow.md) for more details.
 
-- **Task and Worker**: Throughout the OmAgent workflow development journey, Task and Worker stand as pivotal concepts. Worker embodies the actual operational logic of workflow nodes, whereas Task oversees the orchestration of the workflow's logic. Tasks are categorized into Operators, managing workflow logic (e.g., looping, branching), and Simple Tasks, representing nodes customized by developers. Each Simple Task is correlated with a Worker; when the workflow progresses to a given Simple Task, the task is dispatched to the corresponding worker for execution.   
+- **Task and Worker**: Throughout the OmAgent workflow development journey, Task and Worker stand as pivotal concepts. Worker embodies the actual operational logic of workflow nodes, whereas Task oversees the orchestration of the workflow's logic. Tasks are categorized into Operators, managing workflow logic (e.g., looping, branching), and Simple Tasks, representing nodes customized by developers. Each Simple Task is correlated with a Worker; when the workflow progresses to a given Simple Task, the task is dispatched to the corresponding worker for execution. See [task](docs/concepts/task.md) and [worker](docs/concepts/worker.md) for more details.
 
 
 ### Basic Principles of Building an Agent
@@ -160,17 +162,17 @@ For a deeper comprehension of OmAgent, let us elucidate key terms:
 ## Examples
 We provide exemplary projects to demonstrate the construction of intelligent agents using OmAgent. You can find a comprehensive list in the [examples](./examples/) directory. Here is the reference sequence:
 
-1. [step1_simpleVQA](./examples/step1_simpleVQA) illustrates the creation of a simple multimodal VQA agent with OmAgent. [Documentation](docs/examples/simple_qa.md)
+1. [step1_simpleVQA](./examples/step1_simpleVQA) illustrates the creation of a simple multimodal VQA agent with OmAgent. Detailed tutorial can be found [here](docs/examples/simple_qa.md).
 
-2. [step2_outfit_with_switch](./examples/step2_outfit_with_switch) demonstrates how to build an agent with switch-case branches using OmAgent. [Documentation](docs/examples/outfit_with_switch.md)
+2. [step2_outfit_with_switch](./examples/step2_outfit_with_switch) demonstrates how to build an agent with switch-case branches using OmAgent. Detailed tutorial can be found [here](docs/examples/outfit_with_switch.md).
 
-3. [step3_outfit_with_loop](./examples/step3_outfit_with_loop) shows the construction of an agent incorporating loops using OmAgent. [Documentation](docs/examples/outfit_with_loop.md)
+3. [step3_outfit_with_loop](./examples/step3_outfit_with_loop) shows the construction of an agent incorporating loops using OmAgent. Detailed tutorial can be found [here](docs/examples/outfit_with_loop.md).
 
-4. [step4_outfit_with_ltm](./examples/step4_outfit_with_ltm) exemplifies using OmAgent to create an agent equipped with long-term memory. [Documentation](docs/examples/outfit_with_ltm.md)
+4. [step4_outfit_with_ltm](./examples/step4_outfit_with_ltm) exemplifies using OmAgent to create an agent equipped with long-term memory. Detailed tutorial can be found [here](docs/examples/outfit_with_ltm.md).
 
-5. [dnc_loop](./examples/dnc_loop) demonstrates the development of an agent utilizing the DnC algorithm to tackle complex problems. [Documentation](docs/examples/dnc_loop.md)
+5. [dnc_loop](./examples/general_dnc) demonstrates the development of an agent utilizing the DnC algorithm to tackle complex problems. Detailed tutorial can be found [here](docs/examples/dnc_loop.md).
 
-6. [video_understanding](./examples/video_understanding) showcases the creation of a video understanding agent for interpreting video content using OmAgent. [Documentation](docs/examples/video_understanding.md)
+6. [video_understanding](./examples/video_understanding) showcases the creation of a video understanding agent for interpreting video content using OmAgent. Detailed tutorial can be found [here](docs/examples/video_understanding.md).
 
 
 ## API Documentation
