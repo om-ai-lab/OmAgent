@@ -1,0 +1,3 @@
+name: OutfitConclusion
+llm: ${sub| gpt}
+text_encoder: ${sub| text_encoder}

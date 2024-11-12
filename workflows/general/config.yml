@@ -1,3 +1,0 @@
-custom_openai_key: <your_custom_openai_key>
-#custom_openai_endpoint: http://xxx.com/v1 #The base api endpoint for the custom openai model
-bing_api_key: <your_bing_api_key>

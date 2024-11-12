@@ -1,9 +1,0 @@
-custom_openai_key: <your_custom_openai_key>
-#custom_openai_endpoint: http://xxx.com/v1 #The base api endpoint for the custom openai model
-bing_api_key: <your_bing_api_key>
-# milvus_host_url: <your_milvus_host_url>
-# milvus_db_name: <your_milvus_db_name>
-# milvus_user: <your_milvus_user>
-# milvus_password: <your_milvus_password>
-ovd_endpoint: <http://xxx/inf_predict> #The api endpoint for the OVD model
-ovd_model_id: OmDet-Turbo_tiny_SWIN_T

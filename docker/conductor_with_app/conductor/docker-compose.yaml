@@ -1,0 +1,118 @@
+services:
+  conductor-server:
+    environment:
+      - CONFIG_PROP=config-redis.properties
+    image: omailab/omagent-conductor:v3.21.6
+    container_name: conductor-server
+
+    networks:
+      - internal
+    ports:
+      - 8080:8080
+      - 5000:5000
+    healthcheck:
+      test: ["CMD", "curl","-I" ,"-XGET", "http://localhost:8080/health"]
+      interval: 60s
+      timeout: 30s
+      retries: 12
+    links:
+      - conductor-elasticsearch:es
+      - conductor-redis:rs
+    depends_on:
+      conductor-elasticsearch:
+        condition: service_healthy
+      conductor-redis:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1k"
+        max-file: "3"
+
+  conductor-redis:
+    image: redis:6.2.3-alpine
+    container_name: conductor-redis
+    networks:
+      - internal
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: [ "CMD", "redis-cli","ping" ]
+
+  conductor-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.11
+    container_name: conductor-elasticsearch
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx1024m"
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    volumes:
+      - esdata-conductor:/usr/share/elasticsearch/data
+    networks:
+      - internal
+    ports:
+      - 9200:9200
+    healthcheck:
+      test: curl http://localhost:9200/_cluster/health -o /dev/null
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1k"
+        max-file: "3"
+
+  om-app-agent:
+    #image: hbt.linker.cc/yting/omappagent:feature_om_app_1.0.0-202411110929
+    #image: registry.linker.cc/yting/omappagent:feature_om_app_1.0.0-202411121609
+    image: registry.linker.cc/yting/omappagent:feature_om_app_1.0.0-202411122032
+    container_name: om-app-agent
+    restart: always
+    environment:
+      - SPRING_PROFILES=./bootstrap-test.yaml
+    ports:
+      - "8082:8082"
+    volumes:
+      - ../config/om-app-agent/resources/bootstrap-test.yaml:/usr/local/bootstrap-test.yaml:rw
+    networks:
+      - internal
+
+  mysql:
+    image: mysql:5.7.44
+    restart: always
+    ports:
+      - "3306:3306"
+    container_name: mysql
+    privileged: true
+    environment:
+      - MYSQL_ROOT_PASSWORD=Test@58455
+    volumes:
+      - ../pv-data/mysql/data:/var/lib/mysql:rw
+      - ../pv-data/mysql/log:/var/log/mysql:rw
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - internal
+
+  minio:
+    image: bitnami/minio:latest
+    container_name: minio
+    restart: always
+    environment:
+      MINIO_ROOT_USER: 8V51TQi0Haqgtv8C
+      MINIO_ROOT_PASSWORD: xfnGFZ7HakQlmurdG3LIHtB60luMJrD6
+      MINIO_DEFAULT_BUCKETS: hzlh:public
+    volumes:
+      - ../pv-data/minio-data:/bitnami/minio/data:rw
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - internal
+
+volumes:
+  esdata-conductor:
+    driver: local
+
+networks:
+  internal:

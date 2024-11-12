@@ -1,0 +1,5 @@
+name: TaskConqueror
+llm: ${sub|json_res}
+tool_manager: ${sub|all_tools}
+output_parser: 
+  name: StrParser

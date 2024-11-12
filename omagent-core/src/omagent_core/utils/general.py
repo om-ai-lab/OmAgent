@@ -2,16 +2,14 @@ import base64
 from collections import OrderedDict
 from io import BytesIO
 from typing import Sequence
-
-import httpx
+import platform
+from PIL import Image
 import requests
-
-from ..handlers.error_handler.error import VQLError
-from ..handlers.log_handler.logger import logging
-
+import os
+from pathlib import Path
 
 class LRUCache:
-    # initialising capacity
+    # initializing capacity
     def __init__(self, capacity: int):
         self.cache = OrderedDict()
         self.capacity = capacity
@@ -66,35 +64,6 @@ def handle_response(res, json, url):
         raise VQLError(511, detail=info)
         
 
-def request(
-    json: dict,
-    url: str,
-    headers: dict | None = None,
-) -> dict:
-    try:
-        res = requests.post(url=url, json=json, headers=headers)
-    except Exception as error:
-        logging.error(
-            "Request URL: {} | Request body: {} | Error: {}".format(url, json, error)
-        )
-        raise VQLError(511, detail=str(error))
-    
-    return handle_response(res, json, url)
-
-
-async def arequest(url: str, json: dict, headers: dict | None = None) -> dict:
-    try:
-        async with httpx.AsyncClient() as client:
-            res = await client.post(url=url, json=json, headers=headers, timeout=30)
-    except Exception as error:
-        logging.error(
-            "Request URL: {} | Request body: {} | Error: {}".format(url, json, error)
-        )
-        raise VQLError(511, detail=str(error))
-
-    return handle_response(res, json, url)
-
-
 def chunks(l: Sequence, win_len: int, stride_len: int):
     s_id = 0
     e_id = min(len(l), win_len)
@@ -126,3 +95,49 @@ def encode_image(input):
         return res
     else:
         return _encode(input)
+
+
+def get_platform() -> str:
+    """Get platform."""
+    system = platform.system()
+    if system == "Darwin":
+        return "MacOS"
+    return system
+
+
+def read_image(input_source) -> Image.Image:
+    """
+    Read an image from a local path, URL, PIL Image object, or Path object.
+    
+    Args:
+        input_source (str or PIL.Image.Image or Path): The source of the image.
+            Can be a local file path, a URL, a PIL Image object, or a Path object.
+    
+    Returns:
+        PIL.Image.Image: The image as a PIL Image object.
+    
+    Raises:
+        ValueError: If the input source is invalid or the image cannot be read.
+    """
+    if isinstance(input_source, Image.Image):
+        return input_source
+    
+    if isinstance(input_source, (str, Path)):
+        if isinstance(input_source, str) and input_source.startswith(('http://', 'https://')):
+            # URL
+            try:
+                response = requests.get(input_source)
+                response.raise_for_status()
+                return Image.open(BytesIO(response.content))
+            except requests.RequestException as e:
+                raise ValueError(f"Failed to fetch image from URL: {e}")
+        elif os.path.isfile(str(input_source)):
+            # Local file path or Path object
+            try:
+                return Image.open(input_source)
+            except IOError as e:
+                raise ValueError(f"Failed to open local image file: {e}")
+        else:
+            raise ValueError("Invalid input source. Must be a valid URL or local file path.")
+    
+    raise ValueError("Invalid input type. Must be a string (URL or file path), Path object, or PIL Image object.")
