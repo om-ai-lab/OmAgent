@@ -165,6 +165,11 @@ class BaseTool(BotBase, ABC):
     args_schema: Optional[ArgSchema]
     special_params: Dict = {}
     
+    def model_post_init(self, __context: Any) -> None:
+        for _, attr_value in self.__dict__.items():
+            if isinstance(attr_value, BotBase):
+                attr_value._parent = self
+            
     @property 
     def workflow_instance_id(self) -> str:
         if hasattr(self, '_parent'):

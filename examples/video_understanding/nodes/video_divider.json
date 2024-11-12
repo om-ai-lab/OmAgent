@@ -1,9 +1,0 @@
-{
-    "name": "VideoDivider",
-    "llm": "%% json_res",
-    "tool_manager": "%% video_tools",
-    "next_step": {
-        "success": null,
-        "failed": null
-    }
-}

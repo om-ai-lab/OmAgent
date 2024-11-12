@@ -10,8 +10,9 @@ from omagent_core.utils.logger import logging
 from omagent_core.utils.registry import registry
 from pydantic import Field
 from scenedetect import FrameTimecode
+import json_repair
+from ...misc.scene import VideoScenes
 
-from omagent_core.services.handlers.video_scenes import VideoScenes
 
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -35,7 +36,7 @@ ARGSCHEMA = {
 
 
 @registry.register_tool()
-class FrameExtraction(BaseTool, BaseLLMBackend):
+class Rewinder(BaseTool, BaseLLMBackend):
     args_schema: ArgSchema = ArgSchema(**ARGSCHEMA)
     description: str = (
         "Rollback and extract frames from video which is already loaded to get more specific details for further analysis."
@@ -53,25 +54,14 @@ class FrameExtraction(BaseTool, BaseLLMBackend):
         ]
     )
 
-    def _extract_from_result(self, result: str) -> dict:
-        try:
-            pattern = r"```json\s*(\{(?:.|\s)*?\})\s*```"
-            result = result.replace("\n", "")
-            match = re.search(pattern, result, re.DOTALL)
-            if match:
-                return json.loads(match.group(1))
-            else:
-                return json.loads(result)
-        except Exception as error:
-            raise ValueError("LLM generation is not valid.")
 
     def _run(
         self, start_time: float = 0.0, end_time: float = None, number: int = 1
     ) -> str:
-        if self.stm.video is None:
+        if self.stm(self.workflow_instance_id).get("video", None) is None:
             raise ValueError("No video is loaded.")
         else:
-            video: VideoScenes = self.stm.video
+            video: VideoScenes = VideoScenes.from_serializable(self.stm(self.workflow_instance_id)['video'])
         if number > 10:
             logging.warning("Number of frames exceeds 10. Will extract 10 frames.")
             number = 10
@@ -95,14 +85,16 @@ class FrameExtraction(BaseTool, BaseLLMBackend):
         for i, (frame, time_stamp) in enumerate(zip(frames, time_stamps)):
             img_index = f"image_timestamp-{time_stamp}"
             extracted_frames.append(time_stamp)
-            if self.stm.image_cache.get(f"<{img_index}>", None) is None:
-                self.stm.image_cache[f"<{img_index}>"] = frame
+            image_cache = self.stm(self.workflow_instance_id).get("image_cache", {})
+            if image_cache.get(f"<{img_index}>", None) is None:
+                image_cache[f"<{img_index}>"] = frame
+                self.stm(self.workflow_instance_id)["image_cache"] = image_cache
         res = self.simple_infer(
             image_placeholders="".join(
                 [f"<image_timestamp-{each}>" for each in extracted_frames]
             )
         )["choices"][0]["message"]["content"]
-        image_contents = self._extract_from_result(res)
+        image_contents = json_repair.loads(res)
         return f"{extracted_frames} described as: {image_contents}."
 
     async def _arun(

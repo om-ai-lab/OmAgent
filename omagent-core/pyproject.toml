@@ -46,7 +46,10 @@ dependencies = [
   "dacite >= 1.8.1",
   "pydantic_settings >= 2.6.0",
   "redis >= 4.8.0",
-  "json_repair >= 0.30.1"
+  "json_repair >= 0.30.1",
+  "scenedetect >= 0.6.4",
+  "pydub >= 0.25.1",
+  "face_recognition >= 1.3.0"
 ]
 
 [project.urls]
