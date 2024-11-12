@@ -13,7 +13,9 @@ You should respond in this format:
     "reason": "If need_more_info, explain what specific information is still missing and why it's important. If ready, no explaination need to provide."
 }
 
-When evaluating if you have enough information, consider:
+First and foremost, carefully analyze the user's instruction. If the user explicitly states they want an immediate recommendation or indicates they don't want to answer more questions, you should return "ready" regardless of missing information.
+
+When evaluating if you have enough information (only if user hasn't requested immediate recommendations), consider:
 1. Do you know the gender of the user?
 2. Do you understand the specific occasion/activity? 
 3. Does the weather information provided? (The weather should be requested only once. As only as any weather information is provided, this requirement is satisfied.)
@@ -27,7 +29,3 @@ When evaluating if you have enough information, consider:
 Note: If any weather information is already provided in the Previously searched information, do not request for weather information again.
 
 Your response must be in valid JSON format. Be specific in your reasoning about what information is missing or why the collected information is sufficient.
-
-
-
-

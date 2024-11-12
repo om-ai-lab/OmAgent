@@ -80,7 +80,7 @@ The container.yaml file is a configuration file that manages dependencies and se
 
 ## Running the Example
 
-3. Run the simple VQA example:
+3. Run the outfit recommendation with switch example:
 
    For terminal/CLI usage:
    ```bash
