@@ -10,7 +10,7 @@
   <a href="https://twitter.com/intent/follow?screen_name=OmAI_lab" target="_blank">
     <img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/OmAI_lab">
   </a>
-  <a href="https://discord.gg/9JfTJ7bk" target="_blank">
+  <a href="https://discord.gg/Mkqs8z5U" target="_blank">
     <img alt="Discord" src="https://img.shields.io/discord/1296666215548321822?style=flat&logo=discord">
   </a>
 </p>
@@ -70,10 +70,10 @@ OmAgent uses Milvus Lite as the default vector database for storing vector data 
 
 ### 3. Connect Devices  
 If you wish to use smart devices to access your agents, we provide a smartphone app and corresponding backend, allowing you to focus on agent functionality without worrying about complex device connection issues.  
-- Deploy the app backend  
-  TODO
-- Download, install, and debug the smartphone app  
-  TODO
+- **Deploy the app backend**   
+    The APP backend comprises the backend program, along with two middleware components: the MySQL database and MinIO object storage. For installation and deployment instructions, please refer to [this link](docs/concepts/app_backend.md).
+- **Download, install, and debug the smartphone app**  
+  At present, we offer an Android APP available for download and testing. For detailed instructions on acquiring and using it, please refer to [here](docs/concepts/app.md). The iOS version is currently under development and will be available soon.
 
 ## 🚀 Quick Start 
 ### Hello World
@@ -140,11 +140,11 @@ For a deeper comprehension of OmAgent, let us elucidate key terms:
   <img src="docs/images/architecture.jpg" width="700"/>
 </p>  
 
-- **Devices**: Central to OmAgent's vision is the empowerment of intelligent hardware devices through artificial intelligence agents, rendering devices a pivotal component of OmAgent's essence. By leveraging the downloadable mobile application we have generously provided, your mobile device can become the inaugural foundational node linked to OmAgent. Devices serve to intake environmental stimuli, such as images and sounds, potentially offering responsive feedback. We have evolved a streamlined backend process to manage the app-centric business logic, thereby enabling developers to concentrate on constructing the intelligence agent's logical framework.  
+- **Devices**: Central to OmAgent's vision is the empowerment of intelligent hardware devices through artificial intelligence agents, rendering devices a pivotal component of OmAgent's essence. By leveraging the downloadable mobile application we have generously provided, your mobile device can become the inaugural foundational node linked to OmAgent. Devices serve to intake environmental stimuli, such as images and sounds, potentially offering responsive feedback. We have evolved a streamlined backend process to manage the app-centric business logic, thereby enabling developers to concentrate on constructing the intelligence agent's logical framework.  See [client](docs/concepts/client.md) for more details.
 
-- **Workflow**: Within the OmAgent Framework, the architectural structure of intelligent agents is articulated through graphs. Developers possess the liberty to innovate, configure, and sequence node functionalities at will. Presently, we have opted for Conductor as the workflow orchestration engine, lending support to intricate operations like switch-case, fork-join, and do-while.  
+- **Workflow**: Within the OmAgent Framework, the architectural structure of intelligent agents is articulated through graphs. Developers possess the liberty to innovate, configure, and sequence node functionalities at will. Presently, we have opted for Conductor as the workflow orchestration engine, lending support to intricate operations like switch-case, fork-join, and do-while. See [workflow](docs/concepts/workflow.md) for more details.
 
-- **Task and Worker**: Throughout the OmAgent workflow development journey, Task and Worker stand as pivotal concepts. Worker embodies the actual operational logic of workflow nodes, whereas Task oversees the orchestration of the workflow's logic. Tasks are categorized into Operators, managing workflow logic (e.g., looping, branching), and Simple Tasks, representing nodes customized by developers. Each Simple Task is correlated with a Worker; when the workflow progresses to a given Simple Task, the task is dispatched to the corresponding worker for execution.   
+- **Task and Worker**: Throughout the OmAgent workflow development journey, Task and Worker stand as pivotal concepts. Worker embodies the actual operational logic of workflow nodes, whereas Task oversees the orchestration of the workflow's logic. Tasks are categorized into Operators, managing workflow logic (e.g., looping, branching), and Simple Tasks, representing nodes customized by developers. Each Simple Task is correlated with a Worker; when the workflow progresses to a given Simple Task, the task is dispatched to the corresponding worker for execution. See [task](docs/concepts/task.md) and [worker](docs/concepts/worker.md) for more details.
 
 
 ### Basic Principles of Building an Agent
@@ -162,17 +162,17 @@ For a deeper comprehension of OmAgent, let us elucidate key terms:
 ## Examples
 We provide exemplary projects to demonstrate the construction of intelligent agents using OmAgent. You can find a comprehensive list in the [examples](./examples/) directory. Here is the reference sequence:
 
-1. [step1_simpleVQA](./examples/step1_simpleVQA) illustrates the creation of a simple multimodal VQA agent with OmAgent. [Documentation](docs/examples/simple_qa.md)
+1. [step1_simpleVQA](./examples/step1_simpleVQA) illustrates the creation of a simple multimodal VQA agent with OmAgent. Detailed tutorial can be found [here](docs/examples/simple_qa.md).
 
-2. [step2_outfit_with_switch](./examples/step2_outfit_with_switch) demonstrates how to build an agent with switch-case branches using OmAgent. [Documentation](docs/examples/outfit_with_switch.md)
+2. [step2_outfit_with_switch](./examples/step2_outfit_with_switch) demonstrates how to build an agent with switch-case branches using OmAgent. Detailed tutorial can be found [here](docs/examples/outfit_with_switch.md).
 
-3. [step3_outfit_with_loop](./examples/step3_outfit_with_loop) shows the construction of an agent incorporating loops using OmAgent. [Documentation](docs/examples/outfit_with_loop.md)
+3. [step3_outfit_with_loop](./examples/step3_outfit_with_loop) shows the construction of an agent incorporating loops using OmAgent. Detailed tutorial can be found [here](docs/examples/outfit_with_loop.md).
 
-4. [step4_outfit_with_ltm](./examples/step4_outfit_with_ltm) exemplifies using OmAgent to create an agent equipped with long-term memory. [Documentation](docs/examples/outfit_with_ltm.md)
+4. [step4_outfit_with_ltm](./examples/step4_outfit_with_ltm) exemplifies using OmAgent to create an agent equipped with long-term memory. Detailed tutorial can be found [here](docs/examples/outfit_with_ltm.md).
 
-5. [dnc_loop](./examples/dnc_loop) demonstrates the development of an agent utilizing the DnC algorithm to tackle complex problems. [Documentation](docs/examples/dnc_loop.md)
+5. [dnc_loop](./examples/general_dnc) demonstrates the development of an agent utilizing the DnC algorithm to tackle complex problems. Detailed tutorial can be found [here](docs/examples/dnc_loop.md).
 
-6. [video_understanding](./examples/video_understanding) showcases the creation of a video understanding agent for interpreting video content using OmAgent. [Documentation](docs/examples/video_understanding.md)
+6. [video_understanding](./examples/video_understanding) showcases the creation of a video understanding agent for interpreting video content using OmAgent. Detailed tutorial can be found [here](docs/examples/video_understanding.md).
 
 
 ## API Documentation

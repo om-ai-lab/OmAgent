@@ -122,8 +122,8 @@ The environment variable name is case-sensitive.
 
 ### 4. Default Configuration Fields
 Workers have several default configuration fields that can be set:
-- **component_stm**: The STM component for the worker. Use any registered component name. Default is the one registered with `register_stm`. Access it via `self.stm`. See [container](./container.md) and [memories](./memories.md) for more details.
-- **component_ltm**: The LTM component for the worker. Use any registered component name. Default is the one registered with `register_ltm`. Access it via `self.ltm`. See [container](./container.md) and [memories](./memories.md) for more details.
+- **component_stm**: The STM component for the worker. Use any registered component name. Default is the one registered with `register_stm`. Access it via `self.stm`. See [container](./container.md) and [memory](./memory.md) for more details.
+- **component_ltm**: The LTM component for the worker. Use any registered component name. Default is the one registered with `register_ltm`. Access it via `self.ltm`. See [container](./container.md) and [memory](./memory.md) for more details.
 - **component_callback**: The callback component for the worker. Use any registered component name. Default is the one registered with `register_callback`. Access it via `self.callback`. See [container](./container.md) and [client](./client.md) for more details.
 - **component_input**: The input component for the worker. Use any registered component name. Default is the one registered with `register_input`. Access it via `self.input`. See [container](./container.md) and [client](./client.md) for more details.
 - **poll_interval**: The poll interval for the worker. Default is 100 milliseconds.
