@@ -1,5 +1,5 @@
 llm: ${sub| text_res}
 tools:
   - name: WebSearch
-    bing_api_key: ${env| bing_api_key, bing_api_key}
+    bing_api_key: ${env| bing_api_key, null}
     llm: ${sub| text_res}
