@@ -33,11 +33,13 @@ class DefaultClient:
         processor: ConductorWorkflow = None,
         config_path: str = "./config",
         workers: list = [],
+        input_prompt: str = None
     ) -> None:
         self._interactor = interactor
         self._processor = processor
         self._config_path = config_path
         self._workers = workers
+        self._input_prompt = input_prompt
 
     def start_interactor(self):
         absolute_path = Path(self._config_path).resolve()
@@ -53,7 +55,8 @@ class DefaultClient:
         group_name = "omappagent"  # replace with your consumer group name
         poll_interval = 1
 
-        self.first_input(workflow_instance_id=workflow_instance_id, input_prompt="What can I do for you?")
+        if self._input_prompt:
+            self.first_input(workflow_instance_id=workflow_instance_id, input_prompt=self._input_prompt)
 
         client = OrkesWorkflowClient(configuration=container.conductor_config)
         
