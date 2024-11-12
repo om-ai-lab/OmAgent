@@ -50,6 +50,7 @@ docker compose -f docker/conductor/docker-compose.yml up -d
 ```
 - 部署完成后可以通过访问 `http://localhost:5001` 访问Conductor UI。（注：Mac系统默认会占用5000端口，因此我们使用5001端口，你可以在部署Conductor的时候指定其它端口。）
 - 通过 `http://localhost:8080` 调用Conductor API。
+- 更多部署细节请参考 [这里](docker/README.md)
 
 ### 2. 安装OmAgent  
 - **Python 版本**: 确保已安装 Python 3.10 或更高版本。
@@ -118,7 +119,7 @@ docker compose -f docker/conductor/docker-compose.yml up -d
    cd examples/step2_outfit_with_switch
    python run_app.py
    ```
-
+   部署app后端服务请参考 [这里](docker/README.md)  
    OmAgent 的 app 的连接和使用方式请参考 [app使用文档](./docs/concepts/app.md)
 
 ## 🏗 架构
