@@ -1,5 +1,14 @@
 # App
+## App Installation
+The QR code for downloading the app is as follows:
 
+<p align="center">
+  <img src="../images/app_qrcode.png" width="300"/>
+</p>
+
+- Currently, only Android phones are supported for download and use, but iOS support is coming soon.
+
+## App Usage
 Open the APP to enter the homepage, as shown in the figure below:
 <p align="center">
   <img src="../images/app_home.png" width="300"/>

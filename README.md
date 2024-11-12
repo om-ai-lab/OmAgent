@@ -103,6 +103,8 @@ The container.yaml file is a configuration file that manages dependencies and se
    - Update the Conductor server URL under conductor_config section
    - Adjust any other component settings as needed
 
+4. Websearch uses duckduckgo by default. For better results, it is recommended to configure [Bing Search](https://www.microsoft.com/en-us/bing/apis/pricing) by modifying the `configs/tools/websearch.yml` file and setting the `bing_api_key`.
+
 For more information about the container.yaml configuration, please refer to the [container module](./docs/concepts/container.md)
 
 ### 2、Running the Example
@@ -120,6 +122,8 @@ For more information about the container.yaml configuration, please refer to the
    cd examples/step2_outfit_with_switch
    python run_app.py
    ```
+
+   For the connection and usage of the OmAgent app, please refer to the [app usage documentation](./docs/concepts/app.md)
 
 
 ## 🏗 Architecture

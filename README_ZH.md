@@ -99,6 +99,8 @@ docker compose -f docker/conductor/docker-compose.yml up -d
    - 在 `conductor_config` 下更新 Conductor 服务器的 URL
    - 根据需要调整其他组件设置
 
+4. websearch 默认使用的是 duckduckgo，如果要更好的效果建议配置[bing搜索](https://www.microsoft.com/en-us/bing/apis/pricing)，修改 `configs/tools/websearch.yml` 文件，设置 `bing_api_key`。
+
 有关 `container.yaml` 配置的更多信息，请参阅 [container 模块](./docs/concepts/container.md)
 
 ### 2、运行示例
@@ -116,6 +118,8 @@ docker compose -f docker/conductor/docker-compose.yml up -d
    cd examples/step2_outfit_with_switch
    python run_app.py
    ```
+
+   OmAgent 的 app 的连接和使用方式请参考 [app使用文档](./docs/concepts/app.md)
 
 ## 🏗 架构
 OmAgent的设计架构遵循三项基本原则：  
