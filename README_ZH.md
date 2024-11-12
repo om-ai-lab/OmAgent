@@ -69,9 +69,9 @@ docker compose -f docker/conductor/docker-compose.yml up -d
 ### 3. 连接设备  
 如果你希望使用智能设备来访问你的智能体，我们提供了智能手机APP以及对应的后端程序，这样你可以专注于实现智能体功能，而无需担心复杂的设备连接问题。  
 - APP后端部署  
-  TODO
+  APP后端包含后端程序以及Mysql数据库和minio对象存储两个中间件。安装部署方法请参考[这里](docs/concepts/app_backend.md)。
 - 手机APP下载安装以及调试  
-  TODO
+  当前我们提供了Android APP供大家下载测试，具体的获取和使用方法请参考[这里](docs/concepts/app.md)。IOS版本正在开发中， 很快会和大家见面。
 
 ## 🚀 快速开始 
 ### Hello World
