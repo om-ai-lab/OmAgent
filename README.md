@@ -10,7 +10,7 @@
   <a href="https://twitter.com/intent/follow?screen_name=OmAI_lab" target="_blank">
     <img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/OmAI_lab">
   </a>
-  <a href="https://discord.gg/9JfTJ7bk" target="_blank">
+  <a href="https://discord.gg/Mkqs8z5U" target="_blank">
     <img alt="Discord" src="https://img.shields.io/discord/1296666215548321822?style=flat&logo=discord">
   </a>
 </p>

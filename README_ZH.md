@@ -10,7 +10,7 @@
   <a href="https://twitter.com/intent/follow?screen_name=OmAI_lab" target="_blank">
     <img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/OmAI_lab">
   </a>
-  <a href="https://discord.gg/9JfTJ7bk" target="_blank">
+  <a href="https://discord.gg/Mkqs8z5U" target="_blank">
     <img alt="Discord" src="https://img.shields.io/discord/1296666215548321822?style=flat&logo=discord">
   </a>
 </p>
@@ -29,17 +29,17 @@
 
 
 ## 📖 介绍
-OmAgent 是一个开源的代理框架，旨在简化设备上多模态代理的开发。我们的目标是使代理能够增强各种硬件设备的功能，从智能手机、智能可穿戴设备（如眼镜）、IP 摄像头到未来的机器人。因此，OmAgent 对各种类型的设备进行抽象，并简化了将这些设备连接到最先进的多模态基础模型和代理算法的过程，以便每个人都能构建最有趣的设备上代理。此外，OmAgent 专注于优化端到端计算管道，以提供开箱即用的实时用户交互体验。
+OmAgent 是一个开源的智能体框架，旨在简化设备上多模态智能体的开发。我们的目标是使智能体能够增强各种硬件设备的功能，从智能手机、智能可穿戴设备（如眼镜）、IP 摄像头到未来的机器人。因此，OmAgent 对各种类型的设备进行抽象，并简化了将这些设备连接到最先进的多模态基础模型和智能体算法的过程，以便每个人都能构建最有趣的设备上智能体。此外，OmAgent 专注于优化端到端计算管道，以提供开箱即用的实时用户交互体验。
 
 总之，OmAgent 的关键特性包括：
 
-- **轻松连接多样化设备**：我们使连接物理设备变得非常简单，例如手机、眼镜等，以便代理/模型开发者可以构建不仅在网页上运行而是在设备上运行的应用程序。我们欢迎对更多设备的支持贡献！
+- **轻松连接多样化设备**：我们使连接物理设备变得非常简单，例如手机、眼镜等，以便智能体/模型开发者可以构建不仅在网页上运行而是在设备上运行的应用程序。我们欢迎对更多设备的支持贡献！
 
 - **速度优化的最先进多模态模型**：OmAgent 集成了最先进的商业和开源基础模型，为应用开发者提供最强大的智能。此外，OmAgent 简化了音频/视频处理和计算过程，轻松实现设备与用户之间自然流畅的交互。
 
-- **最先进的多模态代理算法**：OmAgent 为研究人员和开发者提供了一个简单的工作流编排接口，以实现最新的代理算法，例如 ReAct、DnC 等。我们欢迎任何新代理算法的贡献，以实现更复杂的问题解决能力。
+- **最先进的多模态智能体算法**：OmAgent 为研究人员和开发者提供了一个简单的工作流编排接口，以实现最新的智能体算法，例如 ReAct、DnC 等。我们欢迎任何新智能体算法的贡献，以实现更复杂的问题解决能力。
 
-- **可扩展性和灵活性**：OmAgent 提供了一个直观的界面，用于构建可扩展的代理，使开发者能够构建适合特定角色并高度适应各种应用的代理。
+- **可扩展性和灵活性**：OmAgent 提供了一个直观的界面，用于构建可扩展的智能体，使开发者能够构建适合特定角色并高度适应各种应用的智能体。
 
 ## 🛠️ 如何安装
 ### 1. 部署工作流编排引擎  
@@ -90,7 +90,7 @@ docker compose -f docker/conductor/docker-compose.yml up -d
    logging.init_logger("omagent", "omagent", level="INFO")
    ```
 
-3. **创建和执行工作流**：该脚本创建一个工作流并向其中添加一个任务。然后启动代理客户端以执行工作流：
+3. **创建和执行工作流**：该脚本创建一个工作流并向其中添加一个任务。然后启动智能体客户端以执行工作流：
 
    ```python
     from examples.step1_simpleVQA.agent.simple_vqa.simple_vqa import SimpleVQA
@@ -110,7 +110,7 @@ docker compose -f docker/conductor/docker-compose.yml up -d
 
    - **Workflow**：定义任务序列。'name'是工作流的名称， 请保证唯一性。
    - **Task**：表示工作单元，在本例中，我们使用来自示例的SimpleVQA。'task_def_name'表示对应的类名，'task_reference_name'表示在conductor中的名称。
-   - **AppClient**：启动代理客户端以执行工作流。这里我们使用AppClient，如果您想使用CLI，请使用DefaultClient。
+   - **AppClient**：启动智能体客户端以执行工作流。这里我们使用AppClient，如果您想使用CLI，请使用DefaultClient。
    - **agent_client.start_interactor()**：这将启动与注册任务对应的工作器，在本例中，它将启动SimpleVQA并等待conductor的调度。
 
 4. 配置参数  
@@ -126,7 +126,7 @@ OmAgent的设计架构遵循三项基本原则：
 1. 基于图的工作流编排；  
 2. 本地多模态；  
 3. 设备中心化。  
-通过OmAgent，您有机会打造一个定制的智能代理程序。  
+通过OmAgent，您有机会打造一个定制的智能智能体程序。  
 
 为了更深入地理解OmAgent，让我们阐明一些关键术语： 
 
@@ -135,26 +135,26 @@ OmAgent的设计架构遵循三项基本原则：
 </p>  
 
 
-**Devices**：OmAgent愿景的核心是通过人工智能代理赋予智能硬件设备力量，使设备成为OmAgent本质的关键组成部分。通过我们慷慨提供的可下载移动应用程序，您的移动设备可以成为连接到OmAgent的首个基础节点。设备用于接收环境刺激，如图像和声音，可能提供响应性反馈。我们已经发展了一个简化的后端流程来管理应用中心的业务逻辑，从而使开发人员能够集中精力构建智能代理的逻辑框架。  
+**Devices**：OmAgent愿景的核心是通过人工智能智能体赋予智能硬件设备力量，使设备成为OmAgent本质的关键组成部分。通过我们慷慨提供的可下载移动应用程序，您的移动设备可以成为连接到OmAgent的首个基础节点。设备用于接收环境刺激，如图像和声音，可能提供响应性反馈。我们已经发展了一个简化的后端流程来管理应用中心的业务逻辑，从而使开发人员能够集中精力构建智能智能体的逻辑框架。  
 
-**Workflow**：在OmAgent框架中，智能代理的架构结构通过图形进行表达。开发人员可以自由创新、配置和序列化节点功能。目前，我们选择了Conductor作为工作流编排引擎，支持诸如switch-case、fork-join和do-while等复杂操作。  
+**Workflow**：在OmAgent框架中，智能智能体的架构结构通过图形进行表达。开发人员可以自由创新、配置和序列化节点功能。目前，我们选择了Conductor作为工作流编排引擎，支持诸如switch-case、fork-join和do-while等复杂操作。  
 
 **Task and Worker**：在整个OmAgent工作流开发过程中，Task 和 Worker 是至关重要的概念。Worker 体现了工作流节点的实际操作逻辑，而 Task 负责编排工作流的逻辑。Task分为Operator，用于管理工作流逻辑（例如循环、分支）和 SimpleTask，代表由开发人员定制的节点。每个SimpleTask与一个Worker相关联；当工作流进展到特定的SimpleTask时，任务将被分派给相应的Worker进行执行。
 
-### 构建代理程序的基本原则
-- **模块化**：将代理程序的功能拆分为独立的工作者，每个工作者负责一个特定的任务。
+### 构建智能体程序的基本原则
+- **模块化**：将智能体程序的功能拆分为独立的工作者，每个工作者负责一个特定的任务。
 
-- **可重用性**：设计工作者以便在不同的工作流程和代理程序中可重用。
+- **可重用性**：设计工作者以便在不同的工作流程和智能体程序中可重用。
 
-- **可扩展性**：通过添加更多工作者或调整工作流程顺序，利用工作流程来扩展代理程序的功能。
+- **可扩展性**：通过添加更多工作者或调整工作流程顺序，利用工作流程来扩展智能体程序的功能。
 
-- **互操作性**：工作者可以与各种后端进行交互，如LLMs、数据库或API，从而使代理程序能够执行复杂操作。
+- **互操作性**：工作者可以与各种后端进行交互，如LLMs、数据库或API，从而使智能体程序能够执行复杂操作。
 
 - **异步执行**：工作流引擎和任务处理程序异步管理执行，实现资源的高效利用。
 
 ### 示例项目
 
-我们提供了一些示例项目来展示如何使用OmAgent构建智能代理程序。您可以在 [examples](./examples/) 目录中找到完整的示例列表。以下是参考顺序：
+我们提供了一些示例项目来展示如何使用OmAgent构建智能智能体程序。您可以在 [examples](./examples/) 目录中找到完整的示例列表。以下是参考顺序：
 1. [step1_simpleVQA](./examples/step1_simpleVQA) 展示了如何使用OmAgent构建一个简单的多模态VQA智能体。[文档](docs/examples/simple_qa.md)  
 2. [step2_outfit_with_switch](./examples/step2_outfit_with_switch) 展示了如何使用OmAgent构建一个带有switch-case分支的智能体。[文档](docs/examples/outfit_with_switch.md)  
 3. [step3_outfit_with_loop](./examples/step3_outfit_with_loop) 展示了如何使用OmAgent构建一个带有循环的智能体。[文档](docs/examples/outfit_with_loop.md)  

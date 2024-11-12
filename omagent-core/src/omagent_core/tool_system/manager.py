@@ -71,6 +71,10 @@ class ToolManager(BaseLLMBackend):
                         init_tools[tool["name"]] = t(**tool)
                     else:
                         raise ValueError("Invalid tool type {}".format(type(t)))
+                elif isinstance(tool, BaseTool):
+                    init_tools[tool.name] = tool
+                else:
+                    raise ValueError("Invalid tool type {}".format(type(tool)))
             return init_tools
         else:
             raise ValueError(

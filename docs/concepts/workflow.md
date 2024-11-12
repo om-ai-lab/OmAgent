@@ -10,7 +10,7 @@ workflow = ConductorWorkflow(name='test_workflow')
 ```
 
 ## Adding Tasks to a Workflow
-You can add tasks to a workflow by using ```add``` method.
+You can add tasks to a workflow by using ```add``` method. (See [task](./task.md) for more details about tasks)
 ```python
 workflow.add(task)
 ```
@@ -43,7 +43,7 @@ You can register a workflow by using ```register``` method.
 ```python
 workflow.register(overwrite=True)
 ```
-After registering, you can see the workflow in the conductor dashboard.
+After registering, you can see the workflow in the Conductor UI (default at http://localhost:5001/workflowDefs).
 
 ## Running a Workflow
 You can start a workflow instance and send input to it by using ```start_workflow_with_input``` method.

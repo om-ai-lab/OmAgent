@@ -82,9 +82,9 @@ workflow >> switch
 
 workflow.register(overwrite=True)
 ```
-This will create a basic workflow with a switch task shown below.
+This will create a basic workflow with a switch task shown below. (You can check the workflow definition at Conductor UI default at http://localhost:5001/workflowDefs).
 <p align="center">
-  <img src="../images/switch_task.png" width="300"/>
+  <img src="../images/switch_task.png" width="500"/>
 </p>  
 You can also chaining the switch cases as follows:  
 
@@ -151,7 +151,7 @@ workflow.register(overwrite=True)
 ```
 This will create a basic workflow with a fork-join task shown below.
 <p align="center">
-  <img src="../images/fork_task.png" width="300"/>
+  <img src="../images/fork_task.png" width="500"/>
 </p>  
 
 ### 3. Do-While Task
