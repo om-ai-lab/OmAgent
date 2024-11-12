@@ -48,10 +48,11 @@ In conclusion, key features of OmAgent include:
 OmAgent utilizes [Conductor](https://github.com/conductor-oss/conductor) as its workflow orchestration engine. Conductor is an open-source, distributed, and scalable workflow engine that supports a variety of programming languages and frameworks. By default, it uses Redis for persistence and Elasticsearch (7.x) as the indexing backend.  
 It is recommended to deploy Conductor using Docker:
 ```bash
-docker compose -f docker/conductor/docker-compose.yml up -d
+docker-compose -f docker/conductor/docker-compose.yml up -d
 ```
 - Once deployed, you can access the Conductor UI at `http://localhost:5001`. (Note: Mac system will occupy port 5000 by default, so we use 5001 here. You can specify other ports when deploying Conductor.)
 - The Conductor API can be accessed via `http://localhost:8080`.
+- More details about the deployment can be found [here](docker/README.md).
 
 ### 2. Install OmAgent  
 - **Python Version**: Ensure Python 3.10 or higher is installed.
@@ -122,8 +123,8 @@ For more information about the container.yaml configuration, please refer to the
    cd examples/step2_outfit_with_switch
    python run_app.py
    ```
-
-   For the connection and usage of the OmAgent app, please refer to the [app usage documentation](./docs/concepts/app.md)
+   For app backend deployment, please refer to [here](docker/README.md)  
+   For the connection and usage of the OmAgent app, please check [app usage documentation](./docs/concepts/app.md)
 
 
 ## 🏗 Architecture
