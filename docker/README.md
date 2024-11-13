@@ -23,12 +23,13 @@ To support app development and debugging, we also need to deploy additional serv
 1. Create Data Directories
    Run from the current directory:
    ```bash
-   mkdir -p ../pv-data/mysql/data ../pv-data/mysql/log ../pv-data/minio-data
+   mkdir -p ./conductor_with_app/pv-data/mysql/data ./conductor_with_app/pv-data/mysql/log ./conductor_with_app/pv-data/minio-data && chmod -R a+rw ./conductor_with_app/pv-data
    ```
-   This will create data directories for the MySQL database and the MinIO object storage service. (Note: Ensure the directories have adequate read and write permissions.)
+   This will create data directories for the MySQL database and the MinIO object storage service. (Note: To ensure the directories have adequate read and write permissions, ```chmod -R a+rw ./conductor_with_app/pv-data``` is used. You can change the permission level as needed.)
 
 2. Modify Configuration Items
-   Edit `config/bootstrap.yaml`, changing the `linker.cos.minio.urlPrefix:` IP address to your local IP (or to the corresponding public IP if external access is required).
+   Edit `config/bootstrap.yaml`, changing the `linker.cos.minio.urlPrefix:` IP address to your local IP (or to the corresponding public IP if external access is required).   
+   Should be in format of ```http://<your_ip>:<minio_port>/<bucket_name>```. Default to ```http://<your_ip>:9000/omai```.
 
 3. Start Services
    Run from the current directory:

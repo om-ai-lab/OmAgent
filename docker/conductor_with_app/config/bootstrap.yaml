@@ -100,9 +100,9 @@ linker:
       secretKey: xfnGFZ7HakQlmurdG3LIHtB60luMJrD6
       endpoint: http://minio:9000
       buckets:
-        - name: hzlh
+        - name: omai
           auth: false
-          urlPrefix: <Your ip>
+          urlPrefix: http://<Your ip>:9000/omai
     select: minio
 
 agent:
