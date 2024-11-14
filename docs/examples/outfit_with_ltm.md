@@ -53,6 +53,7 @@ The system uses Redis for state management, Milvus for long-term image storage, 
 - Conductor server running locally or remotely
 - Milvus vector database (will be started automatically when workflow runs)
 - Sufficient storage space for image database
+- Install Git LFS by `git lfs intall`, then pull sample images by `git lfs pull`
 
 ## Configuration
 

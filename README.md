@@ -68,6 +68,17 @@ docker-compose -f docker/conductor/docker-compose.yml up -d
 - **Install Optional Components**: 
   - Install Milvus VectorDB for enhanced support of long-term memory.
 OmAgent uses Milvus Lite as the default vector database for storing vector data related to long-term memory. To utilize the full Milvus service, you may deploy the [Milvus vector database](https://milvus.io/docs/install_standalone-docker.md) via Docker.
+  - Pull git lfs files.
+We provide sample image files for our examples in the `examples/step4_outfit_with_ltm/wardrobe_images` directory. To use them, ensure Git LFS is installed. You can install it with the following command:
+      ```bash
+      git lfs install
+      ```
+      Then, pull the files by executing:
+      ```bash
+      git lfs pull
+      ```
+  
+
 
 ### 3. Connect Devices  
 If you wish to use smart devices to access your agents, we provide a smartphone app and corresponding backend, allowing you to focus on agent functionality without worrying about complex device connection issues.  
@@ -75,6 +86,7 @@ If you wish to use smart devices to access your agents, we provide a smartphone 
     The APP backend comprises the backend program, along with two middleware components: the MySQL database and MinIO object storage. For installation and deployment instructions, please refer to [this link](docs/concepts/app_backend.md).
 - **Download, install, and debug the smartphone app**  
   At present, we offer an Android APP available for download and testing. For detailed instructions on acquiring and using it, please refer to [here](docs/concepts/app.md). The iOS version is currently under development and will be available soon.
+
 
 ## 🚀 Quick Start 
 ### Hello World
