@@ -1,0 +1,117 @@
+server:
+  servlet:
+    context-path: /omappagent
+  port: 8082
+  max-http-header-size: 102400
+project:
+  name: omappagent
+  moduleId: 1
+spring:
+  application:
+    name: om-app-agent
+  cloud:
+    nacos:
+      config:
+        server-addr: 10.8.17.148:32390
+        file-extension: yaml
+        name: om-app-agent
+        namespace:
+        enabled: false
+        username: nacos
+        password: Nacos
+        shared-configs:
+          - data-id: redisson.yaml
+      discovery:
+        server-addr: 10.8.171.148:32390
+        namespace:
+        username: nacos
+        password: Nacos
+        enabled: false
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mysql:3306/om_app_agent?useSSL=false&useUnicode=true&characterEncoding=utf-8&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai
+    username: hd
+    password: F098058455ec50b3a
+    type: com.alibaba.druid.pool.DruidDataSource
+    initial-size: 8
+    min-idle: 1
+    max-active: 20
+    max-wait: 60000
+    time-between-eviction-runsMillis: 60000
+    min-evictable-idle-timeMillis: 300000
+    validation-query: select 'x' FROM DUAL
+    test-while-idle: true
+    test-on-borrow: false
+    test-on-return: false
+    pool-prepared-statements: true
+    max-open-prepared-statements: 20
+    max-pool-prepared-statement-per-connection-size: 20
+    filters: stat
+    connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+    use-global-data-source-stat: true
+
+  redis:
+    database: 0
+    host: conductor-redis
+    port: 6379
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+    timeout: 3000
+  redisson:
+    config: |
+      singleServerConfig:
+        idleConnectionTimeout: 10000
+        connectTimeout: 10000
+        timeout: 3000
+        retryAttempts: 3
+        retryInterval: 1500
+        subscriptionsPerConnection: 5
+        clientName: null
+        address: redis://redis:6379
+        subscriptionConnectionMinimumIdleSize: 1
+        subscriptionConnectionPoolSize: 50
+        connectionMinimumIdleSize: 32
+        connectionPoolSize: 64
+        database: 0
+        dnsMonitoringInterval: 5000
+      threads: 8
+      nettyThreads: 16
+      codec: !<org.redisson.codec.JsonJacksonCodec> {}
+      #codec: !<org.redisson.codec.MarshallingCodec> {}
+      transportMode : "NIO"
+
+web:
+  config:
+    interceptors: authInterceptor
+
+linker:
+  cos:
+    minio:
+      enable: true
+      accessKey: 8V51TQi0Haqgtv8C
+      secretKey: xfnGFZ7HakQlmurdG3LIHtB60luMJrD6
+      endpoint: http://minio:9000
+      buckets:
+        - name: omai
+          auth: false
+          urlPrefix: http://<Your ip>:9000/omai
+    select: minio
+
+agent:
+  baseUrl: 10.0.12.23:10001
+  resourceIndexUrl: ${agent.baseUrl}/index/image
+
+logging:
+  level:
+    root: debug
+
+conductor:
+  endpoint: "http://conductor-server:8080/api/"
