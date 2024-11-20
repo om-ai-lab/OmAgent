@@ -188,5 +188,15 @@ OmAgent的设计架构遵循三项基本原则：
 }
 ```
 
+## 第三方依赖
+
+本项目包含以下第三方项目的代码：
+
+- **conductor-python**  
+  - 许可证: Apache License 2.0
+  - [项目链接](https://github.com/conductor-sdk/conductor-python)
+  - [许可证链接](http://www.apache.org/licenses/LICENSE-2.0)
+
+
 ## Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=om-ai-lab/OmAgent&type=Date)](https://star-history.com/#om-ai-lab/OmAgent&Date)

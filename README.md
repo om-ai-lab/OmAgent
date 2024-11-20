@@ -211,5 +211,15 @@ If you find our repository beneficial, please cite our paper:
 }
 ```
 
+## Third-Party Dependencies
+
+This project includes code from the following third-party projects:
+
+- **conductor-python**  
+  - License: Apache License 2.0
+  - [Link to Project](https://github.com/conductor-sdk/conductor-python)
+  - [Link to License](http://www.apache.org/licenses/LICENSE-2.0)
+
+
 ## Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=om-ai-lab/OmAgent&type=Date)](https://star-history.com/#om-ai-lab/OmAgent&Date)
