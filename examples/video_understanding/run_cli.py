@@ -33,7 +33,7 @@ workflow = ConductorWorkflow(name='video_understanding')
 video_preprocess_task = simple_task(task_def_name='VideoPreprocessor', task_reference_name='video_preprocess')
 
 # 2. Video QA task for video QA
-video_qa_task = simple_task(task_def_name='VideoQA', task_reference_name='video_qa', inputs={'video_md5': '${workflow.input.video_md5}', 'video_path': '${workflow.input.video_path}', 'instance_id': '${workflow.input.instance_id}'})
+video_qa_task = simple_task(task_def_name='VideoQA', task_reference_name='video_qa', inputs={'video_md5': video_preprocess_task.output('video_md5'), 'video_path': video_preprocess_task.output('video_path'), 'instance_id': video_preprocess_task.output('instance_id')})
 
 # Divide-and-conquer workflow
 # 3. Initialize set variable task for global workflow variables

@@ -64,7 +64,8 @@ class VideoQA(BaseWorker, BaseLLMBackend):
             for _, each in related_information
         ]
         video = VideoScenes.from_serializable(self.stm(self.workflow_instance_id)['video'])
-        self.stm(self.workflow_instance_id).extra = {
+        self.stm(self.workflow_instance_id)['extra'] = {
+                "video_information": "video is already loaded in the short-term memory(stm).",
                 "video_duration_seconds(s)": video.stream.duration.get_seconds(),
                 "frame_rate": video.stream.frame_rate,
                 "video_summary": "\n---\n".join(related_information),

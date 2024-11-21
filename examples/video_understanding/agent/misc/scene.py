@@ -35,7 +35,7 @@ class Scene(BaseModel):
 
 class VideoScenes(BaseModel):
     stream: VideoStream
-    audio: AudioSegment
+    audio: Union[AudioSegment, None]
     scenes: List[Scene]
     frame_extraction_interval: int
 
@@ -53,6 +53,7 @@ class VideoScenes(BaseModel):
         min_scene_len: int = 1,
         frame_extraction_interval: int = 5,
         show_progress: bool = False,
+        kernel_size: Optional[int] = None,
     ):
         """Load a video file.
 
@@ -65,16 +66,32 @@ class VideoScenes(BaseModel):
         """
         video = open_video(video_path)
         scene_manager = SceneManager()
-        scene_manager.add_detector(
-            ContentDetector(
-                threshold=threshold, min_scene_len=video.frame_rate * min_scene_len
-            )
+        weight = ContentDetector.Components(
+            delta_hue=1.0,
+            delta_sat=1.0,
+            delta_lum=0.0,
+            delta_edges=1.0,
         )
+        if kernel_size is None:
+            scene_manager.add_detector(
+                ContentDetector(
+                    threshold=threshold, min_scene_len=video.frame_rate * min_scene_len, weights=weight
+                )
+            )
+        else:
+            scene_manager.add_detector(
+                ContentDetector(
+                    threshold=threshold, min_scene_len=video.frame_rate * min_scene_len, weights=weight, kernel_size=kernel_size
+                )
+            )
         scene_manager.detect_scenes(video, show_progress=show_progress)
         scenes = scene_manager.get_scene_list(start_in_scene=True)
 
-        audio = AudioSegment.from_file(video_path)
-        audio = normalize(audio)
+        try:
+            audio = AudioSegment.from_file(video_path)
+            audio = normalize(audio)
+        except (IndexError, OSError):
+            audio = None
         return cls(
             stream=video,
             scenes=[Scene.init(*scene) for scene in scenes],
@@ -139,6 +156,8 @@ class VideoScenes(BaseModel):
         Returns:
             AudioSegment: The audio clip of the scene.
         """
+        if self.audio is None:
+            return None
         if isinstance(scene, int):
             scene = self.scenes[scene]
             start, end = scene.start, scene.end
@@ -197,8 +216,11 @@ class VideoScenes(BaseModel):
     def from_serializable(cls, data: dict):
         """Rebuild VideoScenes from serialized data."""
         video = open_video(data['video_path'])
-        audio = AudioSegment.from_file(data['video_path'])
-        audio = normalize(audio)
+        try:
+            audio = AudioSegment.from_file(data['video_path'])
+            audio = normalize(audio)
+        except Exception:
+            audio = None
         
         # Rebuild scenes list
         scenes = []

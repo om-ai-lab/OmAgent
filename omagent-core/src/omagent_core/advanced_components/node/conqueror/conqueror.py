@@ -149,7 +149,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
 
             # Call tool_manager to decide which tool to use and execute the tool
             execution_status, execution_results = self.tool_manager.execute_task(
-                content["tool_call"], related_info=self.stm['former_results']
+                content["tool_call"], related_info=self.stm(self.workflow_instance_id)['former_results']
             )
             former_results = self.stm(self.workflow_instance_id)['former_results']
             former_results['tool_call'] = content['tool_call']
@@ -169,7 +169,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                     "tool_status": current_node.status,
                     "tool_result": current_node.result,
                 }
-                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call success.')
+                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call success. {toolcall_success_output_structure}')
                 return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
             # Handle the case where the tool call is failed
             else:
@@ -177,7 +177,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                 current_node.status = TaskStatus.FAILED
                 former_results['tool_call_error'] = f"tool_call {content['tool_call']} raise error: {current_node.result}"
                 self.stm(self.workflow_instance_id)['former_results'] = former_results
-                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call failed.')
+                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call failed. {former_results["tool_call_error"]}')
                 return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
         # Handle the case where the LLM generation is not valid
         else:
