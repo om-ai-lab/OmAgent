@@ -24,7 +24,7 @@ The workflow follows a straightforward sequence:
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.10+
 - Required packages installed (see requirements.txt)
 - Access to OpenAI API or compatible endpoint (see configs/llms/gpt.yml)
 - Redis server running locally or remotely

@@ -45,7 +45,7 @@ The system uses Redis for state management, Milvus for long-term image storage, 
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.10+
 - Required packages installed (see requirements.txt)
 - Access to OpenAI API or compatible endpoint (see configs/llms/gpt.yml)
 - Access to Bing API key for web search functionality to search real-time weather information for outfit recommendations (see configs/tools/websearch.yml)
@@ -53,6 +53,7 @@ The system uses Redis for state management, Milvus for long-term image storage, 
 - Conductor server running locally or remotely
 - Milvus vector database (will be started automatically when workflow runs)
 - Sufficient storage space for image database
+- Install Git LFS by `git lfs intall`, then pull sample images by `git lfs pull`
 
 ## Configuration
 
@@ -84,8 +85,12 @@ The container.yaml file is a configuration file that manages dependencies and se
    export bing_api_key="your_bing_api_key"
    ```
 4. Configure your text encoder settings in `configs/llms/text_encoder.yml` in the two workflow directories:
-   - Set your OpenAI text encoder endpoint and API key by directly modifying the yml file
-   - The default text encoder configuration uses OpenAI text embedding v3 with 3072 dimensions
+   - Set your OpenAI text encoder endpoint and API key through environment variable or  by directly modifying the yml file
+   ```bash
+   export custom_openai_text_encoder_key="openai_text_encoder_key"
+   export custom_openai_text_encoder_endpoint="your_openai_endpoint"
+   ```
+   - The default text encoder configuration uses OpenAI text embedding v3 with 3072 dimensions, make sure you change the dim value of `MilvusLTM` in `container.yaml`
    - Adjust the embedding dimension and other settings as needed through environment variable or by directly modifying the yml file
 
 4. Update settings in the generated `container.yaml`:
@@ -94,7 +99,7 @@ The container.yaml file is a configuration file that manages dependencies and se
      - Configure both `redis_stream_client` and `redis_stm_client` sections
    - Update the Conductor server URL under conductor_config section
    - Configure MilvusLTM in `components` section:
-     - Set the storage_name and dim for MilvusLTM
+     - Set the `storage_name` and `dim` for MilvusLTM
      - Adjust other settings as needed
    - Adjust any other component settings as needed
 
@@ -102,34 +107,27 @@ The container.yaml file is a configuration file that manages dependencies and se
 
 1. Run the image storage workflow first:
 
-   ```bash
-   cd image_storage
-   ```
    For terminal/CLI usage:
    ```bash
-   python run_image_storage_cli.py
+   python image_storage/run_image_storage_cli.py
    ```
    For app usage:
    ```bash
-   python run_image_storage_app.py
+   python image_storage/run_image_storage_app.py
    ```
 
    This workflow will store outfit images in the Milvus database.
 
 2. Run the outfit recommendation workflow in a separate terminal:
 
-   ```bash
-   cd outfit_from_storage
-   ```
-
    For terminal/CLI usage:
    ```bash
-   python run_outfit_recommendation_cli.py
+   python outfit_from_storage/run_outfit_recommendation_cli.py
    ```
 
    For app/GUI usage:
    ```bash
-   python run_outfit_recommendation_app.py
+   python outfit_from_storage/run_outfit_recommendation_app.py
    ```
 
    This workflow will retrieve outfit recommendations from the stored images.

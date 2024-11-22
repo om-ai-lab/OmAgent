@@ -9,7 +9,7 @@ services:
       - internal
     ports:
       - 8080:8080
-      - 5000:5000
+      - 5001:5000
     healthcheck:
       test: ["CMD", "curl","-I" ,"-XGET", "http://localhost:8080/health"]
       interval: 60s
@@ -64,9 +64,7 @@ services:
         max-file: "3"
 
   om-app-agent:
-    #image: hbt.linker.cc/yting/omappagent:feature_om_app_1.0.0-202411110929
-    #image: registry.linker.cc/yting/omappagent:feature_om_app_1.0.0-202411121609
-    image: registry.linker.cc/yting/omappagent:feature_om_app_1.0.0-202411122032
+    image: omailab/omagent-app-backend:v1.0.0
     container_name: om-app-agent
     restart: always
     environment:
@@ -74,7 +72,7 @@ services:
     ports:
       - "8082:8082"
     volumes:
-      - ../config/om-app-agent/resources/bootstrap-test.yaml:/usr/local/bootstrap-test.yaml:rw
+      - ../config/bootstrap.yaml:/usr/local/bootstrap-test.yaml:rw
     networks:
       - internal
 
@@ -101,7 +99,7 @@ services:
     environment:
       MINIO_ROOT_USER: 8V51TQi0Haqgtv8C
       MINIO_ROOT_PASSWORD: xfnGFZ7HakQlmurdG3LIHtB60luMJrD6
-      MINIO_DEFAULT_BUCKETS: hzlh:public
+      MINIO_DEFAULT_BUCKETS: omai:public
     volumes:
       - ../pv-data/minio-data:/bitnami/minio/data:rw
     ports:

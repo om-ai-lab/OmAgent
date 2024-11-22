@@ -1,38 +1,40 @@
-## Deploy
+## Deployment
 
-我们提供两种部署方式：  
-1. 仅包含Conductor的部署，适合基于CLI的开发和测试；  
-2. 包含Conductor以及App后端的部署，提供对于智能手机App功能的支持。  
+We offer two deployment options:  
+1. Deployment with only Conductor, suited for CLI-based development and testing.  
+2. Deployment including both Conductor and the App backend, providing support for smartphone app functionality.  
 
-## Docker 和 Docker Compose 安装
-首先请确保您的环境已经安装docker以及docker-compose。如果没有，可以参考[docker官方文档](https://docs.docker.com/get-docker/) 和 [docker-compose官方文档](https://docs.docker.com/compose/install/) 进行安装。
+## Docker and Docker Compose Installation
 
-## 仅包含Conductor的部署
+First, ensure that your environment has Docker and Docker Compose installed. If not, please refer to the [Docker official documentation](https://docs.docker.com/get-docker/) and the [Docker Compose official documentation](https://docs.docker.com/compose/install/) for installation instructions.
 
-从当前目录运行：
+## Deployment with Conductor Only
+
+Run from the current directory:
 ```bash
 docker-compose -f conductor/docker-compose.yml up -d
 ```
-Conductor的基础部署包含一个Redis数据库，一个Elasticsearch数据库，以及Conductor服务共三个镜像。
-部署完成后可以通过访问 `http://localhost:5001` 访问Conductor UI。（注：Mac系统默认会占用5000端口，因此我们使用5001端口，你可以在部署Conductor的时候指定其它端口。）
-通过 `http://localhost:8080` 调用Conductor API。
+The basic deployment of Conductor includes three images: a Redis database, an Elasticsearch database, and the Conductor service. Once deployment is complete, access the Conductor UI at `http://localhost:5001`. (Note: On Mac systems, port 5000 is typically occupied, so we use port 5001; you can specify another port during Conductor deployment.) Access the Conductor API via `http://localhost:8080`.
 
-## 包含Conductor和App后端的部署
+## Deployment Including Conductor and App Backend
 
-为了支持app的开发和调试我们需要额外部署App后端服务，以及MySQL数据库和minio对象存储服务这两个中间件。
+To support app development and debugging, we also need to deploy additional services: the App backend service, a MySQL database, and a MinIO object storage service.
 
-1. 创建数据目录
-   从当前目录运行：
+1. Create Data Directories
+   Run from the current directory:
    ```bash
-   mkdir -p ../pv-data/mysql/data ../pv-data/mysql/log ../pv-data/minio-data
+   mkdir -p ./conductor_with_app/pv-data/mysql/data ./conductor_with_app/pv-data/mysql/log ./conductor_with_app/pv-data/minio-data && chmod -R a+rw ./conductor_with_app/pv-data
    ```
-这会为MySQL数据库和minio对象存储服务创建数据目录。（注：请注意保证目录具有足够的读写权限）
+   This will create data directories for the MySQL database and the MinIO object storage service. (Note: To ensure the directories have adequate read and write permissions, ```chmod -R a+rw ./conductor_with_app/pv-data``` is used. You can change the permission level as needed.)
 
-2. 修改配置项
-   修改config/om-app-agent/resources/bootstrap-test.yaml中的linker.cos.minio.urlPrefix:后的ip为本机ip（如需公网访问，需要修改为对应公网ip）
+2. Modify Configuration Items
+   Edit `config/bootstrap.yaml`, changing the `linker.cos.minio.urlPrefix:` IP address to your local IP (or to the corresponding public IP if external access is required).   
+   Should be in format of ```http://<your_ip>:<minio_port>/<bucket_name>```. Default to ```http://<your_ip>:9000/omai```.
 
-3. 启动服务
-   从当前目录运行：
+3. Start Services
+   Run from the current directory:
    ```bash
-    docker-compose -f conductor_with_app/conductor/docker-compose.yaml up -d
-    ```
+   docker-compose -f conductor_with_app/conductor/docker-compose.yaml up -d
+   ```
+
+4. Now you can link the app to backend automatically(if within the same local area network) or by setting the IP address(http://<your_ip>:8082 by default) in the app. Details see [here](../docs/concepts/app.md).

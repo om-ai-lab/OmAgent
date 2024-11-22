@@ -95,6 +95,7 @@ class Rewinder(BaseTool, BaseLLMBackend):
             )
         )["choices"][0]["message"]["content"]
         image_contents = json_repair.loads(res)
+        self.stm(self.workflow_instance_id)['image_cache'] = {}
         return f"{extracted_frames} described as: {image_contents}."
 
     async def _arun(

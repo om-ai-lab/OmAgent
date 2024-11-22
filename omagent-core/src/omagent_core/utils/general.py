@@ -43,6 +43,26 @@ class LRUCache:
     def pop(self, key, value):
         self.cache.pop(key, None)
 
+def handle_response(res, json, url):
+    if res.status_code < 299:
+        return res.json()
+    elif res.status_code == 404:
+        logging.error("Request URL: {} | Error[404]: 请求错误: 错误的地址".format(url))
+        raise VQLError(516)
+    elif res.status_code == 422:
+        logging.error(
+            "Request URL: {} | Request body: {} | Error[422]: 请求错误: 错误的请求格式".format(
+                url, json
+            )
+        )
+        raise VQLError(517)
+    else:
+        info = res.json()
+        logging.error(
+            "Request URL: {} | Request body: {} | Error: {}".format(url, json, info)
+        )
+        raise VQLError(511, detail=info)
+        
 
 def chunks(l: Sequence, win_len: int, stride_len: int):
     s_id = 0
