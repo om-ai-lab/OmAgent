@@ -44,7 +44,7 @@ The workflow leverages Redis for state management and the Conductor server for w
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.10+
 - Required packages installed (see requirements.txt)
 - Access to OpenAI API or compatible endpoint
 - Access to Bing API key for web search functionality to search real-time weather information for outfit recommendations (see configs/tools/websearch.yml)

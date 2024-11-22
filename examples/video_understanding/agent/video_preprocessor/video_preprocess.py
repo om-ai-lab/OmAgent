@@ -1,7 +1,7 @@
 import hashlib
 import pickle
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Union
 
 from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.engine.worker.base import BaseWorker
@@ -11,10 +11,12 @@ from omagent_core.utils.registry import registry
 from omagent_core.models.asr.stt import STT
 from pydantic import Field, field_validator
 from pydub import AudioSegment
+from pydub.effects import normalize
 from scenedetect import open_video
 import json_repair
 from ..misc.scene import VideoScenes
 from omagent_core.models.encoders.openai_encoder import OpenaiTextEmbeddingV3
+import time
 
 CURRENT_PATH = root_path = Path(__file__).parents[0]
 
@@ -34,9 +36,10 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
     text_encoder: OpenaiTextEmbeddingV3
 
     stt: STT
-    scene_detect_threshold: int = 27
+    scene_detect_threshold: Union[float, int] = 27
     min_scene_len: int = 1
     frame_extraction_interval: int = 5
+    kernel_size: Optional[int] = None
     show_progress: bool = True
 
     use_cache: bool = False
@@ -80,7 +83,6 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
             dict: Dictionary containing video_md5 and video_path
         """
         video_path = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt="Please input the video path:")['messages'][0]['content'][0]['data']
-        print(f"video_path: {video_path}")
         video_md5 = self.calculate_md5(video_path)
         kwargs["video_md5"] = video_md5
 
@@ -93,9 +95,14 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
         if self.use_cache and cache_path.exists():
             with open(cache_path, "rb") as f:
                 loaded_scene = pickle.load(f)
+                try:
+                    audio = AudioSegment.from_file(video_path)
+                    audio = normalize(audio)
+                except Exception:
+                    audio = None
                 video = VideoScenes(
                     stream=open_video(video_path),
-                    audio=AudioSegment.from_file(video_path),
+                    audio=audio,
                     scenes=loaded_scene,
                     frame_extraction_interval=self.frame_extraction_interval,
                 )
@@ -171,13 +178,17 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
                 min_scene_len=self.min_scene_len,
                 frame_extraction_interval=self.frame_extraction_interval,
                 show_progress=self.show_progress,
+                kernel_size=self.kernel_size,
             )
             self.stm(self.workflow_instance_id)['video'] = video.to_serializable()
 
             for index, scene in enumerate(video.scenes):
                 print(f"Processing scene {index} / {len(video.scenes)}...")
                 audio_clip = video.get_audio_clip(scene)
-                scene.stt_res = self.stt.infer(audio_clip)
+                if audio_clip is None:
+                    scene.stt_res = {"text": ""}
+                else:
+                    scene.stt_res = self.stt.infer(audio_clip)
                 video_frames, time_stamps = video.get_video_frames(scene)
                 try:
                     face_rec = registry.get_tool("FaceRecognition")

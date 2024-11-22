@@ -171,7 +171,7 @@ class BaseLLMBackend(BotBase, ABC):
             output = self.llm.generate(prompt, **kwargs)
             for key, value in output["usage"].items():
                 if value is not None:
-                    self.token_usage[key] += value
+                    pass
             for choice in output["choices"]:
                 if choice.get("message"):
                     choice["message"]["content"] = self.output_parser.parse(

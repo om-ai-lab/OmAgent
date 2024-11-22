@@ -45,7 +45,7 @@ The system uses Redis for state management, Milvus for long-term image storage, 
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.10+
 - Required packages installed (see requirements.txt)
 - Access to OpenAI API or compatible endpoint (see configs/llms/gpt.yml)
 - Access to Bing API key for web search functionality to search real-time weather information for outfit recommendations (see configs/tools/websearch.yml)

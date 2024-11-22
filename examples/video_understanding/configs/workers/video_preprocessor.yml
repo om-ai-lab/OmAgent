@@ -1,6 +1,8 @@
 name: VideoPreprocessor
 llm: ${sub|gpt4o}
 use_cache: true
+scene_detect_threshold: 27
+frame_extraction_interval: 5
 stt:
   name: STT
   endpoint: ${env| custom_openai_endpoint, https://api.openai.com/v1}
