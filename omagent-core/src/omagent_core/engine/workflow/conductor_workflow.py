@@ -1,6 +1,7 @@
 from copy import deepcopy
 from typing import Any, Dict, List, Union
 
+from omagent_core.engine.orkes.orkes_workflow_client import workflow_client
 from shortuuid import uuid
 from typing_extensions import Self
 
@@ -14,6 +15,8 @@ from omagent_core.engine.workflow.task.task import TaskInterface
 from omagent_core.engine.workflow.task.task_type import TaskType
 from omagent_core.engine.workflow.task.timeout_policy import TimeoutPolicy
 import itertools
+from omagent_core.utils.container import container
+from omagent_core.utils.logger import logging
 
 
 class ConductorWorkflow:
@@ -36,6 +39,8 @@ class ConductorWorkflow:
         self._restartable = True
         self._workflow_status_listener_enabled = False
         self._workflow_status_listener_sink = None
+        if container.conductor_config.debug:
+            self.stop_all_running_workflows()
 
     @property
     def name(self) -> str:
@@ -309,6 +314,12 @@ class ConductorWorkflow:
         updated_task_list = []
         for i in range(len(workflow_task_list)):
             wft: WorkflowTask = workflow_task_list[i]
+            if container.conductor_config.debug:
+                if wft.task_definition is None:
+                    wft.task_definition = TaskDef()
+                    wft.task_definition.retry_count = 0
+                else:
+                    wft.task_definition.retry_count = 0
             updated_task_list.append(wft)
             if (
                 wft.type == "FORK_JOIN"
@@ -413,6 +424,19 @@ class ConductorWorkflow:
             return "${" + f"workflow.output" + "}"
         else:
             return "${" + f"workflow.output.{json_path}" + "}"
+        
+    def stop_all_running_workflows(self):
+        try:
+            running_workflows = workflow_client.search(query="status IN (RUNNING)")
+            if running_workflows:
+                for workflow in running_workflows.results:
+                    if workflow.workflow_type == self.name:
+                        workflow_client.terminate_workflow(workflow_id=workflow.workflow_id)
+                logging.info('Stopped all running workflows')
+            else:
+                logging.info('No running workflows found')
+        except Exception as e:
+            logging.error(f'Error while stopping running workflows: {e}')
 
 
 class InlineSubWorkflowTask(TaskInterface):
