@@ -140,6 +140,21 @@ worker_config = build_from_file('path/to/config/directory')
 ```
 Note: You must provide a ```workers``` directory in the configuration path which contains all configurations for the workers. 
 
+## Run workers
+OmAgent provides a TaskHandler class to manage worker instance creation and management. Here's how to use TaskHandler:
+```python
+from omagent_core.engine.automator.task_handler import TaskHandler
+
+task_handler = TaskHandler(worker_config=worker_config, workers=[MyWorker()])
+task_handler.start_processes()
+task_handler.stop_processes()
+```
+The `worker_config` parameter accepts a set of worker configurations and launches the corresponding number of processes based on each worker's concurrency attribute value.  
+
+You can also use the `workers` parameter to directly pass in instantiated worker objects. Instances of these workers are deepcopied based on the concurrency setting. If your worker instances contain objects that cannot be deepcopied, set the instance's concurrency property to 1 and actively expand the concurrency count in the workers list.  
+
+Then, use `start_processes` to start all workers and `stop_processes` to stop all workers.
+
 ## Important Notes
 - Always use the @registry.register_worker() decorator to register the worker
 - The ```_run``` method is mandatory and contains your core logic
