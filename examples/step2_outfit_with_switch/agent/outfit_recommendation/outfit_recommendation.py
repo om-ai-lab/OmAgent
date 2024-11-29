@@ -59,7 +59,8 @@ class OutfitRecommendation(BaseWorker, BaseLLMBackend):
         search_info = self.stm(self.workflow_instance_id)["search_info"] if "search_info" in self.stm(self.workflow_instance_id) else None
 
         # Generate outfit recommendations using LLM with weather and user input
-        chat_complete_res = self.simple_infer(weather=str(search_info), instruction=user_instruct, image='<image_0>')
+        image_cache = self.stm(self.workflow_instance_id)['image_cache']
+        chat_complete_res = self.simple_infer(weather=str(search_info), instruction=user_instruct, image=image_cache.get('<image_0>'))
 
         # Extract recommendations from LLM response
         outfit_recommendation = chat_complete_res["choices"][0]["message"]["content"]

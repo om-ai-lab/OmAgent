@@ -52,7 +52,7 @@ class Conclude(BaseLLMBackend, BaseWorker):
         self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conclude', message=f'{task.get_current_node().task}')
         chat_complete_res = self.simple_infer(
             task=task.get_root().task,
-            result=last_output,
+            result=str(last_output),
             img_placeholders="".join(list(self.stm(self.workflow_instance_id).get('image_cache', {}).keys())),
         )
         self.callback.send_answer(agent_id=self.workflow_instance_id, msg=f'Answer: {chat_complete_res["choices"][0]["message"]["content"]}')
