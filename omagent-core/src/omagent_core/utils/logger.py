@@ -3,6 +3,7 @@ import logging as _logging
 import logging.handlers as handlers
 import os
 from distutils.util import strtobool
+from omagent_core.utils.container import container
 
 
 class Logger(_logging.Logger):
@@ -13,8 +14,7 @@ class Logger(_logging.Logger):
         self,
         name,
         log_name,
-        log_dir="./logs",
-        level=_logging.NOTSET,
+        level=None,
         roate="midnight",
         backup_count=30,
     ):
@@ -26,6 +26,8 @@ class Logger(_logging.Logger):
         :param Rotate: How to rotate log files.
         :param backup_count: How many log files to keep.
         """
+        if level is None:
+            level = _logging.DEBUG if container.conductor_config.debug else _logging.INFO
         super().__init__(name, level)
 
         formatter = _logging.Formatter(
@@ -36,35 +38,22 @@ class Logger(_logging.Logger):
             console_handler = _logging.StreamHandler()
             self.addHandler(console_handler)
             console_handler.setFormatter(formatter)
-            if not strtobool(os.environ.get("IS_DEBUG", "false")):
-                logger_dir_path = os.path.join(log_dir, log_name)
-                logger_file_path = os.path.join(logger_dir_path, f"{log_name}.log")
-                os.makedirs(logger_dir_path, exist_ok=True)
-
-                file_handler = handlers.TimedRotatingFileHandler(
-                    logger_file_path,
-                    when=roate,
-                    backupCount=backup_count,
-                    encoding="utf-8",
-                )
-                file_handler.suffix = "-%Y%m%d.log"
-                self.addHandler(file_handler)
-                file_handler.setFormatter(formatter)
 
     def _log_with_caller_info(self, level, msg, *args, **kwargs):
-        frame = inspect.currentframe()
-        outer_frames = inspect.getouterframes(frame)
-        if len(outer_frames) > 3:
-            calling_frame = outer_frames[3].frame
-            self.findCaller = lambda *args: (
-                calling_frame.f_code.co_filename,
-                calling_frame.f_lineno,
-                calling_frame.f_code.co_name,
-                None,
-            )
-        self._log(level, msg, args, **kwargs)
-        # Reset the findCaller to default after logging
-        self.findCaller = _logging.Logger.findCaller
+        if self.isEnabledFor(level):
+            frame = inspect.currentframe()
+            outer_frames = inspect.getouterframes(frame)
+            if len(outer_frames) > 3:
+                calling_frame = outer_frames[3].frame
+                self.findCaller = lambda *args: (
+                    calling_frame.f_code.co_filename,
+                    calling_frame.f_lineno,
+                    calling_frame.f_code.co_name,
+                    None,
+                )
+            self._log(level, msg, args, **kwargs)
+            # Reset the findCaller to default after logging
+            self.findCaller = _logging.Logger.findCaller
 
     def debug(self, msg, *args, **kwargs):
         self._log_with_caller_info(_logging.DEBUG, msg, *args, **kwargs)

@@ -2,7 +2,7 @@
 from omagent_core.clients.devices.app.schemas import CodeEnum, ContentStatus, InteractionType, MessageType
 from omagent_core.clients.input_base import InputBase
 from omagent_core.engine.configuration.configuration import Configuration
-from omagent_core.engine.orkes.orkes_workflow_client import OrkesWorkflowClient
+from omagent_core.engine.orkes.orkes_workflow_client import workflow_client
 from omagent_core.services.connectors.redis import RedisConnector
 from omagent_core.utils import registry
 import time
@@ -31,7 +31,6 @@ class AppInput(InputBase):
             self._send_input_message(workflow_instance_id, input_prompt)
         current_timestamp = int(time.time() * 1000)
         start_id = f"{current_timestamp}-0"
-        client = OrkesWorkflowClient(configuration=container.conductor_config)
 
         result = {}
         # ensure consumer group exists
@@ -47,7 +46,7 @@ class AppInput(InputBase):
         while True:
             try:
                 # logging.info(f"Checking workflow status: {workflow_instance_id}")
-                workflow_status = client.get_workflow_status(workflow_instance_id)
+                workflow_status = workflow_client.get_workflow_status(workflow_instance_id)
                 if workflow_status.status not in running_status:
                     logging.info(f"Workflow {workflow_instance_id} is not running, exiting...")
                     break

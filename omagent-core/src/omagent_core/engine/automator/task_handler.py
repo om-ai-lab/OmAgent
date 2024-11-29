@@ -4,6 +4,7 @@ import os
 from multiprocessing import Process, freeze_support, Queue, set_start_method, get_context
 from sys import platform
 from typing import List
+from copy import deepcopy
 
 from omagent_core.engine.automator.task_runner import TaskRunner
 from omagent_core.engine.configuration.configuration import Configuration
@@ -51,6 +52,17 @@ class TaskHandler:
             metrics_settings: MetricsSettings = None,
             import_modules: List[str] = None
     ):
+        """Initialize a new TaskHandler instance.
+        
+        Args:
+            worker_config (List): List of worker configurations. Each config should be a dict containing
+                worker name, optional concurrency and other settings. The Worker replicates and starts the corresponding number of processes based on the concurrency parameter
+            workers (List[BaseWorker]): List of pre-configured worker instances. Instances of these workers are deepcopied based on the concurrency setting.If your worker instances contain objects that cannot be deepcopied, set the instance's concurrency property to 1 and actively expand the concurrency count in the workers list.
+            metrics_settings (MetricsSettings, optional): Configuration for metrics collection.
+                If None, metrics collection will be disabled.
+            import_modules (List[str], optional): List of module paths to import during initialization.
+        """
+        
         self.logger_process, self.queue = _setup_logging_queue(container.conductor_config)
 
         # imports
@@ -59,7 +71,14 @@ class TaskHandler:
             for module in import_modules:
                 logger.info(f'loading module {module}')
                 importlib.import_module(module)
-
+        
+        existing_workers = []
+        for worker in workers:
+            concurrency = getattr(worker, 'concurrency', BaseWorker.model_fields['concurrency'].default)
+            if concurrency > 1:
+                existing_workers.extend([deepcopy(worker) for _ in range(concurrency - 1)])
+        workers.extend(existing_workers)
+        
         for config in worker_config:
             worker_cls = registry.get_worker(config['name'])
             concurrency = config.get('concurrency', BaseWorker.model_fields['concurrency'].default)
