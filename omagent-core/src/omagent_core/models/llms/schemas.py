@@ -1,8 +1,12 @@
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, ClassVar
 from ..od.schemas import Target
-
+from itertools import groupby
 from pydantic import BaseModel, field_validator, model_validator
+from PIL import Image
+import datetime
+import time
+from ...utils.general import encode_image
 
 from enum import Enum
 
@@ -32,7 +36,6 @@ class ImageUrl(BaseModel):
                 )
             )
         return detail
-
 
 class Content(BaseModel):
     type: str = "text"
@@ -74,26 +77,55 @@ class Message(BaseModel):
     content: List[Content | Dict] | Content | str
     objects: List[Target] = []
     kwargs: dict = {}
+    basic_data_types: ClassVar[List[type]] = [str, list, tuple, int, float, bool, datetime.datetime, datetime.time]
+
+    @classmethod
+    def merge_consecutive_text(cls, content) -> List:
+        result = []
+        current_str = ""
+        
+        for part in content:
+            if isinstance(part, str):
+                current_str += part
+            else:
+                if current_str:
+                    result.append(current_str)
+                    current_str = ""
+                result.append(part)
+        
+        if current_str:  # 处理最后的字符串
+            result.append(current_str)
+            
+        return result
 
     @field_validator("content", mode="before")
     @classmethod
     def content_validator(
         cls, content: List[Content | Dict] | Content | str
-    ) -> List[Content] | Content:
+    ) -> List[Content] | Content:        
         if isinstance(content, str):
             return Content(type="text", text=content)
         elif isinstance(content, list):
+            # combine str elements in list
+            content = cls.merge_consecutive_text(content)
             formatted = []
             for c in content:
+                if not c:
+                    continue
                 if isinstance(c, Content):
                     formatted.append(c)
                 elif isinstance(c, dict):
-                    formatted.append(Content(**c))
-                elif isinstance(c, str):
-                    formatted.append(Content(type="text", text=c))
+                    try:
+                        formatted.append(Content(**c))
+                    except Exception as e:
+                        formatted.append(Content(type="text", text=str(c)))
+                elif isinstance(c, Image.Image):
+                    formatted.append(Content(type="image_url", image_url={"url": f"data:image/jpeg;base64,{encode_image(c)}"}))
+                elif isinstance(c, tuple(cls.basic_data_types)):
+                    formatted.append(Content(type="text", text=str(c)))
                 else:
                     raise ValueError(
-                        "Content list must contain Content objects, strings or dicts."
+                        f"Content list must contain [Content, str, list, dict, PIL.Image], got {type(c)}"
                     )
         else:
             raise ValueError(
@@ -101,76 +133,14 @@ class Message(BaseModel):
             )
         return formatted
 
-    def combine_image_message(self, **kwargs):
-        if isinstance(self.content, list):
-            for index, each_content in enumerate(self.content):
-                if each_content.text is not None:
-                    image_patterns = [
-                        f"<image_{each}>"
-                        for each in re.findall(r"<image_([^_]+)>", each_content.text)
-                    ]
-                    # set max_num to 20
-                    image_patterns = image_patterns[-min(20, len(image_patterns)) :]
-                else:
-                    image_patterns = []
-                if image_patterns:
-                    image_cache = kwargs.get("image_cache")
-                    if len(image_cache) < len(image_patterns):
-                        raise ValueError("Image number is not enough. Please check.")
-                    segments = re.split(
-                        "({})".format("|".join(map(re.escape, image_patterns))),
-                        each_content.text,
-                    )
-                    segments = [each for each in segments if each.strip()]
-                    modified_content = []
-                    for segment in segments:
-                        if segment in image_patterns:
-                            modified_content.append(
-                                Content(
-                                    type="image_url",
-                                    image_url={
-                                        "url": f"data:image/jpeg;base64,{image_cache[segment]}"
-                                    },
-                                )
-                            )
-                        else:
-                            modified_content.append(Content(type="text", text=segment))
-                    self.content[index] = modified_content
-                    self.message_type = MessageType.MIXED
-        else:
-            image_patterns = [
-                f"<image_{each}>"
-                for each in re.findall(r"<image_([^_]+)>", self.content.text)
-            ]
-            # set max_num to 20
-            image_patterns = image_patterns[-min(20, len(image_patterns)) :]
-            if image_patterns:
-                image_cache = kwargs.get("image_cache")
-                if len(image_cache) < len(image_patterns):
-                    raise ValueError("Image number is not enough. Please check.")
-                segments = re.split(
-                    "({})".format("|".join(map(re.escape, image_patterns))),
-                    self.content.text,
-                )
-                segments = [each for each in segments if each.strip()]
-                modified_content = []
-                for segment in segments:
-                    if segment in image_patterns:
-                        modified_content.append(
-                            Content(
-                                type="text",
-                                text=f"Image of {re.match(r'<image_([^_]+)>', segment).group(1)}",
-                            )
-                        )
-                        modified_content.append(
-                            Content(
-                                type="image_url",
-                                image_url={
-                                    "url": f"data:image/jpeg;base64,{image_cache[segment]}"
-                                },
-                            )
-                        )
-                    else:
-                        modified_content.append(Content(type="text", text=segment))
-                self.content = modified_content
-                self.message_type = MessageType.MIXED
+    @classmethod
+    def system(cls, content: str | List[str | Dict | Content]) -> "Message":
+        return cls(role=Role.SYSTEM, content=content)
+    
+    @classmethod
+    def user(cls, content: str | List[str | Dict | Content]) -> "Message":
+        return cls(role=Role.USER, content=content)
+    
+    @classmethod
+    def assistant(cls, content: str | List[str | Dict | Content]) -> "Message":
+        return cls(role=Role.ASSISTANT, content=content)

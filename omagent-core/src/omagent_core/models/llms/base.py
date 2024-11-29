@@ -16,6 +16,9 @@ from ...base import BotBase
 from .prompt.base import _OUTPUT_PARSER, StrParser
 from .prompt.parser import BaseOutputParser
 from .prompt.prompt import PromptTemplate
+from collections.abc import Hashable
+from PIL import Image
+import re
 
 T = TypeVar("T", str, dict, list)
 
@@ -149,23 +152,44 @@ class BaseLLMBackend(BotBase, ABC):
             raise ValueError("LLM only support dict and BaseLLM object")
 
     def prep_prompt(
-        self, input_list: List[Dict[str, Any]], prompts=None
+        self, input_list: List[Dict[str, Any]], prompts=None, **kwargs
     ) -> List[Message]:
         """Prepare prompts from inputs."""
         if prompts is None:
             prompts = self.prompts
+        images = []
+        if len(kwargs_images:=kwargs.get("images", [])):
+            images = kwargs_images
         processed_prompts = []
         for inputs in input_list:
             records = []
             for prompt in prompts:
-                selected_inputs = {k: inputs[k] for k in prompt.input_variables}
-                prompt_str = prompt.format(**selected_inputs)
-                records.append(Message(content=prompt_str, role=prompt.role))
+                selected_inputs = {k: inputs.get(k, '') for k in prompt.input_variables}
+                prompt_str = prompt.template
+                parts = re.split(r"(\{\{.*?\}\})", prompt_str)
+                formatted_parts = []
+                for part in parts:
+                    if part.startswith("{{") and part.endswith("}}"):
+                        part = part[2:-2].strip()
+                        value = selected_inputs[part]
+                        if isinstance(value, (Image.Image, list)):
+                            formatted_parts.extend([value] if isinstance(value, Image.Image) else value)
+                        else:
+                            formatted_parts.append(str(value))
+                    else:
+                        formatted_parts.append(str(part))
+                formatted_parts = formatted_parts[0] if len(formatted_parts) == 1 else formatted_parts
+                if prompt.role == "system":
+                    records.append(Message.system(formatted_parts))
+                elif prompt.role == "user":
+                    records.append(Message.user(formatted_parts))
+            if len(images):
+                records.append(Message.user(images))
             processed_prompts.append(records)
         return processed_prompts
 
     def infer(self, input_list: List[Dict[str, Any]], **kwargs) -> List[T]:
-        prompts = self.prep_prompt(input_list)
+        prompts = self.prep_prompt(input_list, **kwargs)
         res = []
         for prompt in prompts:
             output = self.llm.generate(prompt, **kwargs)

@@ -48,24 +48,6 @@ class OpenaiGPTLLM(BaseLLM):
         if self.api_key is None or self.api_key == "":
             raise ValueError("api_key is required")
         
-        if self.stm(self.workflow_instance_id).get('image_cache') is not None and len(self.stm(self.workflow_instance_id)['image_cache']):
-            for record in records:
-                record.combine_image_message(
-                    image_cache={
-                        key: encode_image(value)
-                        for key, value in self.stm(self.workflow_instance_id)['image_cache'].items()
-                    }
-                )
-        elif len(kwargs.get("images", [])):
-            image_cache = {}
-            for index, each in enumerate(kwargs["images"]):
-                image_cache[f"<image_{index}>"] = each
-            for record in records:
-                record.combine_image_message(
-                    image_cache={
-                        key: encode_image(value) for key, value in image_cache.items()
-                    }
-                )
         body = self._msg2req(records)
         if kwargs.get("tool_choice"):
             body["tool_choice"] = kwargs["tool_choice"]
@@ -97,24 +79,6 @@ class OpenaiGPTLLM(BaseLLM):
         if self.api_key is None or self.api_key == "":
             raise ValueError("api_key is required")
 
-        if self.stm(self.workflow_instance_id).get('image_cache') is not None and len(self.stm(self.workflow_instance_id)['image_cache']):
-            for record in records:
-                record.combine_image_message(
-                    image_cache={
-                        key: encode_image(value)
-                        for key, value in self.stm.image_cache.items()
-                    }
-                )
-        elif len(kwargs.get("images", [])):
-            image_cache = {}
-            for index, each in enumerate(kwargs["images"]):
-                image_cache[f"<image_{index}>"] = each
-            for record in records:
-                record.combine_image_message(
-                    image_cache={
-                        key: encode_image(value) for key, value in image_cache.items()
-                    }
-                )
         body = self._msg2req(records)
         if kwargs.get("tool_choice"):
             body["tool_choice"] = kwargs["tool_choice"]

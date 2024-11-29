@@ -81,22 +81,14 @@ class Rewinder(BaseTool, BaseLLMBackend):
             frames, time_stamps = video.get_video_frames((start, end), interval)
 
         # self.stm.image_cache.clear()
-        extracted_frames = []
+        payload = []
         for i, (frame, time_stamp) in enumerate(zip(frames, time_stamps)):
-            img_index = f"image_timestamp-{time_stamp}"
-            extracted_frames.append(time_stamp)
-            image_cache = self.stm(self.workflow_instance_id).get("image_cache", {})
-            if image_cache.get(f"<{img_index}>", None) is None:
-                image_cache[f"<{img_index}>"] = frame
-                self.stm(self.workflow_instance_id)["image_cache"] = image_cache
-        res = self.simple_infer(
-            image_placeholders="".join(
-                [f"<image_timestamp-{each}>" for each in extracted_frames]
-            )
-        )["choices"][0]["message"]["content"]
+            payload.append(f"timestamp_{time_stamp}")
+            payload.append(frame)
+        res = self.infer(input_list=[{"timestamp_with_images": payload}])[0]["choices"][0]["message"]["content"]
         image_contents = json_repair.loads(res)
         self.stm(self.workflow_instance_id)['image_cache'] = {}
-        return f"{extracted_frames} described as: {image_contents}."
+        return f"extracted_frames described as: {image_contents}."
 
     async def _arun(
         self, start_time: float = 0.0, end_time: float = None, number: int = 1
