@@ -31,7 +31,7 @@ The system uses Redis for state management, Milvus for long-tern memory storage 
 
 ### This whole workflow is looked like the following diagram:
 
-![Video Understanding Workflow](../images/video_understanding_workflow_diagram.png)
+![Video Understanding Workflow](./docs/images/video_understanding_workflow_diagram.png)
 
 ## Prerequisites
 

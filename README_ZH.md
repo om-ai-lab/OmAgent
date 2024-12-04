@@ -156,12 +156,12 @@ OmAgent的设计架构遵循三项基本原则：
 ### 示例项目
 
 我们提供了一些示例项目来展示如何使用OmAgent构建智能智能体程序。您可以在 [examples](./examples/) 目录中找到完整的示例列表。以下是参考顺序：
-1. [step1_simpleVQA](./examples/step1_simpleVQA) 展示了如何使用OmAgent构建一个简单的多模态VQA智能体。[文档](docs/examples/simple_qa.md)  
-2. [step2_outfit_with_switch](./examples/step2_outfit_with_switch) 展示了如何使用OmAgent构建一个带有switch-case分支的智能体。[文档](docs/examples/outfit_with_switch.md)  
-3. [step3_outfit_with_loop](./examples/step3_outfit_with_loop) 展示了如何使用OmAgent构建一个带有循环的智能体。[文档](docs/examples/outfit_with_loop.md)  
-4. [step4_outfit_with_ltm](./examples/step4_outfit_with_ltm) 展示了如何使用OmAgent构建一个带有长期记忆的智能体。[文档](docs/examples/outfit_with_ltm.md)  
-5. [dnc_loop](./examples/dnc_loop) 展示了如何使用OmAgent构建一个使用DnC算法的智能体，用于解决通用性的复杂问题。[文档](docs/examples/dnc_loop.md)  
-6. [video_understanding](./examples/video_understanding) 展示了如何使用OmAgent构建一个视频理解智能体，用于理解视频内容。[文档](docs/examples/video_understanding.md)  
+1. [step1_simpleVQA](./examples/step1_simpleVQA) 展示了如何使用OmAgent构建一个简单的多模态VQA智能体。
+2. [step2_outfit_with_switch](./examples/step2_outfit_with_switch) 展示了如何使用OmAgent构建一个带有switch-case分支的智能体。md)  
+3. [step3_outfit_with_loop](./examples/step3_outfit_with_loop) 展示了如何使用OmAgent构建一个带有循环的智能体。
+4. [step4_outfit_with_ltm](./examples/step4_outfit_with_ltm) 展示了如何使用OmAgent构建一个带有长期记忆的智能体。
+5. [dnc_loop](./examples/dnc_loop) 展示了如何使用OmAgent构建一个使用DnC算法的智能体，用于解决通用性的复杂问题。
+6. [video_understanding](./examples/video_understanding) 展示了如何使用OmAgent构建一个视频理解智能体，用于理解视频内容。
 
 
 ## API 文档
