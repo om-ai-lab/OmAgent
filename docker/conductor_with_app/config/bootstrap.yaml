@@ -33,9 +33,9 @@ spring:
       max-request-size: 100MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://mysql:3306/om_app_agent?useSSL=false&useUnicode=true&characterEncoding=utf-8&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai
-    username: hd
-    password: F098058455ec50b3a
+    url: jdbc:mysql://mysql:3306/om_app_agent?useSSL=false&useUnicode=true&characterEncoding=utf-8&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: Test@58455
     type: com.alibaba.druid.pool.DruidDataSource
     initial-size: 8
     min-idle: 1
