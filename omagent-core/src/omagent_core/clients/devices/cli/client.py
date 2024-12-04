@@ -63,7 +63,7 @@ class DefaultClient:
                 stream_name, group_name, id="0", mkstream=True
             )
         except Exception as e:
-            logging.info(f"Consumer group may already exist: {e}")
+            logging.debug(f"Consumer group may already exist: {e}")
 
         
         while True: 
