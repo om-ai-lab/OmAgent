@@ -40,8 +40,13 @@ class WebpageClient:
         worker_config = build_from_file(self._config_path)
         self._task_handler_interactor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_interactor.start_processes()
-        with gr.Blocks(title="OmAgent") as chat_interface:
-            chatbot = gr.Chatbot(elem_id="OmAgent", bubble_full_width=False, type="messages")
+        with gr.Blocks(title="OmAgent", css="#OmAgent { height: 100vh !important; max-height: calc(100vh - 190px) !important; overflow-y: auto; }") as chat_interface:
+            chatbot = gr.Chatbot(
+                elem_id="OmAgent", 
+                bubble_full_width=False, 
+                type="messages",
+                height="100%"
+            )
 
             chat_input = gr.MultimodalTextbox(
                 interactive=True,
@@ -65,8 +70,13 @@ class WebpageClient:
         self._task_handler_processor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_processor.start_processes()
 
-        with gr.Blocks(title="OmAgent") as chat_interface:
-            chatbot = gr.Chatbot(elem_id="OmAgent", bubble_full_width=False, type="messages")
+        with gr.Blocks(title="OmAgent", css="#OmAgent { height: 100vh !important; max-height: calc(100vh - 190px) !important; overflow-y: auto; }") as chat_interface:
+            chatbot = gr.Chatbot(
+                elem_id="OmAgent", 
+                bubble_full_width=False, 
+                type="messages",
+                height="100%"
+            )
 
             chat_input = gr.MultimodalTextbox(
                 interactive=True,
