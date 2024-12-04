@@ -1,6 +1,6 @@
 # Client
 
-Currently, there are two clients: `DefaultClient` and `AppClient`.
+Currently, there are three clients: `DefaultClient`, `AppClient`, and `WebpageClient`.
 
 `DefaultClient` is the default client used for interacting with users via the command line. 
 - The parameters of `DefaultClient` include `interactor`, `processor`, `config_path`, `workers`, and `input_prompt`.
