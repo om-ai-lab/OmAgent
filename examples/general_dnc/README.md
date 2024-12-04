@@ -58,7 +58,7 @@ This example implements a general divide-and-conquer workflow that consists of f
 
 ### This whole workflow is looked like the following diagram:
 
-![DnC Workflow](../images/general_dnc_workflow_diagram.png)
+![DnC Workflow](./docs/images/general_dnc_workflow_diagram.png)
 
 ## Prerequisites
 
