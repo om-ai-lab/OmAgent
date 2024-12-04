@@ -1,0 +1,4 @@
+name: HuggingFaceLLM
+model_id: Qwen/Qwen2.5-1.5B-Instruct
+temperature: 0.1
+max_tokens: 200

@@ -1,2 +1,2 @@
 name: DnCGeneration
-llm: ${sub|gpt4}
+llm: ${sub|hf}

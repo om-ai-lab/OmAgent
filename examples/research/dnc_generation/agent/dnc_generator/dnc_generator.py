@@ -5,6 +5,7 @@ from omagent_core.utils.registry import registry
 from omagent_core.models.llms.schemas import Message, Content
 import string
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
+from omagent_core.models.llms.hf_gpt import HuggingFaceLLM
 from omagent_core.models.llms.base import BaseLLMBackend
 import re
 
@@ -15,7 +16,7 @@ class DnCGeneration(BaseWorker, BaseLLMBackend):
     Worker for Divide-and-Conquer text generation.
     Iteratively generates text to include specified keywords and merges results.
     """
-    llm: OpenaiGPTLLM
+    llm: HuggingFaceLLM
     def _run(self, concepts:str, *args, **kwargs):        
         concepts = concepts.split(",")
         response = self._generate_initial_response(concepts)
@@ -63,8 +64,10 @@ class DnCGeneration(BaseWorker, BaseLLMBackend):
             Message(role="user", message_type="text", content=prompt)
         ]
         chat_complete_res = self.llm.generate(records=chat_message)        
-        answer = chat_complete_res["choices"][0]["message"]["content"]
-        
+        if "responses" in chat_complete_res:
+            answer = chat_complete_res["responses"][0]
+        else:
+            answer = chat_complete_res["choices"][0]["message"]["content"]        
         self.callback.send_answer(self.workflow_instance_id, msg=answer)        
         return answer
 
