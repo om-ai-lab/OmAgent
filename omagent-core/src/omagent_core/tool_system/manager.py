@@ -265,13 +265,11 @@ class ToolManager(BaseLLMBackend):
             tool_execution_res = []
             try:
                 for each_tool_call in tool_calls:
-                    tool_execution_res.append(
-                        self.execute(
+                    result = self.execute(
                             each_tool_call["function"]["name"],
-                            each_tool_call["function"]["arguments"],
-                        )
+                        each_tool_call["function"]["arguments"],
                     )
-
+                    tool_execution_res.append(result)
                 toolcall_structure = {
                     "status": "success",
                     "tool_use": list(
@@ -283,7 +281,7 @@ class ToolManager(BaseLLMBackend):
                         )
                     ),
                     "argument": [
-                        eval(each_tool_call["function"]["arguments"])
+                        each_tool_call["function"]["arguments"]
                         for each_tool_call in tool_calls
                     ],
                 }

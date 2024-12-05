@@ -116,7 +116,25 @@ The container.yaml file is a configuration file that manages dependencies and se
    - Update the Conductor server URL under conductor_config section
    - Adjust any other component settings as needed
 
-4. Websearch uses duckduckgo by default. For better results, it is recommended to configure [Bing Search](https://www.microsoft.com/en-us/bing/apis/pricing) by modifying the `configs/tools/websearch.yml` file and setting the `bing_api_key`.
+4. Websearch gives multiple providers, you can choose one of them by modifying the `configs/tools/all_tools.yml` file.
+   1. [**Recommend**] Use Tavily as the websearch tool, `all_tools.yml` file should be like this:
+   ```yaml
+   llm: ${sub|text_res}
+   tools:
+       - ...other tools...
+       - name: TavilyWebSearch
+         tavily_api_key: ${env|tavily_api_key, null}
+   ```
+   You can get the `tavily_api_key` from [here](https://app.tavily.com/home). It start with `tvly-xxx`. By setting the `tavily_api_key`, you can get better search results.
+   2. Use bing search or duckduckgo search, `all_tools.yml` file should be like this:
+   ```yaml
+   llm: ${sub|text_res}
+   tools:
+       - ...other tools...
+       - name: WebSearch
+         bing_api_key: ${env|bing_api_key, null}
+   ```
+   For better results, it is recommended to configure [Bing Search](https://www.microsoft.com/en-us/bing/apis/pricing) setting the `bing_api_key`.
 
 For more information about the container.yaml configuration, please refer to the [container module](./docs/concepts/container.md)
 
