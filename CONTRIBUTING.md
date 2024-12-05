@@ -38,7 +38,7 @@ All applications should be placed under the ```example``` path. An application s
    ```
 
 1. Add an agent operator to OmAgent. An agent operator refers to a general-purpose agent logic module, which can be a worker or a sub-workflow.  
-All agent operators should be placed under the ```omagent-core/src/omagent_core/advanced_components``` path. Single functional nodes can be placed in the ```worker``` directory, and these workers should have high generalizability to be used in different functional scenarios. Similarly, workflows with high generalizability can be placed in the ```workflow``` directory and can be used as sub-workflows by other developers.   
+All agent operators should be placed under the ```omagent-core/src/omagent_core/advanced_components``` path. Single functional nodes can be placed in the ```omagent-core/src/omagent_core/advanced_components/worker``` directory, and these workers should have high generalizability to be used in different functional scenarios. Similarly, workflows with high generalizability can be placed in the ```omagent-core/src/omagent_core/advanced_components/workflow``` directory and can be used as sub-workflows by other developers.   
 The file structure of the workflow operator should be similar to the simple single-workflow agent mentioned above. The major difference is that the workflow operator does not require an entry script, but needs a workflow.py file containing a ```ConductorWorkflow``` object. In addition, the README file of the workflow operator should describe the input and output parameters of the workflow, as well as their types.
    ```
    Inputs:
@@ -46,6 +46,19 @@ The file structure of the workflow operator should be similar to the simple sing
    | -------- | ----- | ----- | ---- |
    | user_name | str | true |  The name of the user |
    ```
+   When submitting an agent operator, you should also submit an example under the `example` directory to demonstrate how to use the operator. The example should include:
+
+   1. A complete application that uses the operator
+   2. Clear documentation explaining how to use the operator
+   3. Sample input/output to help users understand the operator's behavior
+
+   For example, if you submit a workflow operator for task decomposition, you should:
+
+   1. Place the operator code under `omagent-core/src/omagent_core/advanced_components/worker/new_worker_operator/`
+   2. Create an example under `examples/new_worker_operator_demo/` showing how to use it
+
+   The example helps other developers understand and adopt your operator more easily.
+
 
 ### Optimization
 All modifications to existing features are categorized as optimization. This can include bug fixes, performance optimization, code structure optimization, documentation optimization, etc. Please confirm that your modification is forward-compatible and will not change the running logic of the code itself. If forward compatibility cannot be guaranteed, please make a special note in the issue.

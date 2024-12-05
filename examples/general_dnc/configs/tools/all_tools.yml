@@ -5,6 +5,5 @@ tools:
     - ReadFileContent
     - WriteFileContent
     - ShellTool
-    - name: WebSearch
-      bing_api_key: ${env|bing_api_key, null}
-      llm: ${sub|text_res}
+    - name: TavilyWebSearch
+      tavily_api_key: ${env|tavily_api_key, null}
