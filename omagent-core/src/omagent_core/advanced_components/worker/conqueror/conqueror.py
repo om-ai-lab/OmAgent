@@ -128,7 +128,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
             self.stm(self.workflow_instance_id)['former_results'] = former_results
             current_node.result = content["agent_answer"]
             current_node.status = TaskStatus.SUCCESS
-            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" agent answer: {content["agent_answer"]}')
+            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}"\nAgent answer: {content["agent_answer"]}')
             return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
 
         # LLM returns the reason why the task needs to be divided
