@@ -1,0 +1,6 @@
+llm: ${sub|text_res}
+tools:
+    - WriteFileContent
+    - name: WebSearch
+      bing_api_key: 573bfabb7359487b90b8f8d26a4f6fc5
+      llm: ${sub|text_res}
