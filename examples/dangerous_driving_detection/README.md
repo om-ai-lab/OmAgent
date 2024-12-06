@@ -103,7 +103,5 @@ If you encounter issues:
 - **Open an issue on GitHub if you can't find a solution, we will do our best to help you out!**
 
 
-## Building the Example
 
-Coming soon! This section will provide detailed instructions for building and packaging the general_dnc example step by step.
 

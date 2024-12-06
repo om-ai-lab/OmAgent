@@ -47,19 +47,16 @@ task2 = simple_task(task_def_name='FaceImageInput', task_reference_name='face_im
 # 3. Get initial text input from user
 task3 = simple_task(task_def_name='InputInterface', task_reference_name='text_input')
 
-# 4. Check if enough information is gathered
+# 4. Check if user is dangerous driver
 task4 = simple_task(task_def_name='LoopDecider', task_reference_name='loop_decider')
 
-# 5. Generate final outfit recommendations
-# task5 = simple_task(task_def_name='OutfitRecommendation', task_reference_name='outfit_recommendation')
 
-# Create loop that continues Q&A until sufficient information is gathered
-# Loop terminates when outfit_decider returns decision=true
-outfit_qa_loop = DoWhileTask(task_ref_name='car_loop', tasks=[task1, task2, task3, task4], 
+# Loop terminates when loop_decider returns decision=true
+car_qa_loop = DoWhileTask(task_ref_name='car_loop', tasks=[task1, task2, task3, task4], 
                              termination_condition='if ($.loop_decider["decision"] == true){false;} else {true;} ')
 
-# Define workflow sequence: image input -> Q&A loop -> final recommendation
-workflow >> outfit_qa_loop
+# Define workflow sequence: workflow -> car_qa_loop
+workflow >> car_qa_loop
 
 # Register workflow with conductor server
 workflow.register(True)
