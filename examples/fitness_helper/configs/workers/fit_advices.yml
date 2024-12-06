@@ -1,0 +1,2 @@
+name: FitAdvices
+llm: ${sub| gpt}
