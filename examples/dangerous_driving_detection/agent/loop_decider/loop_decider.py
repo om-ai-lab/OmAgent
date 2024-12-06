@@ -60,13 +60,11 @@ class LoopDecider(BaseLLMBackend, BaseWorker):
         content = self._extract_from_result(content)
         logging.info(content)
 
-        # Return decision and handle feedback if more information is needed
+        # Return decision based on LLM output
         if content.get("decision") == "no":
             self.callback.send_answer(agent_id=self.workflow_instance_id, msg=content.get("reason"))
             return {"decision": True}
         else:
-            # feedback.append(content["reason"])
-            # self.stm(self.workflow_instance_id)["feedback"] = feedback
             self.callback.send_answer(agent_id=self.workflow_instance_id, msg=content.get("reason"))
             return {"decision": False}
 
