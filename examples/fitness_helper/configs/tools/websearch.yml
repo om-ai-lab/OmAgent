@@ -1,0 +1,5 @@
+llm: ${sub| text_res}
+tools:
+  - name: WebSearch
+    bing_api_key: ${env| bing_api_key, 573bfabb7359487b90b8f8d26a4f6fc5}
+    llm: ${sub|text_res}
