@@ -154,3 +154,6 @@ running_logs/
 
 # vscode
 .vscode
+
+#history
+.history
