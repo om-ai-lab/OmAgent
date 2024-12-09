@@ -35,42 +35,38 @@ container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 workflow = ConductorWorkflow(name='traval_assistant')
 
 # Configure workflow tasks:
-# task1:
-#   task_def_name='InputInterface': Task for handling initial user input, such as destination and travel preferences.
-#   task_reference_name='input_task': Reference name for the task, uniquely identifies and references this task in the workflow.
 
-# task2:
+# task1:
 #   task_def_name='ScenicSpotQA': Task for Scenic Spot Q&A, involves asking questions about scenic spots and gathering information.
 #   task_reference_name='scenic_spot_qa': Reference name for the task, uniquely identifies and references this task in the workflow.
 
-# task3:
+# task2:
 #   task_def_name='ScenicSpotDecider': Task for Scenic Spot Decider, makes decisions based on user preferences and Q&A information.
 #   task_reference_name='scenic_spot_decider': Reference name for the task, uniquely identifies and references this task in the workflow.
 
-# task4:
+# task3:
 #   task_def_name='ScenicSpotRecommendation': Task for generating final scenic spot recommendations based on user preferences and decisions.
 #   task_reference_name='scenic_spot_recommendation': Reference name for the task, uniquely identifies and references this task in the workflow.
 
-task1 = simple_task(task_def_name='InputInterface', task_reference_name='input_task')
 
-task2 = simple_task(task_def_name='ScenicSpotQA', task_reference_name='scenic_spot_qa')
+task1 = simple_task(task_def_name='ScenicSpotQA', task_reference_name='scenic_spot_qa')
 
-task3 = simple_task(task_def_name='ScenicSpotDecider', task_reference_name='scenic_spot_decider')
+task2 = simple_task(task_def_name='ScenicSpotDecider', task_reference_name='scenic_spot_decider')
 
-task4 = simple_task(task_def_name='ScenicSpotRecommendation', task_reference_name='scenic_spot_recommendation')
+task3 = simple_task(task_def_name='ScenicSpotRecommendation', task_reference_name='scenic_spot_recommendation')
 
 # Create loop that continues Q&A until sufficient information is gathered
 # Loop terminates when scenic_spot_decider returns decision=true
-scenic_spot_qa_loop = DoWhileTask(task_ref_name='preference_loop', tasks=[task2, task3], 
+scenic_spot_qa_loop = DoWhileTask(task_ref_name='preference_loop', tasks=[task1, task2], 
                              termination_condition='if ($.scenic_spot_decider["decision"] == true){false;} else {true;} ')
 
 # Configure workflow execution flow:
-workflow >> scenic_spot_qa_loop >> task4
+workflow >> scenic_spot_qa_loop >> task3
 
 # Register workflow
 workflow.register(True)
 
 # Initialize and start app client with workflow configuration
 config_path = CURRENT_PATH.joinpath('configs')
-agent_client = AppClient(interactor=workflow, config_path=config_path, workers=[InputInterface()])
+agent_client = AppClient(interactor=workflow, config_path=config_path)
 agent_client.start_interactor()
