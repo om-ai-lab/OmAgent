@@ -1,0 +1,7 @@
+Now it's your turn to complete the task.
+The answers in this language are based on the user's answers.
+
+Enter the information:
+- Image of a particular attraction or artefact: {{image}}
+- Name of the attraction or artefact: {{name}}
+- Information about the attraction or artefact: {{search_results}}
