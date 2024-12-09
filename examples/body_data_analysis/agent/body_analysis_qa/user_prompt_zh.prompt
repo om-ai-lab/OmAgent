@@ -1,0 +1,8 @@
+现在，轮到你来完成任务了。
+
+输入信息：
+- 用户身体指标信息： {{bodydata}}
+- 之前搜索过的信息：{{previous_search}}
+- 决定者的反馈： {{feedback}}
+
+您的回复必须是有效的 JSON 格式，并包含以： "conversation" 或者 "tool_call"。

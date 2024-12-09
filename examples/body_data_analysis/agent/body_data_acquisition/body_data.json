@@ -1,0 +1,13 @@
+{
+    "Body_Data": {
+        "Gender": "Male",
+        "Age": "25",
+        "Height": "185cm",
+        "Weight": "95.85kg",
+        "Fat": "23.85kg",
+        "Striated_Muscle": "38.63kg",
+        "Muscle": "67.5kg",
+        "Bone": "5.2kg",
+        "Visceral_Fat_Grade": "9"
+    }
+}

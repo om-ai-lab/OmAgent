@@ -1,0 +1,2 @@
+name: BodyAnalysisQA
+llm: ${sub| text_res}
