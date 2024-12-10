@@ -33,6 +33,6 @@ if __name__ == "__main__":
         }
     ]
 }
-    q = VQA_Agent(api_key="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")
+    q = VQA_Agent(api_key="open_ai_apikey")
     final = q.run(user_input)
     print ("final", final)
