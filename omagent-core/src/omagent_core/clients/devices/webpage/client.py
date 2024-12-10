@@ -35,6 +35,7 @@ class WebpageClient:
         self._config_path = config_path
         self._workers = workers
         self._workflow_instance_id = None
+        self._incomplete_message = ""
         self._custom_css = """
             #OmAgent {
                 height: 100vh !important;
@@ -193,16 +194,35 @@ class WebpageClient:
             # read output stream
             messages = self._get_redis_stream_message(group_name, consumer_name, stream_name)
             finish_flag = False
+
             for stream, message_list in messages:
                 for message_id, message in message_list:
+                    incomplete_flag = False
                     payload_data = self._get_message_payload(message)
                     if payload_data is None:
                         continue
+                    if payload_data["content_status"] == ContentStatus.INCOMPLETE.value:
+                        incomplete_flag = True
                     message_item = payload_data["message"]
                     if message_item["type"] == MessageType.IMAGE_URL.value:
                         history.append({"role": "assistant", "content": {"path": message_item["content"]}})
                     else:
-                        history.append({"role": "assistant", "content": message_item["content"]})
+                        if incomplete_flag:
+                            self._incomplete_message = self._incomplete_message + message_item["content"]
+                            if history and history[-1]["role"] == "assistant":
+                                history[-1]["content"] = self._incomplete_message
+                            else:
+                                history.append({"role": "assistant", "content": self._incomplete_message})
+                        else:
+                            if self._incomplete_message != "":
+                                self._incomplete_message = self._incomplete_message + message_item["content"]
+                                if history and history[-1]["role"] == "assistant":
+                                    history[-1]["content"] = self._incomplete_message
+                                else:
+                                    history.append({"role": "assistant", "content": self._incomplete_message})
+                                self._incomplete_message = ""
+                            else:
+                                history.append({"role": "assistant", "content": message_item["content"]})
                     
                     yield history
 
