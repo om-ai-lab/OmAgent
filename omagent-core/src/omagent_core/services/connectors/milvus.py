@@ -1,6 +1,5 @@
 from .base import ConnectorBase
-from pymilvus import Collection, DataType, MilvusClient, connections, utility
-from pymilvus.client import types
+from pymilvus import MilvusClient
 from typing import Any, Optional
 from pydantic import Field
 from omagent_core.utils.registry import registry
@@ -15,11 +14,18 @@ class MilvusConnector(ConnectorBase):
     db: Optional[str] = Field(default="default")
     alias: Optional[str] = Field(default="alias")
 
-    def model_post_init(self, __context: Any) -> None:                
-        self._client = MilvusClient(
-            uri=self.host,
-            user=self.username,
-            password=self.password,
-            db_name=self.db,
-        ) 
+    def model_post_init(self, __context: Any) -> None:  
+        try:
+            self._client = MilvusClient(
+                uri=self.host,
+                user=self.username,
+                password=self.password,
+                db_name=self.db,
+            )
+        except Exception as e:
+            raise ConnectionError(f"Connection to Milvus failed. Please check your connector config in container.yaml. \n Error Message: {e}")
         
+    def check_connection(self) -> bool:
+        """Check if the connection to Milvus is valid."""
+        # Try to list collections to verify connection
+        self._client.list_collections()

@@ -203,5 +203,24 @@ class Container:
                     overwrite=True,
                 )
 
+        self.check_connection()
 
+    def check_connection(self):
+        for name, connector in self._connectors.items():
+            try:
+                connector.check_connection()
+            except Exception as e:
+                raise ConnectionError(f"Connection to {name} failed. Please check your connector config in container.yaml. \n Error Message: {e}")
+
+        try:
+            from omagent_core.engine.orkes.orkes_workflow_client import OrkesWorkflowClient
+            conductor_client = OrkesWorkflowClient(self.conductor_config)
+            conductor_client.check_connection()
+        except Exception as e:
+            raise ConnectionError(f"Connection to Conductor failed. Please check your conductor config in container.yaml. \n Error Message: {e}")
+        
+        print("--------------------------------")
+        print("All connections passed the connection check")
+        print("--------------------------------")
+    
 container = Container()

@@ -22,6 +22,11 @@ class OrkesWorkflowClient(OrkesBaseClient, WorkflowClient):
     ):
         super(OrkesWorkflowClient, self).__init__(configuration)
 
+    def check_connection(self) -> bool:
+        """Check if the connection to Conductor server is valid"""
+        self.metadataResourceApi.get_all_workflows()
+
+
     def start_workflow_by_name(
             self,
             name: str,
