@@ -1,0 +1,6 @@
+Now, it's your turn to complete the task.
+
+Input Information:
+- User instructions and requests: {{instruction}}
+- Previously searched information: {{previous_search}}
+- Feedback from last decider: {{feedback}}
