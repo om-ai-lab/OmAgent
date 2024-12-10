@@ -10,11 +10,8 @@ from omagent_core.advanced_components.simple_agents.simple_vqa_agent import VQA_
 
 
 if __name__ == "__main__":
-    CURRENT_PATH = Path(__file__).parents[0]    
-    registry.import_module(project_path=CURRENT_PATH.joinpath('step1_simpleVQA'))
     logging.init_logger("omagent", "omagent", level="INFO")
     container.register_stm("RedisSTM")    
-
 
     user_input = {
     "messages": [
@@ -33,6 +30,6 @@ if __name__ == "__main__":
         }
     ]
 }
-    q = VQA_Agent(api_key="openai_apikey")
+    q = VQA_Agent(api_key="api_key")
     final = q.run(user_input)
     print ("final", final)
