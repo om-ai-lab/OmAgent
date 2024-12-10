@@ -33,6 +33,6 @@ if __name__ == "__main__":
         }
     ]
 }
-    q = VQA_Agent(api_key="open_ai_apikey")
+    q = VQA_Agent(api_key="openai_apikey")
     final = q.run(user_input)
     print ("final", final)
