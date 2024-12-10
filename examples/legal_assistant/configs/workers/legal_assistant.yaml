@@ -1,0 +1,3 @@
+name: LegalAssistant
+llm: ${sub|gpt}
+max_history: 5  # 配置保存的对话轮数

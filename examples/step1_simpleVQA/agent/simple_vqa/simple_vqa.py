@@ -34,7 +34,7 @@ class SimpleVQA(BaseWorker, BaseLLMBackend):
         if self.stm(self.workflow_instance_id).get('image_cache', None):
             img = self.stm(self.workflow_instance_id)['image_cache']['<image_0>']
         
-            # Add base64 encoded image as second message
+            # Add base64 encoded image as user message
             chat_message.append(Message(role="user", message_type='image', content=[Content(
                                         type="image_url",
                                         image_url={

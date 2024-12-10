@@ -8,11 +8,11 @@ from omagent_core.utils.build import build_from_file
 from omagent_core.engine.automator.task_handler import TaskHandler
 from omagent_core.clients.devices.app.callback import AppCallback
 from omagent_core.clients.devices.app.input import AppInput
-import yaml
 from omagent_core.utils.container import container
 from omagent_core.utils.registry import registry
 from omagent_core.services.connectors.redis import RedisConnector
 from omagent_core.utils.logger import logging
+import html
 
 registry.import_module()
 
@@ -35,12 +35,43 @@ class WebpageClient:
         self._config_path = config_path
         self._workers = workers
         self._workflow_instance_id = None
+        self._custom_css = """
+            #OmAgent {
+                height: 100vh !important;
+                max-height: calc(100vh - 190px) !important;
+                overflow-y: auto;
+            }
+            
+            .running-message {
+                margin: 0;
+                padding: 2px 4px;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                font-family: inherit;
+            }
+            
+            /* Remove the background and border of the message box */
+            .message-wrap {
+                background: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            
+            /* Remove the bubble style of the running message */
+            .message:has(.running-message) {
+                background: none !important;
+                border: none !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+            }
+        """
         
     def start_interactor(self):
         worker_config = build_from_file(self._config_path)
         self._task_handler_interactor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_interactor.start_processes()
-        with gr.Blocks(title="OmAgent", css="#OmAgent { height: 100vh !important; max-height: calc(100vh - 190px) !important; overflow-y: auto; }") as chat_interface:
+        with gr.Blocks(title="OmAgent", css=self._custom_css) as chat_interface:
             chatbot = gr.Chatbot(
                 elem_id="OmAgent", 
                 bubble_full_width=False, 
@@ -70,7 +101,7 @@ class WebpageClient:
         self._task_handler_processor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_processor.start_processes()
 
-        with gr.Blocks(title="OmAgent", css="#OmAgent { height: 100vh !important; max-height: calc(100vh - 190px) !important; overflow-y: auto; }") as chat_interface:
+        with gr.Blocks(title="OmAgent", css=self._custom_css) as chat_interface:
             chatbot = gr.Chatbot(
                 elem_id="OmAgent", 
                 bubble_full_width=False, 
@@ -150,9 +181,10 @@ class WebpageClient:
                     payload_data = self._get_message_payload(message)
                     if payload_data is None:
                         continue
-                    progress = payload_data.get("progress")
-                    message = payload_data.get("message")
-                    history.append({"role": "assistant", "content": f"`{progress}: {message}`"})
+                    progress = html.escape(payload_data.get("progress", ""))
+                    message = html.escape(payload_data.get("message", ""))
+                    formatted_message = f'<pre class="running-message">{progress}: {message}</pre>'
+                    history.append({"role": "assistant", "content": formatted_message})
                     yield history
 
                     container.get_connector('redis_stream_client')._client.xack(
@@ -190,12 +222,12 @@ class WebpageClient:
             sleep(1)
 
     def processor_bot(self, history: list):
-        history.append({"role": "assistant", "content": f"`processing...`"})
+        history.append({"role": "assistant", "content": f"processing..."})
         yield history
         while True:
             status = self._processor.get_workflow(workflow_id=self._workflow_instance_id).status
             if status == 'COMPLETED':
-                history.append({"role": "assistant", "content": f"`completed`"})
+                history.append({"role": "assistant", "content": f"completed"})
                 yield history
                 self._workflow_instance_id = None
                 break
