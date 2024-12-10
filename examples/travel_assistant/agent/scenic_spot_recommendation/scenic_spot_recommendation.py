@@ -65,7 +65,8 @@ class ScenicSpotRecommendation(BaseWorker, BaseLLMBackend):
         execution_status, execution_results = self.tool_manager.execute_task(
                 scenic_spot_recommendation+'\nYou should use write file to complete this task.'
             )
-        self.callback.send_block(agent_id=self.workflow_instance_id, msg=execution_results)
+        
+        self.callback.send_block(agent_id=self.workflow_instance_id, msg=execution_results[0])
         
         # Send recommendations via callback and return
         self.callback.send_answer(agent_id=self.workflow_instance_id, msg=scenic_spot_recommendation)
