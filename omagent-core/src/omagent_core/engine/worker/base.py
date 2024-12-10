@@ -23,6 +23,7 @@ from omagent_core.engine.http.models.task_result import TaskResult
 from omagent_core.engine.http.models.task_result_status import TaskResultStatus
 from omagent_core.engine.worker.exception import NonRetryableException
 from omagent_core.engine.workflow.task.simple_task import SimpleTask
+from abc import ABC, abstractmethod
 
 
 ExecuteTaskFunction = Callable[[Union[Task, object]], Union[TaskResult, object]]
@@ -212,3 +213,58 @@ class BaseWorker(BotBase, ABC):
 
     def paused(self) -> bool:
         return False
+
+
+
+
+class BaseLocalWorker(BotBase, ABC):
+    """Base class for running workflows in a standalone, Python-native mode."""
+    
+    @property 
+    def workflow_instance_id(self) -> str:
+        return "temp"
+      
+    @abstractmethod
+    def _run(self, *args, **kwargs) -> Any:
+        """Abstract method to be implemented by workers to define their logic."""
+        pass
+
+    def run(self, inputs: Any, *args, **kwargs) -> Any:
+        """
+        Run the worker in standalone mode.
+        
+        Args:
+            inputs (Any): The inputs to the worker.
+            *args, **kwargs: Additional arguments.
+        
+        Returns:
+            Any: The output from the worker's `_run` method.
+        """
+        try:
+            # Invoke the worker's `_run` method with inputs
+            result = self._run(inputs, *args, **kwargs)
+            return result
+        except Exception as e:
+            # Handle and log errors
+            print(f"Error occurred while running worker: {e}")
+            raise
+
+    def __call__(self, inputs: Any, *args, **kwargs) -> Any:
+        """
+        Run the worker in standalone mode.
+        
+        Args:
+            inputs (Any): The inputs to the worker.
+            *args, **kwargs: Additional arguments.
+        
+        Returns:
+            Any: The output from the worker's `_run` method.
+        """
+        try:
+            # Invoke the worker's `_run` method with inputs
+            result = self._run(inputs, *args, **kwargs)
+            return result
+        except Exception as e:
+            # Handle and log errors
+            print(f"Error occurred while running worker: {e}")
+            raise

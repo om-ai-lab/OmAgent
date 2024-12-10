@@ -28,6 +28,7 @@ class HuggingFaceLLM(BaseLLM):
     temperature: float = Field(default=0.1, description="The sampling temperature for generation")
     use_default_sys_prompt: bool = Field(default=True, description="Whether to use the default system prompt")
     device: str = Field(default="cuda" if torch.cuda.is_available() else "cpu", description="The device to run the model on")
+    vision: bool = Field(default=False, description="Whether the model supports vision")
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
