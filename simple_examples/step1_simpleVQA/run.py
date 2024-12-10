@@ -6,7 +6,7 @@ from pathlib import Path
 
 from omagent_core.utils.registry import registry
 from omagent_core.utils.logger import logging
-from omagent_core.advanced_components.simple_agents.simple_vqa_agent import VQA_Agent
+from omagent_core.omagent_simple.agents.simple_vqa_agent import VQA_Agent
 
 
 if __name__ == "__main__":

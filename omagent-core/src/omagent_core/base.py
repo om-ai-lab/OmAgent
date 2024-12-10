@@ -38,6 +38,7 @@ class BotBase(BaseSettings, ABC):
             return container.stm
         else:
             return container.get_component(self.component_stm)
+
     
     @property
     def ltm(self) -> str:
