@@ -22,3 +22,8 @@ class RedisConnector(ConnectorBase):
             decode_responses=False
         )
         self._client = Redis(connection_pool=pool)
+
+    def check_connection(self) -> bool:
+        """Check if Redis connection is valid by executing a simple ping command"""
+        self._client.ping()
+
