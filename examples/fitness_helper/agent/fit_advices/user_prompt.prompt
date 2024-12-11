@@ -1,0 +1,7 @@
+Now, it's your turn to complete the task.
+Give anwer using the language according to the user's answer.
+
+Input Information:
+- Type of fitness exercises: {{type}}
+- User's specific requirements or preferences: {{instruction}}
+- Fitness Exercises in the image: {{image}}
