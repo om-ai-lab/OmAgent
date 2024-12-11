@@ -1,0 +1,2 @@
+name: SimpleVQA
+llm: ${sub|gpt}
