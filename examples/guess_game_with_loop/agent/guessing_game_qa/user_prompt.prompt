@@ -1,0 +1,8 @@
+Now, it's your turn to complete the task.
+
+Input Information:
+- User instructions and requests: {{instruction}}
+- Previously searched information: {{previous_search}}
+- Feedback from decider: {{feedback}}
+
+Your response must be in valid JSON format and contain exactly ONE of these two options: "conversation" or "tool_call".
