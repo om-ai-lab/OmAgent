@@ -1,0 +1,6 @@
+You have completed the reasoning process. Based on the following question and reasoning result, generate a concise and clear final answer.
+
+Question: {{question}}
+Reasoning steps: {{reasoning_result}}
+
+Please provide the final answer:
