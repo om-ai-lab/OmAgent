@@ -11,11 +11,6 @@ from agent.input_interface.input_interface import InputInterface
 
 # Initialize logging
 logging.init_logger("omagent", "omagent", level="INFO")
-import os
-os.environ['custom_openai_endpoint'] = 'http://36.133.246.107:11002/v1'
-os.environ['custom_openai_key'] = 'sk-iytCHBhtNvAhtxeBC8E5A71e473c45C1B9847b6bB2F6461b'
-os.environ['bing_api_key'] = '573bfabb7359487b90b8f8d26a4f6fc5'
-os.environ['custom_openai_text_encoder_key'] = 'sk-2fpMc0GBGTGG96w62cF7B9621bA34aDa8b2112D26404Ae4e'
 
 # Set current working directory path
 CURRENT_PATH = Path(__file__).parents[0]
