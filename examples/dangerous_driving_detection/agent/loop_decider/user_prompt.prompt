@@ -1,0 +1,6 @@
+Now, it's your turn to complete the task.
+
+Input Information:
+- User's hand image while driving: {{hand_image}}
+- User's face image while driving: {{face_image}}
+- Speed of the vehicle: {{speed}}
