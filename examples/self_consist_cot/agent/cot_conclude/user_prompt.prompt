@@ -1,0 +1,6 @@
+The following are different responses to a problem. Please analyze the answers, identify the one that appears most frequently, and provide it as the final answer. If there is a tie between multiple answers, choose any one of them.
+
+Responses:
+{{final_answer}}
+
+Please output only the final answer, without any explanation or additional text.
