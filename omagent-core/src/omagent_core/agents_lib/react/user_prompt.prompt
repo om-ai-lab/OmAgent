@@ -1,0 +1,8 @@
+        Answer the following question step-by-step:
+        Question: {task}
+        
+        Available tools:
+        {tool_descriptions}
+        
+        Previous steps:
+        {history}

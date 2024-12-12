@@ -5,7 +5,7 @@ from typing import List, Callable
 CURRENT_PATH = Path(__file__).parents[0]
 
 
-class Task:
+class Task: 
     def __init__(self, name, func: Callable = None, *args, **kwargs):
         self.name = name
         self.func = func

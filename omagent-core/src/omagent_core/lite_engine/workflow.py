@@ -16,7 +16,7 @@ from omagent_core.tool_system.manager import ToolManager
 from omagent_core.services.connectors.redis import RedisConnector
 from omagent_core.tool_system.tools.web_search.search import WebSearch
 from omagent_core.utils.logger import logging
-from omagent_core.omagent_simple.task import Task, SwitchTask
+from omagent_core.lite_engine.task import Task, SwitchTask
 
 CURRENT_PATH = Path(__file__).parents[0]
 

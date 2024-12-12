@@ -7,6 +7,7 @@ from omagent_core.models.llms.schemas import Message, Content
 from omagent_core.utils.general import encode_image
 from omagent_core.models.llms.prompt.parser import StrParser
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
+
 from omagent_core.engine.worker.base import BaseWorker, BaseLocalWorker
 from omagent_core.utils.container import container
 
@@ -16,8 +17,8 @@ from omagent_core.utils.registry import registry
 from omagent_core.utils.general import read_image
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.logger import logging
-from omagent_core.omagent_simple.task import Task
-from omagent_core.omagent_simple.workflow import Workflow
+from omagent_core.lite_engine.task import Task
+from omagent_core.lite_engine.workflow import Workflow
 from omagent_core.memories.stms.stm_redis import RedisSTM
 from omagent_core.services.connectors.redis import RedisConnector
 
@@ -76,7 +77,6 @@ class SimpleVQA(BaseLocalWorker, BaseLLMBackend):
     llm: OpenaiGPTLLM
 
     def _run(self, user_instruction, *args, **kwargs):
-        print ("user_instruction",user_instruction)
         # Initialize empty list for chat messages
         chat_message = []
         
@@ -86,6 +86,7 @@ class SimpleVQA(BaseLocalWorker, BaseLLMBackend):
         # Retrieve cached image from workflow shared memory
         if self.stm(self.workflow_instance_id).get('image_cache', None):
             img = self.stm(self.workflow_instance_id)['image_cache']['<image_0>']
+        
             # Add base64 encoded image as second message
             chat_message.append(Message(role="user", message_type='image', content=[Content(
                                         type="image_url",
@@ -101,7 +102,7 @@ class SimpleVQA(BaseLocalWorker, BaseLLMBackend):
         answer = chat_complete_res["choices"][0]["message"]["content"]
         
         # Send answer via callback and return
-        #self.callback.send_answer(self.workflow_instance_id, msg=answer)
+        self.callback.send_answer(self.workflow_instance_id, msg=answer)
         return answer
 
 
@@ -120,4 +121,35 @@ class VQA_Agent:
         workflow.execute()        
         return simple_vqa.output()
         
+
+
+if __name__ == "__main__":
+    #def init_agent():
+    
+    CURRENT_PATH = Path(__file__).parents[0]    
+    registry.import_module(project_path=CURRENT_PATH.joinpath('agent'))
+    logging.init_logger("omagent", "omagent", level="INFO")
+    container.register_stm("RedisSTM")    
+
+
+    user_input = {
+    "messages": [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "data": "Could you please analyze this image?"
+                },
+                {
+                    "type": "image_url",
+                    "data": "demo.jpg"
+                }
+            ]
+        }
+    ]
+}
+    q = VQA_Agent(api_key="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")
+    final = q.run(user_input)
+    print ("final", final)
 

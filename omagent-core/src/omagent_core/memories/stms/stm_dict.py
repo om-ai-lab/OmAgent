@@ -2,11 +2,24 @@ from .stm_base import STMBase
 from omagent_core.utils.registry import registry
 from typing import Any
 from multiprocessing import Manager
+from omagent_core.memories.stms.stm_base import STMBase, WorkflowInstanceProxy
 
 @registry.register_component()
 class DictSTM(STMBase):
     def model_post_init(self, __context: Any) -> None:
         self._storage = Manager().dict()
+    
+    def __call__(self, workflow_instance_id: str):
+        """
+        Return a WorkflowInstanceProxy for the given workflow instance ID.
+        
+        Args:
+            workflow_instance_id (str): The ID of the workflow instance.
+            
+        Returns:
+            WorkflowInstanceProxy: A proxy object for accessing the workflow instance data.
+        """
+        return WorkflowInstanceProxy(self, workflow_instance_id)
 
     def __getitem__(self, key):
         """
