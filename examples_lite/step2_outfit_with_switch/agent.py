@@ -62,6 +62,6 @@ if __name__ == "__main__":
         }
     ]
 }
-    o = OutFitRec(api_key="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")
+    o = OutFitRec(api_key="api")
     final = o.run(user_input)
     print (final)
