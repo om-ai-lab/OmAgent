@@ -29,6 +29,7 @@ class OpenaiGPTLLM(BaseLLM):
     endpoint: str = Field(default=os.getenv("ENDPOINT", "https://api.openai.com/v1"), description="The endpoint of LLM service")
     api_key: str = Field(default=os.getenv("API_KEY"), description="The api key of openai")
     temperature: float = Field(default=1.0, description="The temperature of LLM")
+    stream: bool = Field(default=False, description="Whether to stream the response")
     max_tokens: int = Field(default=2048, description="The max tokens of LLM")
     use_default_sys_prompt: bool = Field(default=True, description="Whether to use the default system prompt")
     response_format: str = Field(default="text", description="The response format of openai")
@@ -47,24 +48,7 @@ class OpenaiGPTLLM(BaseLLM):
     def _call(self, records: List[Message], **kwargs) -> Dict:
         if self.api_key is None or self.api_key == "":
             raise ValueError("api_key is required")
-        if self.stm(self.workflow_instance_id).get('image_cache') is not None and len(self.stm(self.workflow_instance_id)['image_cache']):
-            for record in records:
-                record.combine_image_message(
-                    image_cache={
-                        key: encode_image(value)
-                        for key, value in self.stm(self.workflow_instance_id)['image_cache'].items()
-                    }
-                )
-        elif len(kwargs.get("images", [])):
-            image_cache = {}
-            for index, each in enumerate(kwargs["images"]):
-                image_cache[f"<image_{index}>"] = each
-            for record in records:
-                record.combine_image_message(
-                    image_cache={
-                        key: encode_image(value) for key, value in image_cache.items()
-                    }
-                )
+        
         body = self._msg2req(records)
         if kwargs.get("tool_choice"):
             body["tool_choice"] = kwargs["tool_choice"]
@@ -77,6 +61,7 @@ class OpenaiGPTLLM(BaseLLM):
                 messages=body["messages"],
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
+                stream=self.stream,
             )
         else:
             res = self.client.chat.completions.create(
@@ -86,34 +71,20 @@ class OpenaiGPTLLM(BaseLLM):
                 max_tokens=self.max_tokens,
                 response_format=body.get("response_format", None),
                 tools=body.get("tools", None),
+                stream=self.stream,
             )
-        res = res.model_dump()
-        body.update({"response": res})
-        # self.callback.send_block(body)
-        return res
+        if self.stream:
+            return res
+        else:
+            res = res.model_dump()
+            body.update({"response": res})
+            # self.callback.send_block(body)
+            return res
 
     async def _acall(self, records: List[Message], **kwargs) -> Dict:
         if self.api_key is None or self.api_key == "":
             raise ValueError("api_key is required")
 
-        if self.stm(self.workflow_instance_id).get('image_cache') is not None and len(self.stm(self.workflow_instance_id)['image_cache']):
-            for record in records:
-                record.combine_image_message(
-                    image_cache={
-                        key: encode_image(value)
-                        for key, value in self.stm.image_cache.items()
-                    }
-                )
-        elif len(kwargs.get("images", [])):
-            image_cache = {}
-            for index, each in enumerate(kwargs["images"]):
-                image_cache[f"<image_{index}>"] = each
-            for record in records:
-                record.combine_image_message(
-                    image_cache={
-                        key: encode_image(value) for key, value in image_cache.items()
-                    }
-                )
         body = self._msg2req(records)
         if kwargs.get("tool_choice"):
             body["tool_choice"] = kwargs["tool_choice"]

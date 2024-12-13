@@ -1,8 +1,7 @@
-
 from omagent_core.clients.devices.app.schemas import CodeEnum, ContentStatus, InteractionType, MessageType
 from omagent_core.clients.input_base import InputBase
 from omagent_core.engine.configuration.configuration import Configuration
-from omagent_core.engine.orkes.orkes_workflow_client import OrkesWorkflowClient
+from omagent_core.engine.orkes.orkes_workflow_client import workflow_client
 from omagent_core.services.connectors.redis import RedisConnector
 from omagent_core.utils import registry
 import time
@@ -27,11 +26,13 @@ class AppInput(InputBase):
         consumer_name = f"{workflow_instance_id}_agent"  # consumer name
         poll_interval: int = 1
 
+        
         if input_prompt is not None:
-            self._send_input_message(workflow_instance_id, input_prompt)
-        current_timestamp = int(time.time() * 1000)
-        start_id = f"{current_timestamp}-0"
-        client = OrkesWorkflowClient(configuration=container.conductor_config)
+            start_id = self._send_input_message(workflow_instance_id, input_prompt)
+        else:
+            current_timestamp = int(time.time() * 1000)
+            start_id = f"{current_timestamp}-0"
+        
 
         result = {}
         # ensure consumer group exists
@@ -40,14 +41,14 @@ class AppInput(InputBase):
                 stream_name, group_name, id="0", mkstream=True
             )
         except Exception as e:
-            logging.info(f"Consumer group may already exist: {e}")
+            logging.debug(f"Consumer group may already exist: {e}")
 
         logging.info(f"Listening to Redis stream: {stream_name} in group: {group_name} start_id: {start_id}")
         data_flag = False
         while True:
             try:
                 # logging.info(f"Checking workflow status: {workflow_instance_id}")
-                workflow_status = client.get_workflow_status(workflow_instance_id)
+                workflow_status = workflow_client.get_workflow_status(workflow_instance_id)
                 if workflow_status.status not in running_status:
                     logging.info(f"Workflow {workflow_instance_id} is not running, exiting...")
                     break
@@ -147,7 +148,7 @@ class AppInput(InputBase):
         agent_id,
         msg
     ):
-        self._send_base_message(
+        message_id = self._send_base_message(
             agent_id,
             CodeEnum.SUCCESS.value,
             "",
@@ -159,6 +160,7 @@ class AppInput(InputBase):
             0,
             0,
         )
+        return message_id
     
     def _create_message_data(
         self,
@@ -189,7 +191,7 @@ class AppInput(InputBase):
 
     def _send_to_group(self, stream_name, group_name, data):
         logging.info(f"Stream: {stream_name}, Group: {group_name}, Data: {data}")
-        self.redis_stream_client._client.xadd(
+        message_id = self.redis_stream_client._client.xadd(
             stream_name, data
         )
         try:
@@ -197,7 +199,9 @@ class AppInput(InputBase):
                 stream_name, group_name, id="0"
             )
         except Exception as e:
-            logging.info(f"Consumer group may already exist: {e}")
+            logging.debug(f"Consumer group may already exist: {e}")
+        
+        return message_id
 
     def _send_base_message(
         self,
@@ -226,4 +230,5 @@ class AppInput(InputBase):
             prompt_tokens,
             output_tokens,
         )
-        self._send_to_group(stream_name, group_name, data)
+        message_id = self._send_to_group(stream_name, group_name, data)
+        return message_id

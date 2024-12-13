@@ -22,23 +22,24 @@ class OrkesWorkflowClient(OrkesBaseClient, WorkflowClient):
     ):
         super(OrkesWorkflowClient, self).__init__(configuration)
 
+    def check_connection(self) -> bool:
+        """Check if the connection to Conductor server is valid"""
+        self.metadataResourceApi.get_all_workflows()
+
+
     def start_workflow_by_name(
             self,
             name: str,
             input: dict[str, object],
             version: Optional[int] = None,
-            correlationId: Optional[str] = None,
-            priority: Optional[int] = None,
+            **kwargs
     ) -> str:
-        kwargs = {}
-        if version:
-            kwargs.update({"version": version})
-        if correlationId:
-            kwargs.update({"correlation_id": correlationId})
-        if priority:
-            kwargs.update({"priority": priority})
+        start_workflow_request = StartWorkflowRequest(name=name, 
+                                                      version=version, 
+                                                      input=input,
+                                                      **kwargs)
 
-        return self.workflowResourceApi.start_workflow1(input, name, **kwargs)
+        return self.start_workflow(start_workflow_request)
 
     def start_workflow(self, start_workflow_request: StartWorkflowRequest) -> str:
         return self.workflowResourceApi.start_workflow(start_workflow_request)

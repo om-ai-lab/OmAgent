@@ -116,7 +116,25 @@ The container.yaml file is a configuration file that manages dependencies and se
    - Update the Conductor server URL under conductor_config section
    - Adjust any other component settings as needed
 
-4. Websearch uses duckduckgo by default. For better results, it is recommended to configure [Bing Search](https://www.microsoft.com/en-us/bing/apis/pricing) by modifying the `configs/tools/websearch.yml` file and setting the `bing_api_key`.
+4. Websearch gives multiple providers, you can choose one of them by modifying the `configs/tools/all_tools.yml` file.
+   1. [**Recommend**] Use Tavily as the websearch tool, `all_tools.yml` file should be like this:
+   ```yaml
+   llm: ${sub|text_res}
+   tools:
+       - ...other tools...
+       - name: TavilyWebSearch
+         tavily_api_key: ${env|tavily_api_key, null}
+   ```
+   You can get the `tavily_api_key` from [here](https://app.tavily.com/home). It start with `tvly-xxx`. By setting the `tavily_api_key`, you can get better search results.
+   2. Use bing search or duckduckgo search, `all_tools.yml` file should be like this:
+   ```yaml
+   llm: ${sub|text_res}
+   tools:
+       - ...other tools...
+       - name: WebSearch
+         bing_api_key: ${env|bing_api_key, null}
+   ```
+   For better results, it is recommended to configure [Bing Search](https://www.microsoft.com/en-us/bing/apis/pricing) setting the `bing_api_key`.
 
 For more information about the container.yaml configuration, please refer to the [container module](./docs/concepts/container.md)
 
@@ -175,18 +193,17 @@ For a deeper comprehension of OmAgent, let us elucidate key terms:
 ## Examples
 We provide exemplary projects to demonstrate the construction of intelligent agents using OmAgent. You can find a comprehensive list in the [examples](./examples/) directory. Here is the reference sequence:
 
-1. [step1_simpleVQA](./examples/step1_simpleVQA) illustrates the creation of a simple multimodal VQA agent with OmAgent. Detailed tutorial can be found [here](docs/examples/simple_qa.md).
+1. [step1_simpleVQA](./examples/step1_simpleVQA) illustrates the creation of a simple multimodal VQA agent with OmAgent. 
 
-2. [step2_outfit_with_switch](./examples/step2_outfit_with_switch) demonstrates how to build an agent with switch-case branches using OmAgent. Detailed tutorial can be found [here](docs/examples/outfit_with_switch.md).
+2. [step2_outfit_with_switch](./examples/step2_outfit_with_switch) demonstrates how to build an agent with switch-case branches using OmAgent. 
 
-3. [step3_outfit_with_loop](./examples/step3_outfit_with_loop) shows the construction of an agent incorporating loops using OmAgent. Detailed tutorial can be found [here](docs/examples/outfit_with_loop.md).
+3. [step3_outfit_with_loop](./examples/step3_outfit_with_loop) shows the construction of an agent incorporating loops using OmAgent. 
 
-4. [step4_outfit_with_ltm](./examples/step4_outfit_with_ltm) exemplifies using OmAgent to create an agent equipped with long-term memory. Detailed tutorial can be found [here](docs/examples/outfit_with_ltm.md).
+4. [step4_outfit_with_ltm](./examples/step4_outfit_with_ltm) exemplifies using OmAgent to create an agent equipped with long-term memory. 
 
-5. [dnc_loop](./examples/general_dnc) demonstrates the development of an agent utilizing the DnC algorithm to tackle complex problems. Detailed tutorial can be found [here](docs/examples/dnc_loop.md).
+5. [dnc_loop](./examples/general_dnc) demonstrates the development of an agent utilizing the DnC algorithm to tackle complex problems. 
 
-6. [video_understanding](./examples/video_understanding) showcases the creation of a video understanding agent for interpreting video content using OmAgent. Detailed tutorial can be found [here](docs/examples/video_understanding.md).
-
+6. [video_understanding](./examples/video_understanding) showcases the creation of a video understanding agent for interpreting video content using OmAgent. 
 
 ## API Documentation
 The API documentation is available [here](https://om-ai-lab.github.io/OmAgentDocs/).

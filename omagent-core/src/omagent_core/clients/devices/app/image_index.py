@@ -5,7 +5,7 @@ from omagent_core.engine.http.models.workflow_status import running_status
 from omagent_core.utils.registry import registry
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.container import container
-from omagent_core.engine.orkes.orkes_workflow_client import OrkesWorkflowClient
+from omagent_core.engine.orkes.orkes_workflow_client import workflow_client
 from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.utils.logger import logging
 
@@ -20,7 +20,6 @@ class ImageIndexListener(BaseWorker):
         poll_interval: int = 1
         current_timestamp = int(time.time() * 1000)
         start_id = f"{current_timestamp}-0"
-        client = OrkesWorkflowClient(configuration=container.conductor_config)
 
         result = {}
         # ensure consumer group exists
@@ -29,14 +28,14 @@ class ImageIndexListener(BaseWorker):
                 stream_name, group_name, id="0", mkstream=True
             )
         except Exception as e:
-            logging.info(f"Consumer group may already exist: {e}")
+            logging.debug(f"Consumer group may already exist: {e}")
 
         logging.info(f"Listening to Redis stream: {stream_name} in group: {group_name}")
         flag = False
         while True:
             try:
                 # logging.info(f"Checking workflow status: {self.workflow_instance_id}")
-                workflow_status = client.get_workflow_status(self.workflow_instance_id)
+                workflow_status = workflow_client.get_workflow_status(self.workflow_instance_id)
                 if workflow_status.status not in running_status:
                     logging.info(f"Workflow {self.workflow_instance_id} is not running, exiting...")
                     break

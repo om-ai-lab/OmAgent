@@ -1,5 +1,6 @@
 import datetime
 import os
+import sys
 
 from colorama import Fore, Style
 from omagent_core.utils.registry import registry
@@ -10,6 +11,7 @@ from omagent_core.clients.base import CallbackBase
 @registry.register_component()
 class DefaultCallback(CallbackBase):
     bot_id: str = ""
+    incomplete_flag: bool = False
 
     def visualize_in_terminal(self, *args, **kwargs):
         pass
@@ -19,6 +21,11 @@ class DefaultCallback(CallbackBase):
             f"\n{Fore.BLUE}info:{agent_id} {progress} {message}{Style.RESET_ALL}"
         )
 
+    def send_incomplete(self, agent_id, msg, **kwargs):
+        sys.stdout.write(f"{Fore.BLUE}{msg}{Style.RESET_ALL}")
+        sys.stdout.flush()
+        self.incomplete_flag = True
+
     def send_block(
         self,
         agent_id,
@@ -27,16 +34,25 @@ class DefaultCallback(CallbackBase):
     ):
         if kwargs.get('filter_special_symbols', False):
             msg = self.filter_special_symbols_in_msg(msg)
-        logging.info(f"\n{Fore.BLUE}block:{msg}{Style.RESET_ALL}")
+        if self.incomplete_flag:
+            sys.stdout.write(f"{Fore.BLUE}{msg}{Style.RESET_ALL}")
+            sys.stdout.flush()
+            self.incomplete_flag = False
+        else:
+            logging.info(f"\n{Fore.BLUE}block:{msg}{Style.RESET_ALL}")
         
-
     def error(self, agent_id, error_code, error_info, **kwargs):
         logging.error(f"\n{Fore.RED}{error_info}{Style.RESET_ALL}")
 
     def send_answer(self, agent_id, msg, **kwargs):        
         if kwargs.get('filter_special_symbols', False):
             msg = self.filter_special_symbols_in_msg(msg)
-        logging.info(f"\n{Fore.BLUE}answer:{msg}{Style.RESET_ALL}")
+        if self.incomplete_flag:
+            sys.stdout.write(f"{Fore.BLUE}{msg}{Style.RESET_ALL}")
+            sys.stdout.flush()
+            self.incomplete_flag = False
+        else:
+            logging.info(f"\n{Fore.BLUE}answer:{msg}{Style.RESET_ALL}")
 
     def finish(self, **kwargs):
         def generate_tree(path, indent=""):

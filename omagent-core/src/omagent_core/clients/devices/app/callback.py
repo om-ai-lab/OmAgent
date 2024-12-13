@@ -53,7 +53,7 @@ class AppCallback(CallbackBase):
                 stream_name, group_name, id="0"
             )
         except Exception as e:
-            logging.info(f"Consumer group may already exist: {e}")
+            logging.debug(f"Consumer group may already exist: {e}")
 
     def send_base_message(
         self,

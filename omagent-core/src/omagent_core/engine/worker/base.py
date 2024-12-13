@@ -79,7 +79,7 @@ class BaseWorker(BotBase, ABC):
         self._workflow_instance_id = value
 
     @abstractmethod
-    def _run(self, workflow_instance_id, *args, **kwargs) -> Any:
+    def _run(self, *args, **kwargs) -> Any:
         """Run the Node."""
 
     def execute(self, task: Task) -> TaskResult:

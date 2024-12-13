@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import logging
 import re  # noqa: F401
 import socket
 
@@ -964,6 +965,8 @@ class TaskResourceApi(object):
         # Authentication setting
         auth_settings = []  # noqa: E501
 
+        urllib3_logger = logging.getLogger("urllib3")
+        urllib3_logger.setLevel(logging.WARNING)
         return self.api_client.call_api(
             '/tasks/poll/{tasktype}', 'GET',
             path_params,

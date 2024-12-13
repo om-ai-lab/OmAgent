@@ -2,7 +2,7 @@ from pathlib import Path
 from omagent_core.services.connectors.redis import RedisConnector
 from omagent_core.utils.container import container
 container.register_connector(name='redis_stream_client', connector=RedisConnector)
-from omagent_core.engine.orkes.orkes_workflow_client import OrkesWorkflowClient
+from omagent_core.engine.orkes.orkes_workflow_client import workflow_client
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.utils.build import build_from_file
 from omagent_core.engine.automator.task_handler import TaskHandler
@@ -57,15 +57,13 @@ class DefaultClient:
 
         if self._input_prompt:
             self.first_input(workflow_instance_id=workflow_instance_id, input_prompt=self._input_prompt)
-
-        client = OrkesWorkflowClient(configuration=container.conductor_config)
         
         try:
             container.get_connector('redis_stream_client')._client.xgroup_create(
                 stream_name, group_name, id="0", mkstream=True
             )
         except Exception as e:
-            logging.info(f"Consumer group may already exist: {e}")
+            logging.debug(f"Consumer group may already exist: {e}")
 
         
         while True: 
@@ -76,7 +74,7 @@ class DefaultClient:
                 data_flag = False
                 content = None
                 # logging.info(f"Checking workflow status: {workflow_instance_id}")
-                workflow_status = client.get_workflow_status(workflow_instance_id)
+                workflow_status = workflow_client.get_workflow_status(workflow_instance_id)
                 if workflow_status.status not in running_status:
                     logging.info(f"Workflow {workflow_instance_id} is not running, exiting...")
                     break
