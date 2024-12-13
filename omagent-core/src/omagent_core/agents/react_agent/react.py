@@ -1,19 +1,13 @@
 from typing import Dict, Any
 from pathlib import Path
 from typing import List
-
+from pydantic import Field
+from omagent_core.utils.registry import registry
 from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.engine.worker.base import BaseWorker, BaseLocalWorker
-from omagent_core.utils.container import container
 
-from pathlib import Path
-
-from omagent_core.utils.registry import registry
-from typing import List
-from pydantic import Field
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
-from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.tool_system.manager import ToolManager
 from omagent_core.utils.logger import logging
 import re
@@ -141,8 +135,9 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
             # Parse arguments into a dictionary
             tool_args = {}
             if args_str:
+                print ("args_str", args_str)
                 tool_args = self.transform_input_to_output(args_str)
-
+                """
                 import ast
                 for arg in args_str.split(','):
                     key, value = arg.split('=', 1)
@@ -155,7 +150,7 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
                         if not (value.startswith('"') and value.endswith('"')) and not (value.startswith("'") and value.endswith("'")):
                             value = f'"{value}"'  # Add quotes if missing
                         tool_args[key.strip()] = ast.literal_eval(value)
-            
+                """
             return {
                 "tool_name": tool_name,
                 "tool_args": tool_args
@@ -175,18 +170,20 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
         interaction = {"plan": plan, "observation": observation}
         self.stm[workflow_instance_id, input_data] = interaction
 
-    def transform_input_to_output(self,input_text):
-        search_query = re.search(r'search_query="(.*?)"', input_text).group(1)
+    def transform_input_to_output(self,input_text):        
+        search_query = re.search(r'search_query="(.*?)"', input_text).group(1)        
         region = re.search(r'region="(.*?)"', input_text).group(1)
         num_results = int(re.search(r'num_results=(\d+)', input_text).group(1))
         
         goals_match = re.search(r'goals_to_browse=(\[.*?\]|".*?")', input_text)
-        goals_raw = goals_match.group(1)
-        if goals_raw.startswith('['):  # It's a list
-            goals_to_browse = eval(goals_raw)
-        else:  # It's a single string
-            goals_to_browse = [goals_raw.strip('"')]
-        
+        if goals_match:
+            goals_raw = goals_match.group(1)
+            if goals_raw.startswith('['):  # It's a list
+                goals_to_browse = eval(goals_raw)
+            else:  # It's a single string
+                goals_to_browse = [goals_raw.strip('"')]
+        else:
+            goals_to_browse = ""
         # Construct output
         output = {
 
