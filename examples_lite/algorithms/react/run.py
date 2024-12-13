@@ -47,6 +47,7 @@ if __name__ == "__main__":
     web_search_tool = WebSearch(bing_api_key=os.getenv("bing_api_key", "bing_api_key"), llm=llm)
     tool_manager = ToolManager(name="WebSearch", tools=[web_search_tool], llm=llm)
     # Create and use agent
+    
     agent = ReActAgent(
         llm=llm,
         tool_manager=tool_manager

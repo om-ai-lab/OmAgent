@@ -1,7 +1,7 @@
-from omagent_core.agents_lib.outfit_recommendation.outfit_recommendation.outfit_recommendation import OutfitRecommendation
-from omagent_core.agents_lib.outfit_recommendation.weather_decider.weather_decider import WeatherDecider
-from omagent_core.agents_lib.outfit_recommendation.weather_searcher.weather_searcher import WeatherSearcher
-from omagent_core.agents_lib.simple_vqa.simple_vqa_agent import InputInterface
+from omagent_core.agents.outfit_recommendation.outfit_recommendation.outfit_recommendation import OutfitRecommendation
+from omagent_core.agents.outfit_recommendation.weather_decider.weather_decider import WeatherDecider
+from omagent_core.agents.outfit_recommendation.weather_searcher.weather_searcher import WeatherSearcher
+from omagent_core.agents.simple_vqa.simple_vqa_agent import InputInterface
 
 from omagent_core.lite_engine.task import Task
 from omagent_core.lite_engine.workflow import Workflow
@@ -62,6 +62,6 @@ if __name__ == "__main__":
         }
     ]
 }
-    o = OutFitRec(api_key="api")
+    o = OutFitRec(api_key="")
     final = o.run(user_input)
     print (final)

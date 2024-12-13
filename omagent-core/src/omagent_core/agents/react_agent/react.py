@@ -16,6 +16,8 @@ from omagent_core.models.llms.prompt.prompt import PromptTemplate
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.tool_system.manager import ToolManager
 from omagent_core.utils.logger import logging
+import re
+
 CURRENT_PATH = Path(__file__).parents[0]
 
 
@@ -39,21 +41,24 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
         """Implements one step of the ReAct cycle: Plan -> Act -> Observe"""
         # Plan the next action
         plan = self.plan(input_data)
+        if not plan:
+            return
 
         print(f"Plan: {plan}")
         
         # Execute the planned action
         result = self.act(plan)
         
+
         # If we got a final answer, we're done
-        if "final_answer" in plan:
+        if  "final_answer" in plan:
             return result
             
         # Otherwise, observe the result and continue
         observation = self.observe(result)
 
         print(f"Observation: {observation}")
-        self._store_history(input_data, plan, observation)
+        #self._store_history(input_data, plan, observation)
 
         # return the join of plan and observation
         return f"Plan: {plan}\nObservation: {observation}"
@@ -65,7 +70,8 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
     def plan(self, task: str) -> Dict[str, Any]:        
         tool_descriptions = self.tool_manager.generate_prompt()
         
-        history = self._get_history_str()        
+        #history = self._get_history_str()        
+        history = ""
         print ("task:", task, "tool_descriptions:",tool_descriptions, "history:",history)
         response = self.simple_infer(task=task,
                 tool_descriptions=tool_descriptions,
@@ -75,6 +81,9 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
         return self._parse_response(response["choices"][0]["message"]["content"])
     
     def act(self, plan: Dict[str, Any]) -> Any:
+        if not plan:
+            return
+            
         if "final_answer" in plan:
             return plan["final_answer"]
         
@@ -124,12 +133,16 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
             }
         
         try:
-            tool_name = action_line[:action_line.index('(')]
+            if '(' not in action_line or ')' not in action_line:
+                raise ValueError("Malformed action line: Missing parentheses.")
+            tool_name = action_line[:action_line.index('(')].strip()
             args_str = action_line[action_line.index('(')+1:action_line.rindex(')')]
             
             # Parse arguments into a dictionary
             tool_args = {}
             if args_str:
+                tool_args = self.transform_input_to_output(args_str)
+
                 import ast
                 for arg in args_str.split(','):
                     key, value = arg.split('=', 1)
@@ -147,9 +160,9 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
                 "tool_name": tool_name,
                 "tool_args": tool_args
             }
-        except Exception as e:
-            raise ValueError(f"Failed to parse tool call from response: {action_line}") from e
-            
+        except Exception as e:            
+            raise ValueError(f"Failed to parse tool call from response: {action_line}. Error: {str(e)}") from e
+  
     def _get_history_str(self) -> str:
         """Retrieve the history of interactions."""
         workflow_instance_id = "react_agent_history"
@@ -161,3 +174,38 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
         workflow_instance_id = "react_agent_history"
         interaction = {"plan": plan, "observation": observation}
         self.stm[workflow_instance_id, input_data] = interaction
+
+    def transform_input_to_output(self,input_text):
+        search_query = re.search(r'search_query="(.*?)"', input_text).group(1)
+        region = re.search(r'region="(.*?)"', input_text).group(1)
+        num_results = int(re.search(r'num_results=(\d+)', input_text).group(1))
+        
+        goals_match = re.search(r'goals_to_browse=(\[.*?\]|".*?")', input_text)
+        goals_raw = goals_match.group(1)
+        if goals_raw.startswith('['):  # It's a list
+            goals_to_browse = eval(goals_raw)
+        else:  # It's a single string
+            goals_to_browse = [goals_raw.strip('"')]
+        
+        # Construct output
+        output = {
+
+            "search_query": search_query,
+            "region": region,
+            "num_results": num_results,
+            "goals_to_browse": goals_to_browse,
+
+        }
+        return output
+    def get_tool_name(self, input_text):
+        # Find the position of "Action:"
+        action_start = input_text.find("Action:")
+        if action_start == -1:
+            return None  # Action not found
+        
+        # Extract the part of the text after "Action:"
+        after_action = input_text[action_start + len("Action:"):].strip()
+        
+        # Split the string to isolate the tool name (first word before the parenthesis)
+        tool_name = after_action.split('(')[0].strip()
+        return tool_name
