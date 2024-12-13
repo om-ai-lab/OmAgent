@@ -1,0 +1,6 @@
+Now, it's your turn to complete the task.
+Give anwer using the language according to the user's answer.
+
+Input Information:
+- 搜到的信息: {{info}}
+- 网络梗的名称: {{name}}
