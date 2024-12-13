@@ -1,14 +1,12 @@
 from pathlib import Path
 
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
-
 from omagent_core.utils.container import container
 
 from pathlib import Path
-
 from omagent_core.utils.logger import logging
+from omagent_core.memories.stms.stm_redis import RedisSTM
 
-from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.agents.react_agent.react import ReActAgent
 from omagent_core.tool_system.manager import ToolManager
 from omagent_core.tool_system.tools.web_search.search import WebSearch
