@@ -72,7 +72,7 @@ class TavilyWebSearch(BaseTool):
         return tavily_api_key
 
     def _run(
-        self, search_query: str, topic: str, include_answer: bool, include_images: bool, include_raw_content: bool, days: int=3, max_results=5,
+        self, search_query: str, topic: str, include_answer: bool, include_images: bool, include_raw_content: bool=False, days: int=3, max_results=5,
     ) -> Dict[str, Any]:
         """
         Search with search tools and browse the website returned by search. Note some websites may not be accessable due to network error.

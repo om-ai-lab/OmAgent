@@ -239,7 +239,7 @@ class WebpageClient:
 
             if finish_flag:
                 break
-            sleep(1)
+            sleep(0.01)
 
     def processor_bot(self, history: list):
         history.append({"role": "assistant", "content": f"processing..."})
@@ -251,7 +251,7 @@ class WebpageClient:
                 yield history
                 self._workflow_instance_id = None
                 break
-            sleep(1)
+            sleep(0.01)
 
     def _get_redis_stream_message(self, group_name: str, consumer_name: str, stream_name: str):
         messages = container.get_connector('redis_stream_client')._client.xreadgroup(
