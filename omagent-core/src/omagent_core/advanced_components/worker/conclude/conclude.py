@@ -9,6 +9,8 @@ from ....memories.ltms.ltm import LTM
 from ....utils.registry import registry
 from pydantic import Field
 from ....engine.task.agent_task import TaskTree
+from ....utils.logger import logging
+
 
 CURRENT_PATH = root_path = Path(__file__).parents[0]
 
@@ -55,9 +57,17 @@ class Conclude(BaseLLMBackend, BaseWorker):
             result=str(last_output),
             img_placeholders="".join(list(self.stm(self.workflow_instance_id).get('image_cache', {}).keys())),
         )
-        self.callback.send_answer(agent_id=self.workflow_instance_id, msg=f'Answer: {chat_complete_res["choices"][0]["message"]["content"]}')
-        last_output = chat_complete_res["choices"][0]["message"]["content"]
-        for key, value in self.token_usage.items():
-            print(f"Usage of {key}: {value}")
+        last_output = 'Answer: '
+        self.callback.send_incomplete(agent_id=self.workflow_instance_id, msg='Answer: ')
+        for chunk in chat_complete_res:
+            if chunk.choices[0].delta.content is not None:
+                self.callback.send_incomplete(agent_id=self.workflow_instance_id, msg=f'{chunk.choices[0].delta.content}')
+                last_output += chunk.choices[0].delta.content
+            else:
+                self.callback.send_block(agent_id=self.workflow_instance_id, msg='')
+                last_output += ''
+                break
+        # self.callback.send_answer(agent_id=self.workflow_instance_id, msg=f'Answer: {chat_complete_res["choices"][0]["message"]["content"]}')
+        logging.info(f'Answer: {last_output}')
         self.stm(self.workflow_instance_id).clear()
         return {'last_output': last_output}

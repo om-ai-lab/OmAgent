@@ -193,16 +193,18 @@ class BaseLLMBackend(BotBase, ABC):
         res = []
         for prompt in prompts:
             output = self.llm.generate(prompt, **kwargs)
-            for key, value in output["usage"].items():
-                if value is not None:
-                    pass
-            for choice in output["choices"]:
-                if choice.get("message"):
-                    choice["message"]["content"] = self.output_parser.parse(
-                        choice["message"]["content"]
-                    )
-
-            res.append(output)
+            # for key, value in output["usage"].items():
+            #     if value is not None:
+            #         pass
+            if not self.llm.stream:
+                for choice in output["choices"]:
+                    if choice.get("message"):
+                        choice["message"]["content"] = self.output_parser.parse(
+                            choice["message"]["content"]
+                        )
+                res.append(output)
+            else:
+                res.append(output)
         return res
 
     async def ainfer(self, input_list: List[Dict[str, Any]], **kwargs) -> List[T]:
