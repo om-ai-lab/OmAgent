@@ -22,8 +22,6 @@ from omagent_core.engine.http.models.task import Task
 from omagent_core.engine.http.models.task_result import TaskResult
 from omagent_core.engine.http.models.task_result_status import TaskResultStatus
 from omagent_core.engine.worker.exception import NonRetryableException
-from omagent_core.engine.workflow.task.simple_task import SimpleTask
-from abc import ABC, abstractmethod
 
 
 ExecuteTaskFunction = Callable[[Union[Task, object]], Union[TaskResult, object]]
@@ -213,9 +211,6 @@ class BaseWorker(BotBase, ABC):
 
     def paused(self) -> bool:
         return False
-
-
-
 
 class BaseLocalWorker(BotBase, ABC):
     """Base class for running workflows in a standalone, Python-native mode."""
