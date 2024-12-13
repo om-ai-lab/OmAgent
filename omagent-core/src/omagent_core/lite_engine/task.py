@@ -32,7 +32,7 @@ class Task:
     
     def output(self):
         return self.result
-
+    """
     def __rshift__(self, task_or_dict):
         # If other is a dictionary, treat it as a switch condition
         if isinstance(task_or_dict, dict):
@@ -45,7 +45,7 @@ class Task:
             if isinstance(task_or_dict, Task):
                 setattr(task_or_dict, '_parent_task', self)
             return task_or_dict
-
+    """
 
 class SwitchTask(Task):
     def __init__(self, name, cases: dict):
@@ -80,13 +80,13 @@ class SwitchTask(Task):
         for task in self.next_tasks:
             task.execute()
         return None
-
+    """
     def __rshift__(self, other):
         self.next_tasks.append(other)
         if isinstance(other, Task):
             setattr(other, '_parent_task', self)
         return other
-
+    """
 
 class DoWhileTask(Task):
     def __init__(self, name, tasks: List[Task], termination_condition: str):

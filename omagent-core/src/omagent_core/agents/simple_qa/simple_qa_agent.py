@@ -51,8 +51,8 @@ class SimpleQA(BaseLocalWorker, BaseLLMBackend):
 
 class QA_Agent:
     def __init__(self, model_name):
-        #llm = HuggingFaceLLM(model_name=model_name)   
-        llm = OpenaiGPTLLM(api_key="")     
+        llm = HuggingFaceLLM(model_name=model_name)   
+        #llm = OpenaiGPTLLM(api_key="")     
         self.simple_qa = SimpleQA(llm=llm)
         
 

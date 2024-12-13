@@ -62,7 +62,6 @@ class WebSearch(BaseTool, BaseLLMBackend):
 
     def __init__(__pydantic_self__, **data: Any) -> None:
         super().__init__(**data)
-        print ("aaa")
 
         __pydantic_self__.client = httpx.AsyncClient(
             headers={
@@ -137,6 +136,7 @@ class WebSearch(BaseTool, BaseLLMBackend):
                 result.raise_for_status()
                 result = result.json()
                 pages = result["webPages"]["value"]
+                print ("pages:", pages)
             except Exception as e:
                 logging.error(f"Bing search failed: {e}")
                 return [{

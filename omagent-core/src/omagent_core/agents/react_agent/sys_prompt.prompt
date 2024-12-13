@@ -7,4 +7,4 @@
         
         Your response should be in the format:
         Thought: your thought process
-        Action: tool_name(arg1=value1, arg2=value2,...) or Final Answer: your final answer
+        Action: tool_name(arg1=value1, arg2=value2,...) args must contains {'search_query', 'region', 'num_results', 'goals_to_browse'} or Final Answer: your final answer

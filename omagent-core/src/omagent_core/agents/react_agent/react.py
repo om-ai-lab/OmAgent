@@ -3,10 +3,6 @@ from pathlib import Path
 from typing import List
 
 from omagent_core.models.llms.base import BaseLLMBackend
-from omagent_core.utils.registry import registry
-from omagent_core.models.llms.schemas import Message, Content
-from omagent_core.utils.general import encode_image
-from omagent_core.models.llms.prompt.parser import StrParser
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.engine.worker.base import BaseWorker, BaseLocalWorker
 from omagent_core.utils.container import container
@@ -14,23 +10,11 @@ from omagent_core.utils.container import container
 from pathlib import Path
 
 from omagent_core.utils.registry import registry
-from omagent_core.utils.general import read_image
-from omagent_core.engine.worker.base import BaseWorker
-from omagent_core.utils.logger import logging
-from omagent_core.lite_engine.task import Task
-from omagent_core.lite_engine.workflow import Workflow
-from omagent_core.memories.stms.stm_redis import RedisSTM
-from omagent_core.services.connectors.redis import RedisConnector
-import re
-import json_repair
-from pathlib import Path
 from typing import List
 from pydantic import Field
-from omagent_core.models.llms.base import BaseLLMBackend
-from omagent_core.engine.worker.base import BaseLocalWorker
-from omagent_core.utils.registry import registry
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
+from omagent_core.tool_system.manager import ToolManager
 from omagent_core.utils.logger import logging
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -49,6 +33,7 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
     ]
     )
     llm: OpenaiGPTLLM
+    tool_manager: ToolManager
 
     def _run(self, input_data, *args, **kwargs):
         """Implements one step of the ReAct cycle: Plan -> Act -> Observe"""
@@ -68,6 +53,7 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
         observation = self.observe(result)
 
         print(f"Observation: {observation}")
+        self._store_history(input_data, plan, observation)
 
         # return the join of plan and observation
         return f"Plan: {plan}\nObservation: {observation}"
@@ -76,19 +62,17 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
         """Stop if the result is a final answer (string) rather than an observation"""
         return isinstance(result, str) and not "Observation:" in result
     
-    def plan(self, task: str) -> Dict[str, Any]:
-        tool_descriptions = "\n".join([
-            f"- {tool.name}: {tool.description}" 
-            for tool in self.tools
-        ])
+    def plan(self, task: str) -> Dict[str, Any]:        
+        tool_descriptions = self.tool_manager.generate_prompt()
         
-        history = self._get_history_str() if self.memory else ""
+        history = self._get_history_str()        
+        print ("task:", task, "tool_descriptions:",tool_descriptions, "history:",history)
         response = self.simple_infer(task=task,
                 tool_descriptions=tool_descriptions,
                 history=history)
         
-        
-        return self._parse_response(response.content)
+        print (response)
+        return self._parse_response(response["choices"][0]["message"]["content"])
     
     def act(self, plan: Dict[str, Any]) -> Any:
         if "final_answer" in plan:
@@ -97,8 +81,20 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
         tool_name = plan["tool_name"]
         tool_args = plan["tool_args"]
         
-        tool = next(t for t in self.tools if t.name == tool_name)
-        return tool(**tool_args)
+        # Debug: Check the tool schema
+        print(f"Tool name: {tool_name}")
+        print(f"Tool args before adjustment: {tool_args}")
+        
+        # Adjust `tool_args` if necessary
+        for key, value in tool_args.items():
+            if isinstance(value, list):
+                # Flatten the list to a comma-separated string or adjust as needed
+                tool_args[key] = ", ".join(value) if value else ""
+        
+        print(f"Tool args after adjustment: {tool_args}")
+        
+        # Execute the tool with adjusted arguments
+        return self.tool_manager.execute(tool_name=tool_name, args=tool_args)
     
     def observe(self, action_result: Any) -> str:
         return f"Observation: {action_result}"
@@ -127,7 +123,6 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
                 "final_answer": response.split("Final Answer:")[1].strip()
             }
         
-        # Parse tool call: tool_name(arg1=value1, arg2=value2)
         try:
             tool_name = action_line[:action_line.index('(')]
             args_str = action_line[action_line.index('(')+1:action_line.rindex(')')]
@@ -135,9 +130,18 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
             # Parse arguments into a dictionary
             tool_args = {}
             if args_str:
+                import ast
                 for arg in args_str.split(','):
-                    key, value = arg.split('=')
-                    tool_args[key.strip()] = value.strip()
+                    key, value = arg.split('=', 1)
+                    # Ensure the value is a valid Python literal
+                    value = value.strip()
+                    # Handle list values correctly
+                    if value.startswith('[') and value.endswith(']'):
+                        tool_args[key.strip()] = ast.literal_eval(value)
+                    else:
+                        if not (value.startswith('"') and value.endswith('"')) and not (value.startswith("'") and value.endswith("'")):
+                            value = f'"{value}"'  # Add quotes if missing
+                        tool_args[key.strip()] = ast.literal_eval(value)
             
             return {
                 "tool_name": tool_name,
@@ -145,7 +149,15 @@ class ReActAgent(BaseLLMBackend, BaseLocalWorker):
             }
         except Exception as e:
             raise ValueError(f"Failed to parse tool call from response: {action_line}") from e
-        
+            
     def _get_history_str(self) -> str:
-        """Simply join the history with newlines"""
-        return self.stm(self.workflow_instance_id).get('history', None)
+        """Retrieve the history of interactions."""
+        workflow_instance_id = "react_agent_history"
+        items = self.stm.items(workflow_instance_id)
+        return "\n".join(f"Input: {item[0]}, Plan: {item[1]['plan']}, Observation: {item[1]['observation']}" for item in items)
+
+    def _store_history(self, input_data: str, plan: Dict[str, Any], observation: str) -> None:
+        """Store interaction history in STM."""
+        workflow_instance_id = "react_agent_history"
+        interaction = {"plan": plan, "observation": observation}
+        self.stm[workflow_instance_id, input_data] = interaction
