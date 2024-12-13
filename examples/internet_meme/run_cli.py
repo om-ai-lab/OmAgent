@@ -8,7 +8,7 @@ from omagent_core.clients.devices.cli.client import DefaultClient
 from omagent_core.utils.logger import logging
 
 from agent.input_interface.input_interface import InputInterface
-
+import os
 # Initialize logging
 logging.init_logger("omagent", "omagent", level="INFO")
 
