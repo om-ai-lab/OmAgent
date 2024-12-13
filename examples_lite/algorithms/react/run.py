@@ -37,14 +37,6 @@ if __name__ == "__main__":
     )
 
     # Define input query
-    user_input = {
-        "messages": [
-            {
-                "role": "user",
-                "content": "What is the weather in Paris?"
-            }
-        ]
-    }
     user_input="What is the weather in Paris?"
     result = agent.run(user_input)
     print("final", result)
