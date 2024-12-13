@@ -5,7 +5,7 @@ from omagent_core.utils.container import container
 
 from pathlib import Path
 from omagent_core.utils.logger import logging
-from omagent_core.memories.stms.stm_redis import RedisSTM
+from omagent_core.memories.stms.stm_sharedMem import SharedMemSTM
 
 from omagent_core.agents.react_agent.react import ReActAgent
 from omagent_core.tool_system.manager import ToolManager
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     logging.init_logger("omagent", "omagent", level="INFO")
     
     # Register memory storage    
-    container.register_stm("RedisSTM")
+    container.register_stm("SharedMemSTM")
     
     # Setup LLM
     llm = OpenaiGPTLLM(

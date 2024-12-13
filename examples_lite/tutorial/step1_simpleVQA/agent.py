@@ -5,7 +5,6 @@ from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.utils.registry import registry
 from omagent_core.models.llms.schemas import Message, Content
 from omagent_core.utils.general import encode_image
-from omagent_core.models.llms.prompt.parser import StrParser
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 
 from omagent_core.engine.worker.base import BaseWorker, BaseLocalWorker
@@ -15,13 +14,11 @@ from pathlib import Path
 
 from omagent_core.utils.registry import registry
 from omagent_core.utils.general import read_image
-from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.logger import logging
 from omagent_core.lite_engine.task import Task
 from omagent_core.lite_engine.workflow import Workflow
-from omagent_core.memories.stms.stm_redis import RedisSTM
-from omagent_core.services.connectors.redis import RedisConnector
-
+from omagent_core.memories.stms.stm_sharedMem import SharedMemSTM
+import os
 
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -129,7 +126,7 @@ if __name__ == "__main__":
     CURRENT_PATH = Path(__file__).parents[0]    
     registry.import_module(project_path=CURRENT_PATH.joinpath('agent'))
     logging.init_logger("omagent", "omagent", level="INFO")
-    container.register_stm("RedisSTM")    
+    container.register_stm("SharedMemSTM")    
 
 
     user_input = {
@@ -149,7 +146,7 @@ if __name__ == "__main__":
         }
     ]
 }
-    q = VQA_Agent(api_key="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")
+    q = VQA_Agent(api_key=os.getenv("OPENAI_API_KEY", "default_api_key"))
     final = q.run(user_input)
     print ("final", final)
 
