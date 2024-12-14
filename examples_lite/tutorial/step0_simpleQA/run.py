@@ -1,5 +1,3 @@
-from pathlib import Path
-from omagent_core.utils.registry import registry
 from omagent_core.utils.container import container
 from omagent_core.utils.logger import logging
 from omagent_core.memories.stms.stm_sharedMem import SharedMemSTM

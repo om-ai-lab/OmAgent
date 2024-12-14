@@ -6,6 +6,9 @@ from omagent_core.utils.registry import registry
 from omagent_core.models.llms.schemas import Message, Content
 from omagent_core.utils.general import encode_image
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
+from omagent_core.models.llms.qwen_vl import Qwen_VL
+from omagent_core.models.llms.base import BaseLLM
+
 
 from omagent_core.engine.worker.base import BaseWorker, BaseLocalWorker
 from omagent_core.utils.container import container
@@ -71,7 +74,7 @@ class SimpleVQA(BaseLocalWorker, BaseLLMBackend):
     3. Sends messages to LLM to generate a response
     4. Returns response and sends it via callback
     """
-    llm: OpenaiGPTLLM
+    llm: BaseLLM
 
     def _run(self, user_instruction, *args, **kwargs):
         # Initialize empty list for chat messages
@@ -105,7 +108,8 @@ class SimpleVQA(BaseLocalWorker, BaseLLMBackend):
 
 class VQA_Agent:
     def __init__(self,api_key):
-        llm = OpenaiGPTLLM(api_key=api_key)        
+        #llm = OpenaiGPTLLM(api_key=api_key)       
+        llm = Qwen_VL() 
         self.simple_vqa = SimpleVQA(llm=llm)
         self.inputinterface = InputInterface()
         

@@ -9,10 +9,11 @@ from omagent_core.models.llms.hf_gpt import HuggingFaceLLM
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.tool_system.manager import ToolManager
 from omagent_core.tool_system.tools.web_search.search import WebSearch
+from omagent_core.memories.stms.stm_sharedMem import SharedMemSTM
 
 from omagent_core.utils.container import container
 from omagent_core.utils.logger import logging
-
+import os
 
 class OutFitRec:
     def __init__(self,api_key):
@@ -44,7 +45,7 @@ class OutFitRec:
 
 if __name__ == "__main__":
     logging.init_logger("omagent", "omagent", level="INFO")
-    container.register_stm("RedisSTM")    
+    container.register_stm("SharedMemSTM")    
     user_input = {
     "messages": [
         {
@@ -62,6 +63,6 @@ if __name__ == "__main__":
         }
     ]
 }
-    o = OutFitRec(api_key="")
+    o = OutFitRec(api_key=os.getenv("OPENAI_API_KEY", "default_api_key"))
     final = o.run(user_input)
     print (final)
