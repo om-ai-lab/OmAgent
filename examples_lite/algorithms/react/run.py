@@ -38,5 +38,5 @@ if __name__ == "__main__":
 
     # Define input query
     user_input="What is the weather in Paris?"
-    result = agent.run(user_input)
+    result = agent._run(user_input)
     print("final", result)

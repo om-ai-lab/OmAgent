@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List
 
 from omagent_core.models.llms.base import BaseLLMBackend
-from omagent_core.engine.worker.base import BaseLocalWorker
+from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.registry import registry
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
@@ -14,7 +14,7 @@ CURRENT_PATH = Path(__file__).parents[0]
 
 
 @registry.register_worker()
-class OutfitRecommendation(BaseLocalWorker, BaseLLMBackend):
+class OutfitRecommendation(BaseWorker, BaseLLMBackend):
     """Outfit recommendation processor that generates personalized clothing suggestions.
     
     This processor:

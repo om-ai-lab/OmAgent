@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 from pydantic import Field
 from omagent_core.models.llms.base import BaseLLMBackend
-from omagent_core.engine.worker.base import BaseLocalWorker
+from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.registry import registry
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
@@ -15,7 +15,7 @@ CURRENT_PATH = root_path = Path(__file__).parents[0]
 
 
 @registry.register_worker()
-class WeatherDecider(BaseLLMBackend, BaseLocalWorker):
+class WeatherDecider(BaseLLMBackend, BaseWorker):
     """Weather decider node that determines if weather information is provided in user input.
     
     This node:

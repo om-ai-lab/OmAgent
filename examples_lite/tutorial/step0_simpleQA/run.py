@@ -1,9 +1,8 @@
 from omagent_core.utils.container import container
 from omagent_core.utils.logger import logging
 from omagent_core.memories.stms.stm_sharedMem import SharedMemSTM
-
 from omagent_core.agents.simple_qa.simple_qa_agent import QA_Agent
-
+import os
 
 if __name__ == "__main__":
     logging.init_logger("omagent", "omagent", level="INFO")

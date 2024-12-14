@@ -10,7 +10,7 @@ from omagent_core.models.llms.qwen_vl import Qwen_VL
 from omagent_core.models.llms.base import BaseLLM
 
 
-from omagent_core.engine.worker.base import BaseWorker, BaseLocalWorker
+from omagent_core.engine.worker.base import BaseWorker, BaseWorker
 from omagent_core.utils.container import container
 
 from pathlib import Path
@@ -25,9 +25,10 @@ import os
 
 CURRENT_PATH = Path(__file__).parents[0]
 
+os.environ["MODE"] = "lite"
 
 @registry.register_worker()
-class InputInterface(BaseLocalWorker):
+class InputInterface(BaseWorker):
     """Input interface processor that handles user instructions and image input.
     
     This processor:
@@ -65,7 +66,7 @@ class InputInterface(BaseLocalWorker):
 
 
 @registry.register_worker()
-class SimpleVQA(BaseLocalWorker, BaseLLMBackend):
+class SimpleVQA(BaseWorker, BaseLLMBackend):
     """Simple Visual Question Answering processor that handles image-based questions.
     
     This processor:

@@ -3,6 +3,9 @@ from typing import List
 
 from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.utils.registry import registry
+from omagent_core.models.llms.schemas import Message, Content
+from omagent_core.utils.general import encode_image
+from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.models.llms.qwen_vl import Qwen_VL
 from omagent_core.models.llms.base import BaseLLM
 
@@ -13,6 +16,7 @@ from omagent_core.utils.container import container
 from pathlib import Path
 
 from omagent_core.utils.registry import registry
+from omagent_core.utils.general import read_image
 from omagent_core.utils.logger import logging
 from omagent_core.lite_engine.task import Task
 from omagent_core.lite_engine.workflow import Workflow
@@ -20,7 +24,6 @@ from omagent_core.memories.stms.stm_sharedMem import SharedMemSTM
 import os
 
 CURRENT_PATH = Path(__file__).parents[0]
-os.environ["MODE"] = "lite"
 
 
 @registry.register_worker()
@@ -50,6 +53,7 @@ class VQA_Agent:
         llm = Qwen_VL(model_name=model_name) 
         self.simple_vqa = SimpleVQA(llm=llm)
         
+
     def run(self, inputs):
         simple_vqa = Task(name='SimpleVQA', func=self.simple_vqa, inputs=inputs)        
         workflow = Workflow(name='example_workflow')        

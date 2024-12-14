@@ -5,7 +5,7 @@ from pydantic import Field
 from omagent_core.utils.registry import registry
 from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
-from omagent_core.engine.worker.base import BaseLocalWorker
+from omagent_core.engine.worker.base import BaseWorker
 
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
 from omagent_core.tool_system.manager import ToolManager
@@ -16,7 +16,7 @@ CURRENT_PATH = Path(__file__).parents[0]
 
 
 @registry.register_worker()
-class ReActAgent(BaseLLMBackend, BaseLocalWorker):
+class ReActAgent(BaseLLMBackend, BaseWorker):
     
     prompts: List[PromptTemplate] = Field(
     default=[

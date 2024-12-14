@@ -8,7 +8,7 @@ from omagent_core.models.llms.schemas import Message, Content
 from omagent_core.utils.general import encode_image
 from omagent_core.models.llms.prompt.parser import StrParser
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
-from omagent_core.engine.worker.base import BaseLocalWorker, BaseWorker
+from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.container import container
 from omagent_core.memories.stms.stm_sharedMem import SharedMemSTM
 from omagent_core.memories.stms.stm_redis import RedisSTM

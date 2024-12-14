@@ -1,5 +1,5 @@
 from pathlib import Path
-from omagent_core.engine.worker.base import BaseLocalWorker
+from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.registry import registry
 from omagent_core.tool_system.manager import ToolManager
 from omagent_core.utils.logger import logging
@@ -8,7 +8,7 @@ CURRENT_PATH = root_path = Path(__file__).parents[0]
 
 
 @registry.register_worker()
-class WeatherSearcher(BaseLocalWorker):
+class WeatherSearcher(BaseWorker):
     """Weather searcher processor that searches for weather information based on user input.
     
     This processor:

@@ -9,7 +9,7 @@ from omagent_core.models.llms.prompt.parser import StrParser
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.models.llms.hf_gpt import HuggingFaceLLM
 
-from omagent_core.engine.worker.base import BaseWorker, BaseLocalWorker
+from omagent_core.engine.worker.base import BaseWorker, BaseWorker
 from omagent_core.utils.container import container
 
 from pathlib import Path
@@ -26,7 +26,7 @@ CURRENT_PATH = Path(__file__).parents[0]
 
 
 @registry.register_worker()
-class SimpleQA(BaseLocalWorker, BaseLLMBackend):
+class SimpleQA(BaseWorker, BaseLLMBackend):
     llm: HuggingFaceLLM
 
     def _run(self, user_instruction, *args, **kwargs):
