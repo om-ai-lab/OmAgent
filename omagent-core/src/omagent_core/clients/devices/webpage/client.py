@@ -12,6 +12,7 @@ from omagent_core.utils.container import container
 from omagent_core.utils.registry import registry
 from omagent_core.services.connectors.redis import RedisConnector
 from omagent_core.utils.logger import logging
+from omagent_core.engine.http.models.workflow_status import terminal_status
 import html
 
 registry.import_module()
@@ -72,27 +73,33 @@ class WebpageClient:
         worker_config = build_from_file(self._config_path)
         self._task_handler_interactor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_interactor.start_processes()
-        with gr.Blocks(title="OmAgent", css=self._custom_css) as chat_interface:
-            chatbot = gr.Chatbot(
-                elem_id="OmAgent", 
-                bubble_full_width=False, 
-                type="messages",
-                height="100%"
-            )
+        try:
+            with gr.Blocks(title="OmAgent", css=self._custom_css) as chat_interface:
+                chatbot = gr.Chatbot(
+                    elem_id="OmAgent", 
+                    bubble_full_width=False, 
+                    type="messages",
+                    height="100%"
+                )
 
-            chat_input = gr.MultimodalTextbox(
-                interactive=True,
-                file_count="multiple",
-                placeholder="Enter message or upload file...",
-                show_label=False,
-            )
+                chat_input = gr.MultimodalTextbox(
+                    interactive=True,
+                    file_count="multiple",
+                    placeholder="Enter message or upload file...",
+                    show_label=False,
+                )
 
-            chat_msg = chat_input.submit(
-                self.add_message, [chatbot, chat_input], [chatbot, chat_input]
-            )
-            bot_msg = chat_msg.then(self.bot, chatbot, chatbot, api_name="bot_response")
-            bot_msg.then(lambda: gr.MultimodalTextbox(interactive=True), None, [chat_input])
-        chat_interface.launch()
+                chat_msg = chat_input.submit(
+                    self.add_message, [chatbot, chat_input], [chatbot, chat_input]
+                )
+                bot_msg = chat_msg.then(self.bot, chatbot, chatbot, api_name="bot_response")
+                bot_msg.then(lambda: gr.MultimodalTextbox(interactive=True), None, [chat_input])
+            chat_interface.launch()
+        except KeyboardInterrupt:
+            logging.info("\nDetected Ctrl+C, stopping workflow...")
+            if self._workflow_instance_id is not None:
+                self._interactor._executor.terminate(workflow_id=self._workflow_instance_id)
+            raise
 
     def stop_interactor(self):
         self._task_handler_interactor.stop_processes()
@@ -102,27 +109,33 @@ class WebpageClient:
         self._task_handler_processor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_processor.start_processes()
 
-        with gr.Blocks(title="OmAgent", css=self._custom_css) as chat_interface:
-            chatbot = gr.Chatbot(
-                elem_id="OmAgent", 
-                bubble_full_width=False, 
-                type="messages",
-                height="100%"
-            )
+        try:
+            with gr.Blocks(title="OmAgent", css=self._custom_css) as chat_interface:
+                chatbot = gr.Chatbot(
+                    elem_id="OmAgent", 
+                    bubble_full_width=False, 
+                    type="messages",
+                    height="100%"
+                )
 
-            chat_input = gr.MultimodalTextbox(
-                interactive=True,
-                file_count="multiple",
-                placeholder="Enter message or upload file...",
-                show_label=False,
-            )
+                chat_input = gr.MultimodalTextbox(
+                    interactive=True,
+                    file_count="multiple",
+                    placeholder="Enter message or upload file...",
+                    show_label=False,
+                )
 
-            chat_msg = chat_input.submit(
-                self.add_processor_message, [chatbot, chat_input], [chatbot, chat_input]
-            )
-            bot_msg = chat_msg.then(self.processor_bot, chatbot, chatbot, api_name="bot_response")
-            bot_msg.then(lambda: gr.MultimodalTextbox(interactive=True), None, [chat_input])
-        chat_interface.launch(server_port=7861)
+                chat_msg = chat_input.submit(
+                    self.add_processor_message, [chatbot, chat_input], [chatbot, chat_input]
+                )
+                bot_msg = chat_msg.then(self.processor_bot, chatbot, chatbot, api_name="bot_response")
+                bot_msg.then(lambda: gr.MultimodalTextbox(interactive=True), None, [chat_input])
+            chat_interface.launch(server_port=7861)
+        except KeyboardInterrupt:
+            logging.info("\nDetected Ctrl+C, stopping workflow...")
+            if self._workflow_instance_id is not None:
+                self._processor._executor.terminate(workflow_id=self._workflow_instance_id)
+            raise
 
     def stop_processor(self):
         self._task_handler_processor.stop_processes()
@@ -246,7 +259,7 @@ class WebpageClient:
         yield history
         while True:
             status = self._processor.get_workflow(workflow_id=self._workflow_instance_id).status
-            if status == 'COMPLETED':
+            if status in terminal_status:
                 history.append({"role": "assistant", "content": f"completed"})
                 yield history
                 self._workflow_instance_id = None
