@@ -261,7 +261,7 @@ class ToolManager(BaseLLMBackend):
                 "name": tool_calls[0]["function"]["name"],
                 "arguments": json.loads(tool_calls[0]["function"]["arguments"]),
             }
-            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool {toolcall_structure["name"]} executing.')
+            #self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool {toolcall_structure["name"]} executing.')
             tool_execution_res = []
             try:
                 for each_tool_call in tool_calls:

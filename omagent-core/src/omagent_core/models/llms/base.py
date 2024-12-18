@@ -28,9 +28,9 @@ class BaseLLM(BotBase, ABC):
     lru_cache: LRUCache = Field(default=LRUCache(EnvVar.LLM_CACHE_NUM))
     
     @property 
-    def workflow_instance_id(self) -> str:
+    def workflow_instance_id(self) -> str:                        
         if hasattr(self, '_parent'):
-            return self._parent.workflow_instance_id
+            return self._parent.workflow_instance_id        
         return None
         
     @workflow_instance_id.setter

@@ -80,6 +80,26 @@ class BaseWorker(BotBase, ABC):
     def _run(self, *args, **kwargs) -> Any:
         """Run the Node."""
 
+    def __call__(self, inputs: Any, *args, **kwargs) -> Any:
+        """
+        Run the worker in standalone mode.
+        
+        Args:
+            inputs (Any): The inputs to the worker.
+            *args, **kwargs: Additional arguments.
+        
+        Returns:
+            Any: The output from the worker's `_run` method.
+        """
+        try:
+            # Invoke the worker's `_run` method with inputs
+            result = self._run(inputs, *args, **kwargs)
+            return result
+        except Exception as e:
+            # Handle and log errors
+            print(f"Error occurred while running worker: {e}")
+            raise
+
     def execute(self, task: Task) -> TaskResult:
         task_input = {}
         task_output = None
@@ -211,3 +231,4 @@ class BaseWorker(BotBase, ABC):
 
     def paused(self) -> bool:
         return False
+

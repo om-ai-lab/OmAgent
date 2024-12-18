@@ -62,6 +62,7 @@ class WebSearch(BaseTool, BaseLLMBackend):
 
     def __init__(__pydantic_self__, **data: Any) -> None:
         super().__init__(**data)
+
         __pydantic_self__.client = httpx.AsyncClient(
             headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36"
@@ -114,7 +115,7 @@ class WebSearch(BaseTool, BaseLLMBackend):
         :param string? region: The region code of the search, default to `en-US`. Available regions: `en-US`, `zh-CN`, `ja-JP`, `de-DE`, `fr-FR`, `en-GB`.
         :return string: The results of the search.
         """
-        self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Searching for "{search_query}".')
+        #self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Searching for "{search_query}".')
         if region is None:
             region = "en-US"
         if self.bing_api_key is None:
@@ -135,6 +136,7 @@ class WebSearch(BaseTool, BaseLLMBackend):
                 result.raise_for_status()
                 result = result.json()
                 pages = result["webPages"]["value"]
+                print ("pages:", pages)
             except Exception as e:
                 logging.error(f"Bing search failed: {e}")
                 return [{
