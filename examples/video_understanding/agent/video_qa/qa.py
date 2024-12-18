@@ -6,12 +6,11 @@ from typing import List
 from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.engine.worker.base import BaseWorker
 
-from omagent_core.engine.workflow.context import BaseWorkflowContext
 from omagent_core.models.llms.prompt import PromptTemplate
 from omagent_core.memories.ltms.ltm import LTM
 from omagent_core.utils.registry import registry
 from omagent_core.models.encoders.openai_encoder import OpenaiTextEmbeddingV3
-from omagent_core.engine.task.agent_task import TaskTree
+from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import TaskTree
 from pydantic import Field
 from ..misc.scene import VideoScenes
 import json_repair

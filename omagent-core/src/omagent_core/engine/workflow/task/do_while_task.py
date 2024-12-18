@@ -77,8 +77,14 @@ class DnCLoopTask(DoWhileTask):
             real_tasks = tasks + post_loop_exit
         else:
             real_tasks = tasks
+        flatten_tasks = []
+        for each in real_tasks:
+            if isinstance(each, list):
+                flatten_tasks.extend(each)
+            else:
+                flatten_tasks.append(each)
         super().__init__(
             task_ref_name=task_ref_name,
             termination_condition=get_dnc_loop_condition(post_loop_exit[0].task_reference_name),
-            tasks=real_tasks,
+            tasks=flatten_tasks,
         )

@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 from colorama import Fore, Style
-from ....engine.task.agent_task import TaskStatus
+from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import TaskStatus
 from pydantic import Field
 from tenacity import (
     retry,
@@ -12,15 +12,14 @@ from tenacity import (
     stop_after_delay,
 )
 
-from ....models.llms.base import BaseLLMBackend
-from ....engine.workflow.context import BaseWorkflowContext
-from ....models.llms.prompt import PromptTemplate
-from ....memories.ltms.ltm import LTM
-from ....utils.env import EnvVar
-from ....utils.registry import registry
-from ....tool_system.manager import ToolManager
-from ....engine.worker.base import BaseWorker
-from ....engine.task.agent_task import TaskTree
+from omagent_core.models.llms.base import BaseLLMBackend
+from omagent_core.models.llms.prompt import PromptTemplate
+from omagent_core.memories.ltms.ltm import LTM
+from omagent_core.utils.env import EnvVar
+from omagent_core.utils.registry import registry
+from omagent_core.tool_system.manager import ToolManager
+from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import TaskTree
 
 
 CURRENT_PATH = root_path = Path(__file__).parents[0]
@@ -40,7 +39,7 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
     )
     tool_manager: ToolManager
 
-    def _run(self, agent_task: dict, last_output: str, *args, **kwargs) -> Tuple[BaseWorkflowContext, str]:
+    def _run(self, dnc_structure: dict, last_output: str, *args, **kwargs):
         """A task rescue node that attempts to recover from tool execution failures.
 
         This component acts as a rescue mechanism that:
@@ -58,7 +57,7 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
         5. Determining if rescue was successful or needs further handling
 
         Args:
-            agent_task (dict): The task tree containing the failed task
+            dnc_structure (dict): The task tree containing the failed task
             last_output (str): The output from previous failed execution
             *args: Additional arguments
             **kwargs: Additional keyword arguments
@@ -71,7 +70,7 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
         if toolcall_content is not None:
             former_results = self.stm(self.workflow_instance_id)['former_results']
             tool_call_error = former_results.pop("tool_call_error", None)
-            task = TaskTree(**agent_task)
+            task = TaskTree(**dnc_structure)
             current_node = task.get_current_node()
 
             # Call LLM to understand the failure and generate fixes
@@ -94,15 +93,21 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
                 former_results['rescue_detail'] = rescue_execution_results
                 self.stm(self.workflow_instance_id)['former_results'] = former_results
                 self.callback.info(agent_id=self.workflow_instance_id, progress=f'Rescue', message=f'Rescue tool call success.')
-                return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
+                self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
+                self.stm(self.workflow_instance_id)['last_output'] = last_output
+                return {"dnc_structure": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
             # Handle the case where the rescue execution is failed
             else:
                 self.stm(self.workflow_instance_id)['former_results'] = former_results
                 current_node.status = TaskStatus.RUNNING
                 self.callback.info(agent_id=self.workflow_instance_id, progress=f'Rescue', message=f'Rescue tool call failed.')
-                return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
+                self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
+                self.stm(self.workflow_instance_id)['last_output'] = last_output
+                return {"dnc_structure": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
         
         # Handle the case where there is no tool call to rescue
         else:
             self.callback.info(agent_id=self.workflow_instance_id, progress=f'Rescue', message=f'No tool call to rescue.')
-            return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
+            self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
+            self.stm(self.workflow_instance_id)['last_output'] = last_output
+            return {"dnc_structure": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
