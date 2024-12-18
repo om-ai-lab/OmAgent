@@ -1,0 +1,7 @@
+Now, it's your turn to complete the task.
+
+Enter the information:
+- Information about the user's body metrics: {{bodydata}}
+- Previous searches: {{previous_search}}
+- Decider feedback: {{feedback}}
+
