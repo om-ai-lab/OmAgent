@@ -92,6 +92,8 @@ class Registry:
                 
         for path in default_path:
             for module in path.rglob("*.[ps][yo]"):
+                if module.name == 'workflow.py':
+                    continue
                 module = str(module)
                 if "__init__" in module or "base.py" in module or "entry.py" in module:
                     continue

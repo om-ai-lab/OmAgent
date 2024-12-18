@@ -12,49 +12,15 @@ This example demonstrates how to use the framework for divide-and-conquer tasks.
 
 This example implements a general divide-and-conquer workflow that consists of following components:
 
-1. **DnC Input Interface**
+1. **Input Interface**
    - Handles user input containing questions and(or) images
-   - Construct data structure for workflow running
 
-2. **Init Set Variable Task**
-   - Initialize global workflow variables that is needed in the entire workflow
-  
-3. **Conqueror Task**
-   - Conqueror task executes and manages complex task trees: direct agent answer, conquer current task, use tool call for current task or break current task into several subtasks
-   - It takes a hierarchical task tree and processes each task node, maintaining context and state between task executions
+2. **DnC Workflow**
+   - Decompose the original task into multiple sub-tasks
+   - Conquer each sub-task to complete the original task
 
-4. **Conqueror Update Set Variable Task**
-   - Update global workflow variables changed after conqueror task excution for better reading experience in conductor UI
-  
-5. **Divider Task**
-   - Break down complex task into multiple smaller subtasks
-   - Generate and match milestones to each subtask
-
-6. **Divider Update Set Variable Task**
-   - Update global workflow variables changed after divider task excution for better reading experience in conductor UI
-
-7. **Rescue Task**
-   - Rescue failed tool call task, attempt to fix the issue by retrying with corrected parameters
-
-8. **Conclude Task**
+3. **Conclude Task**
    - Solid end of the workflow, conclude the original root task based on all related information
-
-9.  **Switch Task**
-    - After conqueror task, based on it's dicision, switch to specific next worker.
-    - Default case is the next conqueror task
-    - If too complex, switch to divider task
-    - If failed, switch to rescue task
-
-10. **Task Exit Monitor Task**
-    - Monitor whether the exit condition of the DnC loop task is met
-    - Based on the conqueror and divider task(s), the task tree is dynamicly generated and continuesly updated in the whole workflow
-
-11. **Post Set Variable Task**
-    - Update global workflow variables changed after task exit monitor task execution for better reading experience in conductor UI
-
-12. **DnC Loop Task**
-    - The core of the DnC workflow, takes a hierarchical task tree and processes each task node, maintaining context and state between task executions
-    - It contains three main tasks: conqueror task, divider task and rescue task, and other supporting tasks mentioned above
 
 ### This whole workflow is looked like the following diagram:
 

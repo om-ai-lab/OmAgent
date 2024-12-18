@@ -4,14 +4,13 @@ from omagent_core.utils.registry import registry
 from omagent_core.utils.general import read_image
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.logger import logging
-from omagent_core.engine.task.agent_task import TaskTree
 
 
 CURRENT_PATH = Path(__file__).parents[0]
 
 
 @registry.register_worker()
-class DnCInputIterface(BaseWorker):
+class InputInterface(BaseWorker):
     """Input interface processor that handles user instructions and image input.
     
     This processor:
@@ -24,8 +23,6 @@ class DnCInputIterface(BaseWorker):
     def _run(self, *args, **kwargs):
         # Read user input through configured input interface
         user_input = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt='Please input your question:')
-        tree = TaskTree()
-        agent_id = user_input['agent_id']
         messages = user_input['messages']
         message = messages[-1]
         image = None
@@ -37,6 +34,4 @@ class DnCInputIterface(BaseWorker):
                 text = each_content['data']
         if image is not None:
             self.stm(self.workflow_instance_id)['image_cache'] = {f'<image_0>' : image}
-        if text is not None:
-            tree.add_node({"task": text})
-        return {'agent_task': tree.model_dump(), 'last_output': None}
+        return {'query': text}

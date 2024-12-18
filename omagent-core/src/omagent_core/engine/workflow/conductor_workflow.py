@@ -12,6 +12,7 @@ from omagent_core.engine.workflow.task.fork_task import ForkTask
 from omagent_core.engine.workflow.task.join_task import JoinTask
 from omagent_core.engine.workflow.task.switch_task import SwitchTask
 from omagent_core.engine.workflow.task.task import TaskInterface
+from omagent_core.engine.workflow.task.set_variable_task import SetVariableTask
 from omagent_core.engine.workflow.task.task_type import TaskType
 from omagent_core.engine.workflow.task.timeout_policy import TimeoutPolicy
 import itertools
@@ -358,11 +359,15 @@ class ConductorWorkflow:
             return self.__add_task(switch_task)
 
         elif isinstance(task, ConductorWorkflow):
-            inline = InlineSubWorkflowTask(
-                task_ref_name=task.name + "_" + str(uuid()), workflow=task
-            )
-            inline.input_parameters.update(task._input_template)
-            return self.__add_task(inline)
+            # inline = InlineSubWorkflowTask(
+            #     task_ref_name=task.name + "_" + str(uuid()), workflow=task
+            # )
+            # inline.input_parameters.update(task._input_template)
+            # return self.__add_task(inline)
+            sub_workflow_tasks = task._tasks
+            for sub_task in sub_workflow_tasks:
+                self.__add_task(sub_task)
+            return self
 
         elif isinstance(task, TaskInterface):
             return self.__add_task(task)

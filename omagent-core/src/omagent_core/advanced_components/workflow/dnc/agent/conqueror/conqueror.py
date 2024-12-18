@@ -12,19 +12,17 @@ from tenacity import (
     stop_after_delay,
 )
 
-from ....memories.ltms.ltm import LTM
-from ....engine.workflow.context import BaseWorkflowContext
-from ....utils.env import EnvVar
-from ....utils.registry import registry
-from ....models.llms.base import BaseLLMBackend
-from ....models.llms.prompt.prompt import PromptTemplate
-from ....tool_system.manager import ToolManager
-from ....engine.task.agent_task import TaskTree, TaskStatus
-from ....engine.worker.base import BaseWorker
-from ....models.llms.base import StrParser
+from omagent_core.memories.ltms.ltm import LTM
+from omagent_core.utils.env import EnvVar
+from omagent_core.utils.registry import registry
+from omagent_core.models.llms.base import BaseLLMBackend
+from omagent_core.models.llms.prompt.prompt import PromptTemplate
+from omagent_core.tool_system.manager import ToolManager
+from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import TaskTree, TaskStatus
+from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.models.llms.base import StrParser
 import json_repair
-from ....models.llms.openai_gpt import OpenaiGPTLLM
-from ....utils.container import container
+from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from collections import defaultdict
 
 CURRENT_PATH = Path(__file__).parents[0]
@@ -44,7 +42,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
     )
     tool_manager: ToolManager
 
-    def _run(self, agent_task: dict, last_output: str, *args, **kwargs):
+    def _run(self, dnc_structure: dict, last_output: str, *args, **kwargs):
         """A task conqueror that executes and manages complex task trees.
 
         This component acts as a task conqueror that:
@@ -59,7 +57,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
         overall context and goal alignment.
 
         Args:
-            agent_task (dict): The task tree definition and current state
+            dnc_structure (dict): The task tree definition and current state
             last_output (str): The output from previous task execution
             *args: Additional arguments
             **kwargs: Additional keyword arguments
@@ -67,7 +65,7 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
         Returns:
             dict: Processed response containing next actions or task completion results
         """
-        task = TaskTree(**agent_task)
+        task = TaskTree(**dnc_structure)
         current_node = task.get_current_node()
         current_node.status = TaskStatus.RUNNING
 
@@ -129,7 +127,9 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
             current_node.result = content["agent_answer"]
             current_node.status = TaskStatus.SUCCESS
             self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}"\nAgent answer: {content["agent_answer"]}')
-            return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
+            self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
+            self.stm(self.workflow_instance_id)['last_output'] = last_output
+            return {"dnc_structure": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
 
         # LLM returns the reason why the task needs to be divided
         elif content.get("divide"):
@@ -141,7 +141,9 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                 )
             )
             self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Task "{current_node.task}" needs to be divided.')
-            return {"agent_task": task.model_dump(), "switch_case_value": "complex", "last_output": last_output, "kwargs": kwargs}
+            self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
+            self.stm(self.workflow_instance_id)['last_output'] = last_output
+            return {"dnc_structure": task.model_dump(), "switch_case_value": "complex", "last_output": last_output, "kwargs": kwargs}
 
         # LLM returns the tool call information
         elif content.get("tool_call"):
@@ -170,7 +172,9 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                     "tool_result": current_node.result,
                 }
                 self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call success. {toolcall_success_output_structure}')
-                return {"agent_task": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
+                self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
+                self.stm(self.workflow_instance_id)['last_output'] = last_output
+                return {"dnc_structure": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
             # Handle the case where the tool call is failed
             else:
                 current_node.result = execution_results
@@ -178,7 +182,9 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
                 former_results['tool_call_error'] = f"tool_call {content['tool_call']} raise error: {current_node.result}"
                 self.stm(self.workflow_instance_id)['former_results'] = former_results
                 self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool call failed. {former_results["tool_call_error"]}')
-                return {"agent_task": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
+                self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
+                self.stm(self.workflow_instance_id)['last_output'] = last_output
+                return {"dnc_structure": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
         # Handle the case where the LLM generation is not valid
         else:
             raise ValueError("LLM generation is not valid.")
