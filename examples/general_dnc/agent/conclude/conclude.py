@@ -1,15 +1,14 @@
 from pathlib import Path
 from typing import List
 
-from ....models.llms.base import BaseLLMBackend
-from ....engine.worker.base import BaseWorker
-from ....engine.workflow.context import BaseWorkflowContext
-from ....models.llms.prompt import PromptTemplate
-from ....memories.ltms.ltm import LTM
-from ....utils.registry import registry
+from omagent_core.models.llms.base import BaseLLMBackend
+from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.models.llms.prompt import PromptTemplate
+from omagent_core.memories.ltms.ltm import LTM
+from omagent_core.utils.registry import registry
 from pydantic import Field
-from ....engine.task.agent_task import TaskTree
-from ....utils.logger import logging
+from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import TaskTree
+from omagent_core.utils.logger import logging
 
 
 CURRENT_PATH = root_path = Path(__file__).parents[0]
@@ -28,7 +27,7 @@ class Conclude(BaseLLMBackend, BaseWorker):
         ]
     )
 
-    def _run(self, agent_task: dict, last_output: str, *args, **kwargs):
+    def _run(self, dnc_structure: dict, last_output: str, *args, **kwargs):
         """A conclude node that summarizes and completes the root task.
 
         This component acts as the final node that:
@@ -50,7 +49,7 @@ class Conclude(BaseLLMBackend, BaseWorker):
         Returns:
             dict: Final response containing the conclusion/summary
         """
-        task = TaskTree(**agent_task)
+        task = TaskTree(**dnc_structure)
         self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conclude', message=f'{task.get_current_node().task}')
         chat_complete_res = self.simple_infer(
             task=task.get_root().task,
@@ -68,6 +67,5 @@ class Conclude(BaseLLMBackend, BaseWorker):
                 last_output += ''
                 break
         # self.callback.send_answer(agent_id=self.workflow_instance_id, msg=f'Answer: {chat_complete_res["choices"][0]["message"]["content"]}')
-        logging.info(f'Answer: {last_output}')
         self.stm(self.workflow_instance_id).clear()
         return {'last_output': last_output}
