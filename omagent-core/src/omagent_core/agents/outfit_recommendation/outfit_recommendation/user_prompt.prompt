@@ -1,0 +1,7 @@
+Now, it's your turn to complete the task.
+Give anwer using the language according to the user's answer.
+
+Input Information:
+- Weather conditions: {{weather}}
+- User's specific requirements or preferences: {{instruction}}
+- Clothing item in the image: {{image}}
