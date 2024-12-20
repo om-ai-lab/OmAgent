@@ -70,7 +70,6 @@ class ProgrammaticClient:
             workflow_instance_id = workflow.start_workflow_with_input(workflow_input=workflow_input)
             while True:
                 status = workflow.get_workflow(workflow_id=workflow_instance_id).status
-                print("status:", status)
                 if status in terminal_status:
                     break
                 sleep(1)
