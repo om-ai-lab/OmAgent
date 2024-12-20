@@ -43,7 +43,7 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
     show_progress: bool = True
 
     use_cache: bool = False
-    cache_dir: str = "./running_logs/video_cache"
+    cache_dir: str = "./video_cache"
 
     @field_validator("stt", mode="before")
     @classmethod

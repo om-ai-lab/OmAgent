@@ -15,7 +15,7 @@ from omagent_core.base import BotBase
 class CallbackBase(BotBase, ABC):
     bot_id: str
     start_time: str = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-    folder_name: str = f"./running_logs/{start_time}"
+    # folder_name: str = f"./running_logs/{start_time}"
 
     class Config:
         """Configuration for this pydantic object."""
@@ -23,9 +23,9 @@ class CallbackBase(BotBase, ABC):
         arbitrary_types_allowed = True
         extra = "allow"
 
-    @model_validator(mode="after")
-    def init_folder(self):
-        Path(self.folder_name).mkdir(parents=True, exist_ok=True)
+    # @model_validator(mode="after")
+    # def init_folder(self):
+    #     Path(self.folder_name).mkdir(parents=True, exist_ok=True)
 
     @abstractmethod
     def send_block(self, **kwargs):
