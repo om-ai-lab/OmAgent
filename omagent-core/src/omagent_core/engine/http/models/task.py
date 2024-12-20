@@ -2,7 +2,6 @@ import pprint
 import re  # noqa: F401
 
 import six
-
 from omagent_core.engine.http.models import WorkflowTask
 from omagent_core.engine.http.models.task_result import TaskResult
 from omagent_core.engine.http.models.task_result_status import TaskResultStatus
@@ -13,6 +12,7 @@ class Task(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -21,104 +21,137 @@ class Task(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'task_type': 'str',
-        'status': 'str',
-        'input_data': 'dict(str, object)',
-        'reference_task_name': 'str',
-        'retry_count': 'int',
-        'seq': 'int',
-        'correlation_id': 'str',
-        'poll_count': 'int',
-        'task_def_name': 'str',
-        'scheduled_time': 'int',
-        'start_time': 'int',
-        'end_time': 'int',
-        'update_time': 'int',
-        'start_delay_in_seconds': 'int',
-        'retried_task_id': 'str',
-        'retried': 'bool',
-        'executed': 'bool',
-        'callback_from_worker': 'bool',
-        'response_timeout_seconds': 'int',
-        'workflow_instance_id': 'str',
-        'workflow_type': 'str',
-        'task_id': 'str',
-        'reason_for_incompletion': 'str',
-        'callback_after_seconds': 'int',
-        'worker_id': 'str',
-        'output_data': 'dict(str, object)',
-        'workflow_task': 'WorkflowTask',
-        'domain': 'str',
-        'rate_limit_per_frequency': 'int',
-        'rate_limit_frequency_in_seconds': 'int',
-        'external_input_payload_storage_path': 'str',
-        'external_output_payload_storage_path': 'str',
-        'workflow_priority': 'int',
-        'execution_name_space': 'str',
-        'isolation_group_id': 'str',
-        'iteration': 'int',
-        'sub_workflow_id': 'str',
-        'subworkflow_changed': 'bool',
-        'loop_over_task': 'bool',
-        'task_definition': 'TaskDef',
-        'queue_wait_time': 'int'
+        "task_type": "str",
+        "status": "str",
+        "input_data": "dict(str, object)",
+        "reference_task_name": "str",
+        "retry_count": "int",
+        "seq": "int",
+        "correlation_id": "str",
+        "poll_count": "int",
+        "task_def_name": "str",
+        "scheduled_time": "int",
+        "start_time": "int",
+        "end_time": "int",
+        "update_time": "int",
+        "start_delay_in_seconds": "int",
+        "retried_task_id": "str",
+        "retried": "bool",
+        "executed": "bool",
+        "callback_from_worker": "bool",
+        "response_timeout_seconds": "int",
+        "workflow_instance_id": "str",
+        "workflow_type": "str",
+        "task_id": "str",
+        "reason_for_incompletion": "str",
+        "callback_after_seconds": "int",
+        "worker_id": "str",
+        "output_data": "dict(str, object)",
+        "workflow_task": "WorkflowTask",
+        "domain": "str",
+        "rate_limit_per_frequency": "int",
+        "rate_limit_frequency_in_seconds": "int",
+        "external_input_payload_storage_path": "str",
+        "external_output_payload_storage_path": "str",
+        "workflow_priority": "int",
+        "execution_name_space": "str",
+        "isolation_group_id": "str",
+        "iteration": "int",
+        "sub_workflow_id": "str",
+        "subworkflow_changed": "bool",
+        "loop_over_task": "bool",
+        "task_definition": "TaskDef",
+        "queue_wait_time": "int",
     }
 
     attribute_map = {
-        'task_type': 'taskType',
-        'status': 'status',
-        'input_data': 'inputData',
-        'reference_task_name': 'referenceTaskName',
-        'retry_count': 'retryCount',
-        'seq': 'seq',
-        'correlation_id': 'correlationId',
-        'poll_count': 'pollCount',
-        'task_def_name': 'taskDefName',
-        'scheduled_time': 'scheduledTime',
-        'start_time': 'startTime',
-        'end_time': 'endTime',
-        'update_time': 'updateTime',
-        'start_delay_in_seconds': 'startDelayInSeconds',
-        'retried_task_id': 'retriedTaskId',
-        'retried': 'retried',
-        'executed': 'executed',
-        'callback_from_worker': 'callbackFromWorker',
-        'response_timeout_seconds': 'responseTimeoutSeconds',
-        'workflow_instance_id': 'workflowInstanceId',
-        'workflow_type': 'workflowType',
-        'task_id': 'taskId',
-        'reason_for_incompletion': 'reasonForIncompletion',
-        'callback_after_seconds': 'callbackAfterSeconds',
-        'worker_id': 'workerId',
-        'output_data': 'outputData',
-        'workflow_task': 'workflowTask',
-        'domain': 'domain',
-        'rate_limit_per_frequency': 'rateLimitPerFrequency',
-        'rate_limit_frequency_in_seconds': 'rateLimitFrequencyInSeconds',
-        'external_input_payload_storage_path': 'externalInputPayloadStoragePath',
-        'external_output_payload_storage_path': 'externalOutputPayloadStoragePath',
-        'workflow_priority': 'workflowPriority',
-        'execution_name_space': 'executionNameSpace',
-        'isolation_group_id': 'isolationGroupId',
-        'iteration': 'iteration',
-        'sub_workflow_id': 'subWorkflowId',
-        'subworkflow_changed': 'subworkflowChanged',
-        'loop_over_task': 'loopOverTask',
-        'task_definition': 'taskDefinition',
-        'queue_wait_time': 'queueWaitTime'
+        "task_type": "taskType",
+        "status": "status",
+        "input_data": "inputData",
+        "reference_task_name": "referenceTaskName",
+        "retry_count": "retryCount",
+        "seq": "seq",
+        "correlation_id": "correlationId",
+        "poll_count": "pollCount",
+        "task_def_name": "taskDefName",
+        "scheduled_time": "scheduledTime",
+        "start_time": "startTime",
+        "end_time": "endTime",
+        "update_time": "updateTime",
+        "start_delay_in_seconds": "startDelayInSeconds",
+        "retried_task_id": "retriedTaskId",
+        "retried": "retried",
+        "executed": "executed",
+        "callback_from_worker": "callbackFromWorker",
+        "response_timeout_seconds": "responseTimeoutSeconds",
+        "workflow_instance_id": "workflowInstanceId",
+        "workflow_type": "workflowType",
+        "task_id": "taskId",
+        "reason_for_incompletion": "reasonForIncompletion",
+        "callback_after_seconds": "callbackAfterSeconds",
+        "worker_id": "workerId",
+        "output_data": "outputData",
+        "workflow_task": "workflowTask",
+        "domain": "domain",
+        "rate_limit_per_frequency": "rateLimitPerFrequency",
+        "rate_limit_frequency_in_seconds": "rateLimitFrequencyInSeconds",
+        "external_input_payload_storage_path": "externalInputPayloadStoragePath",
+        "external_output_payload_storage_path": "externalOutputPayloadStoragePath",
+        "workflow_priority": "workflowPriority",
+        "execution_name_space": "executionNameSpace",
+        "isolation_group_id": "isolationGroupId",
+        "iteration": "iteration",
+        "sub_workflow_id": "subWorkflowId",
+        "subworkflow_changed": "subworkflowChanged",
+        "loop_over_task": "loopOverTask",
+        "task_definition": "taskDefinition",
+        "queue_wait_time": "queueWaitTime",
     }
 
-    def __init__(self, task_type=None, status=None, input_data=None, reference_task_name=None, retry_count=None,
-                 seq=None, correlation_id=None, poll_count=None, task_def_name=None, scheduled_time=None,
-                 start_time=None, end_time=None, update_time=None, start_delay_in_seconds=None, retried_task_id=None,
-                 retried=None, executed=None, callback_from_worker=None, response_timeout_seconds=None,
-                 workflow_instance_id=None, workflow_type=None, task_id=None, reason_for_incompletion=None,
-                 callback_after_seconds=None, worker_id=None, output_data=None, workflow_task=None, domain=None,
-                 rate_limit_per_frequency=None, rate_limit_frequency_in_seconds=None,
-                 external_input_payload_storage_path=None, external_output_payload_storage_path=None,
-                 workflow_priority=None, execution_name_space=None, isolation_group_id=None, iteration=None,
-                 sub_workflow_id=None, subworkflow_changed=None, loop_over_task=None, task_definition=None,
-                 queue_wait_time=None):  # noqa: E501
+    def __init__(
+        self,
+        task_type=None,
+        status=None,
+        input_data=None,
+        reference_task_name=None,
+        retry_count=None,
+        seq=None,
+        correlation_id=None,
+        poll_count=None,
+        task_def_name=None,
+        scheduled_time=None,
+        start_time=None,
+        end_time=None,
+        update_time=None,
+        start_delay_in_seconds=None,
+        retried_task_id=None,
+        retried=None,
+        executed=None,
+        callback_from_worker=None,
+        response_timeout_seconds=None,
+        workflow_instance_id=None,
+        workflow_type=None,
+        task_id=None,
+        reason_for_incompletion=None,
+        callback_after_seconds=None,
+        worker_id=None,
+        output_data=None,
+        workflow_task=None,
+        domain=None,
+        rate_limit_per_frequency=None,
+        rate_limit_frequency_in_seconds=None,
+        external_input_payload_storage_path=None,
+        external_output_payload_storage_path=None,
+        workflow_priority=None,
+        execution_name_space=None,
+        isolation_group_id=None,
+        iteration=None,
+        sub_workflow_id=None,
+        subworkflow_changed=None,
+        loop_over_task=None,
+        task_definition=None,
+        queue_wait_time=None,
+    ):  # noqa: E501
         """Task - a model defined in Swagger"""  # noqa: E501
         self._task_type = None
         self._status = None
@@ -223,9 +256,13 @@ class Task(object):
         if rate_limit_frequency_in_seconds is not None:
             self.rate_limit_frequency_in_seconds = rate_limit_frequency_in_seconds
         if external_input_payload_storage_path is not None:
-            self.external_input_payload_storage_path = external_input_payload_storage_path
+            self.external_input_payload_storage_path = (
+                external_input_payload_storage_path
+            )
         if external_output_payload_storage_path is not None:
-            self.external_output_payload_storage_path = external_output_payload_storage_path
+            self.external_output_payload_storage_path = (
+                external_output_payload_storage_path
+            )
         if workflow_priority is not None:
             self.workflow_priority = workflow_priority
         if execution_name_space is not None:
@@ -284,12 +321,22 @@ class Task(object):
         :param status: The status of this Task.  # noqa: E501
         :type: str
         """
-        allowed_values = ["IN_PROGRESS", "CANCELED", "FAILED", "FAILED_WITH_TERMINAL_ERROR", "COMPLETED",
-                          "COMPLETED_WITH_ERRORS", "SCHEDULED", "TIMED_OUT", "SKIPPED"]  # noqa: E501
+        allowed_values = [
+            "IN_PROGRESS",
+            "CANCELED",
+            "FAILED",
+            "FAILED_WITH_TERMINAL_ERROR",
+            "COMPLETED",
+            "COMPLETED_WITH_ERRORS",
+            "SCHEDULED",
+            "TIMED_OUT",
+            "SKIPPED",
+        ]  # noqa: E501
         if status not in allowed_values:
             raise ValueError(
-                "Invalid value for `status` ({0}), must be one of {1}"  # noqa: E501
-                .format(status, allowed_values)
+                "Invalid value for `status` ({0}), must be one of {1}".format(  # noqa: E501
+                    status, allowed_values
+                )
             )
 
         self._status = status
@@ -914,7 +961,9 @@ class Task(object):
         return self._external_output_payload_storage_path
 
     @external_output_payload_storage_path.setter
-    def external_output_payload_storage_path(self, external_output_payload_storage_path):
+    def external_output_payload_storage_path(
+        self, external_output_payload_storage_path
+    ):
         """Sets the external_output_payload_storage_path of this Task.
 
 
@@ -922,7 +971,9 @@ class Task(object):
         :type: str
         """
 
-        self._external_output_payload_storage_path = external_output_payload_storage_path
+        self._external_output_payload_storage_path = (
+            external_output_payload_storage_path
+        )
 
     @property
     def workflow_priority(self):
@@ -1120,18 +1171,22 @@ class Task(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(Task, dict):
@@ -1159,7 +1214,9 @@ class Task(object):
         """Returns true if both objects are not equal"""
         return not self == other
 
-    def to_task_result(self, status: TaskResultStatus = TaskResultStatus.COMPLETED) -> TaskResult:
+    def to_task_result(
+        self, status: TaskResultStatus = TaskResultStatus.COMPLETED
+    ) -> TaskResult:
         task_result = TaskResult(
             task_id=self.task_id,
             workflow_instance_id=self.workflow_instance_id,

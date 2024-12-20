@@ -1,14 +1,14 @@
 import asyncio
-import time
 import json
+import time
+
+from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.http.models.workflow_status import running_status
-from omagent_core.utils.registry import registry
+from omagent_core.engine.orkes.orkes_workflow_client import workflow_client
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.container import container
-from omagent_core.engine.orkes.orkes_workflow_client import workflow_client
-from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.utils.logger import logging
-
+from omagent_core.utils.registry import registry
 
 
 @registry.register_worker()
@@ -35,16 +35,29 @@ class ImageIndexListener(BaseWorker):
         while True:
             try:
                 # logging.info(f"Checking workflow status: {self.workflow_instance_id}")
-                workflow_status = workflow_client.get_workflow_status(self.workflow_instance_id)
+                workflow_status = workflow_client.get_workflow_status(
+                    self.workflow_instance_id
+                )
                 if workflow_status.status not in running_status:
-                    logging.info(f"Workflow {self.workflow_instance_id} is not running, exiting...")
+                    logging.info(
+                        f"Workflow {self.workflow_instance_id} is not running, exiting..."
+                    )
                     break
 
                 # read new messages from redis stream
-                messages = container.get_connector("redis_stream_client")._client.xrevrange(stream_name, max='+', min=start_id, count=1)
+                messages = container.get_connector(
+                    "redis_stream_client"
+                )._client.xrevrange(stream_name, max="+", min=start_id, count=1)
                 # Convert byte data to string
                 messages = [
-                    (message_id, {k.decode('utf-8'): v.decode('utf-8') for k, v in message.items()}) for message_id, message in messages
+                    (
+                        message_id,
+                        {
+                            k.decode("utf-8"): v.decode("utf-8")
+                            for k, v in message.items()
+                        },
+                    )
+                    for message_id, message in messages
                 ]
                 # logging.info(f"Messages: {messages}")
 
@@ -68,7 +81,7 @@ class ImageIndexListener(BaseWorker):
         logging.info(f"Received message: {message}")
         try:
             payload = message.get("payload")
-            '''
+            """
             {
                 "content": [
                     {
@@ -78,7 +91,7 @@ class ImageIndexListener(BaseWorker):
                     }
                 ]
             }
-            '''
+            """
             # check payload data
             if not payload:
                 logging.error("Payload is empty")
@@ -102,8 +115,14 @@ class ImageIndexListener(BaseWorker):
                 if not isinstance(item, dict):
                     logging.error("Each item in 'content' should be a dictionary")
                     return False
-                if "type" not in item or "resource_id" not in item or "data" not in item:
-                    logging.error("Each item in 'content' should contain 'type', 'resource_id' and 'data' keys")
+                if (
+                    "type" not in item
+                    or "resource_id" not in item
+                    or "data" not in item
+                ):
+                    logging.error(
+                        "Each item in 'content' should contain 'type', 'resource_id' and 'data' keys"
+                    )
                     return False
             message_data = json.loads(payload)
             result.update(message_data)

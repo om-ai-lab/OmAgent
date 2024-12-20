@@ -1,7 +1,8 @@
 from abc import ABC
 from typing import Any, Dict
 
-from omagent_core.engine.event.queue.queue_worker_configuration import QueueWorkerConfiguration
+from omagent_core.engine.event.queue.queue_worker_configuration import \
+    QueueWorkerConfiguration
 
 
 class QueueConfiguration(ABC):

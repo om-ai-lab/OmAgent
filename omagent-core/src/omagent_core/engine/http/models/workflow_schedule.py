@@ -9,6 +9,7 @@ class WorkflowSchedule(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,36 +18,47 @@ class WorkflowSchedule(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'name': 'str',
-        'cron_expression': 'str',
-        'run_catchup_schedule_instances': 'bool',
-        'paused': 'bool',
-        'start_workflow_request': 'StartWorkflowRequest',
-        'schedule_start_time': 'int',
-        'schedule_end_time': 'int',
-        'create_time': 'int',
-        'updated_time': 'int',
-        'created_by': 'str',
-        'updated_by': 'str'
+        "name": "str",
+        "cron_expression": "str",
+        "run_catchup_schedule_instances": "bool",
+        "paused": "bool",
+        "start_workflow_request": "StartWorkflowRequest",
+        "schedule_start_time": "int",
+        "schedule_end_time": "int",
+        "create_time": "int",
+        "updated_time": "int",
+        "created_by": "str",
+        "updated_by": "str",
     }
 
     attribute_map = {
-        'name': 'name',
-        'cron_expression': 'cronExpression',
-        'run_catchup_schedule_instances': 'runCatchupScheduleInstances',
-        'paused': 'paused',
-        'start_workflow_request': 'startWorkflowRequest',
-        'schedule_start_time': 'scheduleStartTime',
-        'schedule_end_time': 'scheduleEndTime',
-        'create_time': 'createTime',
-        'updated_time': 'updatedTime',
-        'created_by': 'createdBy',
-        'updated_by': 'updatedBy'
+        "name": "name",
+        "cron_expression": "cronExpression",
+        "run_catchup_schedule_instances": "runCatchupScheduleInstances",
+        "paused": "paused",
+        "start_workflow_request": "startWorkflowRequest",
+        "schedule_start_time": "scheduleStartTime",
+        "schedule_end_time": "scheduleEndTime",
+        "create_time": "createTime",
+        "updated_time": "updatedTime",
+        "created_by": "createdBy",
+        "updated_by": "updatedBy",
     }
 
-    def __init__(self, name=None, cron_expression=None, run_catchup_schedule_instances=None, paused=None,
-                 start_workflow_request=None, schedule_start_time=None, schedule_end_time=None, create_time=None,
-                 updated_time=None, created_by=None, updated_by=None):  # noqa: E501
+    def __init__(
+        self,
+        name=None,
+        cron_expression=None,
+        run_catchup_schedule_instances=None,
+        paused=None,
+        start_workflow_request=None,
+        schedule_start_time=None,
+        schedule_end_time=None,
+        create_time=None,
+        updated_time=None,
+        created_by=None,
+        updated_by=None,
+    ):  # noqa: E501
         """WorkflowSchedule - a model defined in Swagger"""  # noqa: E501
         self._name = None
         self._cron_expression = None
@@ -321,18 +333,22 @@ class WorkflowSchedule(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(WorkflowSchedule, dict):

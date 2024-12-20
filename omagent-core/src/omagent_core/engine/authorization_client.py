@@ -1,26 +1,32 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
-from omagent_core.engine.orkes.models.metadata_tag import MetadataTag
-from omagent_core.engine.orkes.models.access_type import AccessType
-from omagent_core.engine.orkes.models.granted_permission import GrantedPermission
-from omagent_core.engine.orkes.models.access_key import AccessKey
-from omagent_core.engine.orkes.models.created_access_key import CreatedAccessKey
-from omagent_core.engine.http.models.group import Group
-from omagent_core.engine.http.models.target_ref import TargetRef
-from omagent_core.engine.http.models.subject_ref import SubjectRef
+
+from omagent_core.engine.http.models.conductor_application import \
+    ConductorApplication
 from omagent_core.engine.http.models.conductor_user import ConductorUser
-from omagent_core.engine.http.models.conductor_application import ConductorApplication
-from omagent_core.engine.http.models.upsert_user_request import UpsertUserRequest
-from omagent_core.engine.http.models.upsert_group_request import UpsertGroupRequest
-from omagent_core.engine.http.models.create_or_update_application_request import CreateOrUpdateApplicationRequest
+from omagent_core.engine.http.models.create_or_update_application_request import \
+    CreateOrUpdateApplicationRequest
+from omagent_core.engine.http.models.group import Group
+from omagent_core.engine.http.models.subject_ref import SubjectRef
+from omagent_core.engine.http.models.target_ref import TargetRef
+from omagent_core.engine.http.models.upsert_group_request import \
+    UpsertGroupRequest
+from omagent_core.engine.http.models.upsert_user_request import \
+    UpsertUserRequest
+from omagent_core.engine.orkes.models.access_key import AccessKey
+from omagent_core.engine.orkes.models.access_type import AccessType
+from omagent_core.engine.orkes.models.created_access_key import \
+    CreatedAccessKey
+from omagent_core.engine.orkes.models.granted_permission import \
+    GrantedPermission
+from omagent_core.engine.orkes.models.metadata_tag import MetadataTag
 
 
 class AuthorizationClient(ABC):
     # Applications
     @abstractmethod
     def create_application(
-            self,
-            create_or_update_application_request: CreateOrUpdateApplicationRequest
+        self, create_or_update_application_request: CreateOrUpdateApplicationRequest
     ) -> ConductorApplication:
         pass
 
@@ -34,9 +40,9 @@ class AuthorizationClient(ABC):
 
     @abstractmethod
     def update_application(
-            self,
-            create_or_update_application_request: CreateOrUpdateApplicationRequest,
-            application_id: str
+        self,
+        create_or_update_application_request: CreateOrUpdateApplicationRequest,
+        application_id: str,
     ) -> ConductorApplication:
         pass
 
@@ -82,7 +88,9 @@ class AuthorizationClient(ABC):
 
     # Users
     @abstractmethod
-    def upsert_user(self, upsert_user_request: UpsertUserRequest, user_id: str) -> ConductorUser:
+    def upsert_user(
+        self, upsert_user_request: UpsertUserRequest, user_id: str
+    ) -> ConductorUser:
         pass
 
     @abstractmethod
@@ -99,7 +107,9 @@ class AuthorizationClient(ABC):
 
     # Groups
     @abstractmethod
-    def upsert_group(self, upsert_group_request: UpsertGroupRequest, group_id: str) -> Group:
+    def upsert_group(
+        self, upsert_group_request: UpsertGroupRequest, group_id: str
+    ) -> Group:
         pass
 
     @abstractmethod
@@ -128,7 +138,9 @@ class AuthorizationClient(ABC):
 
     # Permissions
     @abstractmethod
-    def grant_permissions(self, subject: SubjectRef, target: TargetRef, access: List[AccessType]):
+    def grant_permissions(
+        self, subject: SubjectRef, target: TargetRef, access: List[AccessType]
+    ):
         pass
 
     @abstractmethod
@@ -136,7 +148,9 @@ class AuthorizationClient(ABC):
         pass
 
     @abstractmethod
-    def get_granted_permissions_for_group(self, group_id: str) -> List[GrantedPermission]:
+    def get_granted_permissions_for_group(
+        self, group_id: str
+    ) -> List[GrantedPermission]:
         pass
 
     @abstractmethod
@@ -144,5 +158,7 @@ class AuthorizationClient(ABC):
         pass
 
     @abstractmethod
-    def remove_permissions(self, subject: SubjectRef, target: TargetRef, access: List[AccessType]):
+    def remove_permissions(
+        self, subject: SubjectRef, target: TargetRef, access: List[AccessType]
+    ):
         pass

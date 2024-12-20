@@ -5,11 +5,12 @@ from typing import List, Optional
 import cv2
 import face_recognition
 import numpy as np
-from ...base import ArgSchema, BaseModelTool
-from ....models.od.schemas import Target
-from ....utils.registry import registry
 from PIL import Image
 from pydantic import model_validator
+
+from ....models.od.schemas import Target
+from ....utils.registry import registry
+from ...base import ArgSchema, BaseModelTool
 
 ARGSCHEMA = {}
 
@@ -23,7 +24,7 @@ class FaceRecognition(BaseModelTool):
     )
     threshold: float = 0.6
     num_jitters: int = 1
-    face_db: str = 'data/face_db'
+    face_db: str = "data/face_db"
     model: str = "large"
     loaded_face_db: Optional[dict] = None
 

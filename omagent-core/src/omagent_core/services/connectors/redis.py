@@ -1,8 +1,11 @@
-from .base import ConnectorBase
-from redis import ConnectionPool, Redis
 from typing import Any, Optional
-from pydantic import Field
+
 from omagent_core.utils.registry import registry
+from pydantic import Field
+from redis import ConnectionPool, Redis
+
+from .base import ConnectorBase
+
 
 @registry.register_connector()
 class RedisConnector(ConnectorBase):
@@ -19,11 +22,10 @@ class RedisConnector(ConnectorBase):
             password=self.password,
             username=self.username,
             db=self.db,
-            decode_responses=False
+            decode_responses=False,
         )
         self._client = Redis(connection_pool=pool)
 
     def check_connection(self) -> bool:
         """Check if Redis connection is valid by executing a simple ping command"""
         self._client.ping()
-

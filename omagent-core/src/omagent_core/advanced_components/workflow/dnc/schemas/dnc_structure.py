@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -27,11 +28,7 @@ class TaskTree(BaseModel):
 
     def add_node(self, task: dict, parent_id: Optional[int] = None) -> TaskNode:
         """添加单个节点到树中"""
-        node = TaskNode(
-            id=self.next_id,
-            parent_id=parent_id,
-            **task
-        )
+        node = TaskNode(id=self.next_id, parent_id=parent_id, **task)
         self.nodes[node.id] = node
         self.next_id += 1
         return node
@@ -40,7 +37,7 @@ class TaskTree(BaseModel):
         """为指定节点添加子任务"""
         if parent_id not in self.nodes:
             raise ValueError(f"Parent node {parent_id} not found")
-        
+
         added_nodes = []
         for subtask in subtasks:
             node = self.add_node(subtask, parent_id=parent_id)
@@ -65,7 +62,11 @@ class TaskTree(BaseModel):
             return []
         if node.parent_id is None:
             return []
-        return [n for n in self.nodes.values() if n.parent_id == node.parent_id and n.id != node_id]
+        return [
+            n
+            for n in self.nodes.values()
+            if n.parent_id == node.parent_id and n.id != node_id
+        ]
 
     def get_next_sibling(self, node_id: int) -> Optional[TaskNode]:
         """获取下一个兄弟节点"""
@@ -112,22 +113,26 @@ class TaskTree(BaseModel):
         else:
             raise ValueError(f"Node {node_id} not found")
 
+
 if __name__ == "__main__":
     import json
+
     # 测试代码
     tree = TaskTree()
-    
+
     # 添加根任务
-    root = tree.add_node({"task": "search hangzhou weather tomorrow and save the result into a file"})
-    
+    root = tree.add_node(
+        {"task": "search hangzhou weather tomorrow and save the result into a file"}
+    )
+
     # 添加子任务
     subtasks = [
         {"task": "search hangzhou weather tomorrow"},
         {"task": "analyze the weather data"},
-        {"task": "save the result into a file"}
+        {"task": "save the result into a file"},
     ]
     children = tree.add_subtasks(root.id, subtasks)
-    
+
     sub_task1 = tree.get_children(root.id)[1]
     sub_task0 = tree.get_previous_sibling(sub_task1.id)
     sub_task2 = tree.get_next_sibling(sub_task1.id)

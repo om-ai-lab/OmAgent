@@ -1,9 +1,10 @@
 import io
 from typing import Any, Optional
 
-from ...base import BotBase
 from openai import NOT_GIVEN, AsyncOpenAI, OpenAI
 from pydub import AudioSegment
+
+from ...base import BotBase
 
 
 class STT(BotBase):

@@ -3,17 +3,18 @@ import re
 from pathlib import Path
 from typing import List
 
-from omagent_core.models.llms.base import BaseLLMBackend
-from omagent_core.engine.worker.base import BaseWorker
-
-from omagent_core.models.llms.prompt import PromptTemplate
-from omagent_core.memories.ltms.ltm import LTM
-from omagent_core.utils.registry import registry
-from omagent_core.models.encoders.openai_encoder import OpenaiTextEmbeddingV3
-from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import TaskTree
-from pydantic import Field
-from ..misc.scene import VideoScenes
 import json_repair
+from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import \
+    TaskTree
+from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.memories.ltms.ltm import LTM
+from omagent_core.models.encoders.openai_encoder import OpenaiTextEmbeddingV3
+from omagent_core.models.llms.base import BaseLLMBackend
+from omagent_core.models.llms.prompt import PromptTemplate
+from omagent_core.utils.registry import registry
+from pydantic import Field
+
+from ..misc.scene import VideoScenes
 
 CURRENT_PATH = root_path = Path(__file__).parents[0]
 
@@ -33,9 +34,12 @@ class VideoQA(BaseWorker, BaseLLMBackend):
     text_encoder: OpenaiTextEmbeddingV3
 
     def _run(self, video_md5: str, video_path: str, instance_id: str, *args, **kwargs):
-        self.stm(self.workflow_instance_id)['image_cache'] = {}
-        self.stm(self.workflow_instance_id)['former_results'] = {}
-        question = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt="Please input your question:")['messages'][0]['content'][0]['data']
+        self.stm(self.workflow_instance_id)["image_cache"] = {}
+        self.stm(self.workflow_instance_id)["former_results"] = {}
+        question = self.input.read_input(
+            workflow_instance_id=self.workflow_instance_id,
+            input_prompt="Please input your question:",
+        )["messages"][0]["content"][0]["data"]
         chat_complete_res = self.simple_infer(question=question)
         content = chat_complete_res["choices"][0]["message"]["content"]
         content = json_repair.loads(content)
@@ -62,11 +66,13 @@ class VideoQA(BaseWorker, BaseLLMBackend):
             f"Time span: {each['start_time']} - {each['end_time']}\n{each['content']}"
             for _, each in related_information
         ]
-        video = VideoScenes.from_serializable(self.stm(self.workflow_instance_id)['video'])
-        self.stm(self.workflow_instance_id)['extra'] = {
-                "video_information": "video is already loaded in the short-term memory(stm).",
-                "video_duration_seconds(s)": video.stream.duration.get_seconds(),
-                "frame_rate": video.stream.frame_rate,
-                "video_summary": "\n---\n".join(related_information),
-            }
-        return {"query": question, 'last_output': None}
+        video = VideoScenes.from_serializable(
+            self.stm(self.workflow_instance_id)["video"]
+        )
+        self.stm(self.workflow_instance_id)["extra"] = {
+            "video_information": "video is already loaded in the short-term memory(stm).",
+            "video_duration_seconds(s)": video.stream.duration.get_seconds(),
+            "frame_rate": video.stream.frame_rate,
+            "video_summary": "\n---\n".join(related_information),
+        }
+        return {"query": question, "last_output": None}

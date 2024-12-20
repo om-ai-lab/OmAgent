@@ -9,6 +9,7 @@ class EventHandler(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,25 +18,32 @@ class EventHandler(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'name': 'str',
-        'event': 'str',
-        'condition': 'str',
-        'actions': 'list[Action]',
-        'active': 'bool',
-        'evaluator_type': 'str'
+        "name": "str",
+        "event": "str",
+        "condition": "str",
+        "actions": "list[Action]",
+        "active": "bool",
+        "evaluator_type": "str",
     }
 
     attribute_map = {
-        'name': 'name',
-        'event': 'event',
-        'condition': 'condition',
-        'actions': 'actions',
-        'active': 'active',
-        'evaluator_type': 'evaluatorType'
+        "name": "name",
+        "event": "event",
+        "condition": "condition",
+        "actions": "actions",
+        "active": "active",
+        "evaluator_type": "evaluatorType",
     }
 
-    def __init__(self, name=None, event=None, condition=None, actions=None, active=None,
-                 evaluator_type=None):  # noqa: E501
+    def __init__(
+        self,
+        name=None,
+        event=None,
+        condition=None,
+        actions=None,
+        active=None,
+        evaluator_type=None,
+    ):  # noqa: E501
         """EventHandler - a model defined in Swagger"""  # noqa: E501
         self._name = None
         self._event = None
@@ -184,18 +192,22 @@ class EventHandler(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(EventHandler, dict):

@@ -1,10 +1,18 @@
 import importlib
-from pathlib import Path
-from typing import List, Callable, Any, Dict
 from functools import partial
+from pathlib import Path
+from typing import Any, Callable, Dict, List
 
-
-CATEGORIES = ["prompt", "llm", "node", "worker", "tool", "encoder", "connector", "component"]
+CATEGORIES = [
+    "prompt",
+    "llm",
+    "node",
+    "worker",
+    "tool",
+    "encoder",
+    "connector",
+    "component",
+]
 
 
 class Registry:
@@ -73,9 +81,9 @@ class Registry:
         """
         return self._get(category, name)
 
-    def import_module(self, project_path: List[str]|str = None):
+    def import_module(self, project_path: List[str] | str = None):
         """Import modules from default paths and optional project paths.
-        
+
         Args:
             project_path: Optional path or list of paths to import modules from
         """
@@ -89,10 +97,10 @@ class Registry:
             root_path.joinpath("advanced_components"),
             root_path.joinpath("clients"),
         ]
-                
+
         for path in default_path:
             for module in path.rglob("*.[ps][yo]"):
-                if module.name == 'workflow.py':
+                if module.name == "workflow.py":
                     continue
                 module = str(module)
                 if "__init__" in module or "base.py" in module or "entry.py" in module:
@@ -106,7 +114,7 @@ class Registry:
         if project_path:
             if isinstance(project_path, (str, Path)):
                 project_path = [project_path]
-            
+
             for path in project_path:
                 path = Path(path).absolute()
                 project_root = path.parent

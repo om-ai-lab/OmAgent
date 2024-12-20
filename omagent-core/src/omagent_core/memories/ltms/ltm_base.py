@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Tuple
+
 from omagent_core.base import BotBase
+
 
 class LTMBase(BotBase):
     @abstractmethod

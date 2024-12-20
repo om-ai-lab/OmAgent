@@ -1,25 +1,21 @@
 import json
 import re
 from pathlib import Path
-from typing import List, Tuple, Any
+from typing import Any, List, Tuple
 
-from pydantic import Field
-from tenacity import (
-    retry,
-    retry_if_exception_message,
-    stop_after_attempt,
-    stop_after_delay,
-)
-
+import json_repair
+from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import \
+    TaskTree
+from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.memories.ltms.ltm import LTM
-from omagent_core.utils.env import EnvVar
-from omagent_core.utils.registry import registry
 from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
 from omagent_core.tool_system.manager import ToolManager
-from omagent_core.engine.worker.base import BaseWorker
-from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import TaskTree
-import json_repair
+from omagent_core.utils.env import EnvVar
+from omagent_core.utils.registry import registry
+from pydantic import Field
+from tenacity import (retry, retry_if_exception_message, stop_after_attempt,
+                      stop_after_delay)
 
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -40,7 +36,7 @@ class TaskExitMonitor(BaseWorker):
         The monitor is responsible for:
         1. Checking if current task failed -> exit loop
         2. If current task has children -> move to first child
-        3. If current task has next sibling -> move to next sibling 
+        3. If current task has next sibling -> move to next sibling
         4. If at root with no siblings -> exit loop
         5. If parent has no next sibling -> exit loop
         6. Otherwise -> move to parent's next sibling
@@ -55,35 +51,61 @@ class TaskExitMonitor(BaseWorker):
             dict: Contains updated task tree, exit flag, and last output
         """
         stm_data = self.stm(self.workflow_instance_id)
-        stm_dnc_structure = stm_data.get('dnc_structure', None)
-        stm_last_output = stm_data.get('last_output', None)
+        stm_dnc_structure = stm_data.get("dnc_structure", None)
+        stm_last_output = stm_data.get("last_output", None)
         task = TaskTree(**stm_dnc_structure)
         current_node = task.get_current_node()
         if current_node.status == "failed":
-            self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
-            self.stm(self.workflow_instance_id)['last_output'] = stm_last_output
-            return {"dnc_structure": task.model_dump(), "exit_flag": True, "last_output": stm_last_output}
+            self.stm(self.workflow_instance_id)["dnc_structure"] = task.model_dump()
+            self.stm(self.workflow_instance_id)["last_output"] = stm_last_output
+            return {
+                "dnc_structure": task.model_dump(),
+                "exit_flag": True,
+                "last_output": stm_last_output,
+            }
         elif task.get_children(current_node.id) != []:
             task.set_cursor(task.get_children(current_node.id)[0].id)
-            self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
-            self.stm(self.workflow_instance_id)['last_output'] = stm_last_output
-            return {"dnc_structure": task.model_dump(), "exit_flag": False, "last_output": stm_last_output}
+            self.stm(self.workflow_instance_id)["dnc_structure"] = task.model_dump()
+            self.stm(self.workflow_instance_id)["last_output"] = stm_last_output
+            return {
+                "dnc_structure": task.model_dump(),
+                "exit_flag": False,
+                "last_output": stm_last_output,
+            }
         elif task.get_next_sibling(current_node.id) is not None:
             task.set_cursor(task.get_next_sibling(current_node.id).id)
-            self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
-            self.stm(self.workflow_instance_id)['last_output'] = stm_last_output
-            return {"dnc_structure": task.model_dump(), "exit_flag": False, "last_output": stm_last_output}
+            self.stm(self.workflow_instance_id)["dnc_structure"] = task.model_dump()
+            self.stm(self.workflow_instance_id)["last_output"] = stm_last_output
+            return {
+                "dnc_structure": task.model_dump(),
+                "exit_flag": False,
+                "last_output": stm_last_output,
+            }
         else:
             if task.get_parent(current_node.id) is None:
-                self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
-                self.stm(self.workflow_instance_id)['last_output'] = stm_last_output
-                return {"dnc_structure": task.model_dump(), "exit_flag": True, "last_output": stm_last_output}
+                self.stm(self.workflow_instance_id)["dnc_structure"] = task.model_dump()
+                self.stm(self.workflow_instance_id)["last_output"] = stm_last_output
+                return {
+                    "dnc_structure": task.model_dump(),
+                    "exit_flag": True,
+                    "last_output": stm_last_output,
+                }
             elif task.get_next_sibling(task.get_parent(current_node.id).id) is None:
-                self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
-                self.stm(self.workflow_instance_id)['last_output'] = stm_last_output
-                return {"dnc_structure": task.model_dump(), "exit_flag": True, "last_output": stm_last_output}
+                self.stm(self.workflow_instance_id)["dnc_structure"] = task.model_dump()
+                self.stm(self.workflow_instance_id)["last_output"] = stm_last_output
+                return {
+                    "dnc_structure": task.model_dump(),
+                    "exit_flag": True,
+                    "last_output": stm_last_output,
+                }
             else:
-                task.set_cursor(task.get_next_sibling(task.get_parent(current_node.id).id).id)
-                self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
-                self.stm(self.workflow_instance_id)['last_output'] = stm_last_output
-                return {"dnc_structure": task.model_dump(), "exit_flag": False, "last_output": stm_last_output}
+                task.set_cursor(
+                    task.get_next_sibling(task.get_parent(current_node.id).id).id
+                )
+                self.stm(self.workflow_instance_id)["dnc_structure"] = task.model_dump()
+                self.stm(self.workflow_instance_id)["last_output"] = stm_last_output
+                return {
+                    "dnc_structure": task.model_dump(),
+                    "exit_flag": False,
+                    "last_output": stm_last_output,
+                }

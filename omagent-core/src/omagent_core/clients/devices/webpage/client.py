@@ -1,23 +1,23 @@
-from time import sleep
-import gradio as gr
+import html
 import json
-from omagent_core.clients.devices.app.schemas import ContentStatus, MessageType
-from omagent_core.utils.container import container
-from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
-from omagent_core.utils.build import build_from_file
-from omagent_core.engine.automator.task_handler import TaskHandler
+from time import sleep
+
+import gradio as gr
 from omagent_core.clients.devices.app.callback import AppCallback
 from omagent_core.clients.devices.app.input import AppInput
-from omagent_core.utils.container import container
-from omagent_core.utils.registry import registry
-from omagent_core.services.connectors.redis import RedisConnector
-from omagent_core.utils.logger import logging
+from omagent_core.clients.devices.app.schemas import ContentStatus, MessageType
+from omagent_core.engine.automator.task_handler import TaskHandler
 from omagent_core.engine.http.models.workflow_status import terminal_status
-import html
+from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
+from omagent_core.services.connectors.redis import RedisConnector
+from omagent_core.utils.build import build_from_file
+from omagent_core.utils.container import container
+from omagent_core.utils.logger import logging
+from omagent_core.utils.registry import registry
 
 registry.import_module()
 
-container.register_connector(name='redis_stream_client', connector=RedisConnector)
+container.register_connector(name="redis_stream_client", connector=RedisConnector)
 # container.register_stm(stm='RedisSTM')
 container.register_callback(callback=AppCallback)
 container.register_input(input=AppInput)
@@ -68,18 +68,20 @@ class WebpageClient:
                 box-shadow: none !important;
             }
         """
-        
+
     def start_interactor(self):
         worker_config = build_from_file(self._config_path)
-        self._task_handler_interactor = TaskHandler(worker_config=worker_config, workers=self._workers)
+        self._task_handler_interactor = TaskHandler(
+            worker_config=worker_config, workers=self._workers
+        )
         self._task_handler_interactor.start_processes()
         try:
             with gr.Blocks(title="OmAgent", css=self._custom_css) as chat_interface:
                 chatbot = gr.Chatbot(
-                    elem_id="OmAgent", 
-                    bubble_full_width=False, 
+                    elem_id="OmAgent",
+                    bubble_full_width=False,
                     type="messages",
-                    height="100%"
+                    height="100%",
                 )
 
                 chat_input = gr.MultimodalTextbox(
@@ -92,30 +94,38 @@ class WebpageClient:
                 chat_msg = chat_input.submit(
                     self.add_message, [chatbot, chat_input], [chatbot, chat_input]
                 )
-                bot_msg = chat_msg.then(self.bot, chatbot, chatbot, api_name="bot_response")
-                bot_msg.then(lambda: gr.MultimodalTextbox(interactive=True), None, [chat_input])
+                bot_msg = chat_msg.then(
+                    self.bot, chatbot, chatbot, api_name="bot_response"
+                )
+                bot_msg.then(
+                    lambda: gr.MultimodalTextbox(interactive=True), None, [chat_input]
+                )
             chat_interface.launch()
         except KeyboardInterrupt:
             logging.info("\nDetected Ctrl+C, stopping workflow...")
             if self._workflow_instance_id is not None:
-                self._interactor._executor.terminate(workflow_id=self._workflow_instance_id)
+                self._interactor._executor.terminate(
+                    workflow_id=self._workflow_instance_id
+                )
             raise
 
     def stop_interactor(self):
         self._task_handler_interactor.stop_processes()
-        
+
     def start_processor(self):
         worker_config = build_from_file(self._config_path)
-        self._task_handler_processor = TaskHandler(worker_config=worker_config, workers=self._workers)
+        self._task_handler_processor = TaskHandler(
+            worker_config=worker_config, workers=self._workers
+        )
         self._task_handler_processor.start_processes()
 
         try:
             with gr.Blocks(title="OmAgent", css=self._custom_css) as chat_interface:
                 chatbot = gr.Chatbot(
-                    elem_id="OmAgent", 
-                    bubble_full_width=False, 
+                    elem_id="OmAgent",
+                    bubble_full_width=False,
                     type="messages",
-                    height="100%"
+                    height="100%",
                 )
 
                 chat_input = gr.MultimodalTextbox(
@@ -126,15 +136,23 @@ class WebpageClient:
                 )
 
                 chat_msg = chat_input.submit(
-                    self.add_processor_message, [chatbot, chat_input], [chatbot, chat_input]
+                    self.add_processor_message,
+                    [chatbot, chat_input],
+                    [chatbot, chat_input],
                 )
-                bot_msg = chat_msg.then(self.processor_bot, chatbot, chatbot, api_name="bot_response")
-                bot_msg.then(lambda: gr.MultimodalTextbox(interactive=True), None, [chat_input])
+                bot_msg = chat_msg.then(
+                    self.processor_bot, chatbot, chatbot, api_name="bot_response"
+                )
+                bot_msg.then(
+                    lambda: gr.MultimodalTextbox(interactive=True), None, [chat_input]
+                )
             chat_interface.launch(server_port=7861)
         except KeyboardInterrupt:
             logging.info("\nDetected Ctrl+C, stopping workflow...")
             if self._workflow_instance_id is not None:
-                self._processor._executor.terminate(workflow_id=self._workflow_instance_id)
+                self._processor._executor.terminate(
+                    workflow_id=self._workflow_instance_id
+                )
             raise
 
     def stop_processor(self):
@@ -142,44 +160,44 @@ class WebpageClient:
 
     def add_message(self, history, message):
         if self._workflow_instance_id is None:
-            self._workflow_instance_id = self._interactor.start_workflow_with_input(workflow_input={})
+            self._workflow_instance_id = self._interactor.start_workflow_with_input(
+                workflow_input={}
+            )
         contents = []
         for x in message["files"]:
             history.append({"role": "user", "content": {"path": x}})
-            contents.append({"type": "image_url","data": x})
+            contents.append({"type": "image_url", "data": x})
         if message["text"] is not None:
             history.append({"role": "user", "content": message["text"]})
-            contents.append({"type": "text","data": message["text"]})
+            contents.append({"type": "text", "data": message["text"]})
         result = {
             "agent_id": self._workflow_instance_id,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": contents
-                }
-            ],
-            "kwargs": {}    
+            "messages": [{"role": "user", "content": contents}],
+            "kwargs": {},
         }
-        container.get_connector('redis_stream_client')._client.xadd(f"{self._workflow_instance_id}_input", {"payload":json.dumps(result, ensure_ascii=False) })
+        container.get_connector("redis_stream_client")._client.xadd(
+            f"{self._workflow_instance_id}_input",
+            {"payload": json.dumps(result, ensure_ascii=False)},
+        )
         return history, gr.MultimodalTextbox(value=None, interactive=False)
-    
+
     def add_processor_message(self, history, message):
         if self._workflow_instance_id is None:
-            self._workflow_instance_id = self._processor.start_workflow_with_input(workflow_input={})
+            self._workflow_instance_id = self._processor.start_workflow_with_input(
+                workflow_input={}
+            )
         image_items = []
         for idx, x in enumerate(message["files"]):
             history.append({"role": "user", "content": {"path": x}})
-            image_items.append({
-                "type": "image_url",
-                "resource_id": str(idx),
-                "data": str(x)
-            })
-        result = {
-            "content": image_items
-        }
-        container.get_connector('redis_stream_client')._client.xadd(f"image_process", {"payload":json.dumps(result, ensure_ascii=False) })
+            image_items.append(
+                {"type": "image_url", "resource_id": str(idx), "data": str(x)}
+            )
+        result = {"content": image_items}
+        container.get_connector("redis_stream_client")._client.xadd(
+            f"image_process", {"payload": json.dumps(result, ensure_ascii=False)}
+        )
         return history, gr.MultimodalTextbox(value=None, interactive=False)
-    
+
     def bot(self, history: list):
         stream_name = f"{self._workflow_instance_id}_output"
         consumer_name = f"{self._workflow_instance_id}_agent"  # consumer name
@@ -187,9 +205,11 @@ class WebpageClient:
         running_stream_name = f"{self._workflow_instance_id}_running"
         self._check_redis_stream_exist(stream_name, group_name)
         self._check_redis_stream_exist(running_stream_name, group_name)
-        while True: 
+        while True:
             # read running stream
-            running_messages = self._get_redis_stream_message(group_name, consumer_name, running_stream_name)
+            running_messages = self._get_redis_stream_message(
+                group_name, consumer_name, running_stream_name
+            )
             for stream, message_list in running_messages:
                 for message_id, message in message_list:
                     payload_data = self._get_message_payload(message)
@@ -197,15 +217,19 @@ class WebpageClient:
                         continue
                     progress = html.escape(payload_data.get("progress", ""))
                     message = html.escape(payload_data.get("message", ""))
-                    formatted_message = f'<pre class="running-message">{progress}: {message}</pre>'
+                    formatted_message = (
+                        f'<pre class="running-message">{progress}: {message}</pre>'
+                    )
                     history.append({"role": "assistant", "content": formatted_message})
                     yield history
 
-                    container.get_connector('redis_stream_client')._client.xack(
+                    container.get_connector("redis_stream_client")._client.xack(
                         running_stream_name, group_name, message_id
                     )
             # read output stream
-            messages = self._get_redis_stream_message(group_name, consumer_name, stream_name)
+            messages = self._get_redis_stream_message(
+                group_name, consumer_name, stream_name
+            )
             finish_flag = False
 
             for stream, message_list in messages:
@@ -218,35 +242,66 @@ class WebpageClient:
                         incomplete_flag = True
                     message_item = payload_data["message"]
                     if message_item["type"] == MessageType.IMAGE_URL.value:
-                        history.append({"role": "assistant", "content": {"path": message_item["content"]}})
+                        history.append(
+                            {
+                                "role": "assistant",
+                                "content": {"path": message_item["content"]},
+                            }
+                        )
                     else:
                         if incomplete_flag:
-                            self._incomplete_message = self._incomplete_message + message_item["content"]
+                            self._incomplete_message = (
+                                self._incomplete_message + message_item["content"]
+                            )
                             if history and history[-1]["role"] == "assistant":
                                 history[-1]["content"] = self._incomplete_message
                             else:
-                                history.append({"role": "assistant", "content": self._incomplete_message})
+                                history.append(
+                                    {
+                                        "role": "assistant",
+                                        "content": self._incomplete_message,
+                                    }
+                                )
                         else:
                             if self._incomplete_message != "":
-                                self._incomplete_message = self._incomplete_message + message_item["content"]
+                                self._incomplete_message = (
+                                    self._incomplete_message + message_item["content"]
+                                )
                                 if history and history[-1]["role"] == "assistant":
                                     history[-1]["content"] = self._incomplete_message
                                 else:
-                                    history.append({"role": "assistant", "content": self._incomplete_message})
+                                    history.append(
+                                        {
+                                            "role": "assistant",
+                                            "content": self._incomplete_message,
+                                        }
+                                    )
                                 self._incomplete_message = ""
                             else:
-                                history.append({"role": "assistant", "content": message_item["content"]})
-                    
+                                history.append(
+                                    {
+                                        "role": "assistant",
+                                        "content": message_item["content"],
+                                    }
+                                )
+
                     yield history
 
-                    container.get_connector('redis_stream_client')._client.xack(
+                    container.get_connector("redis_stream_client")._client.xack(
                         stream_name, group_name, message_id
                     )
-                    
+
                     # check finish flag
-                    if "interaction_type" in payload_data and payload_data["interaction_type"] == 1:
+                    if (
+                        "interaction_type" in payload_data
+                        and payload_data["interaction_type"] == 1
+                    ):
                         finish_flag = True
-                    if "content_status" in payload_data and payload_data["content_status"] == ContentStatus.END_ANSWER.value:
+                    if (
+                        "content_status" in payload_data
+                        and payload_data["content_status"]
+                        == ContentStatus.END_ANSWER.value
+                    ):
                         self._workflow_instance_id = None
                         finish_flag = True
 
@@ -258,7 +313,9 @@ class WebpageClient:
         history.append({"role": "assistant", "content": f"processing..."})
         yield history
         while True:
-            status = self._processor.get_workflow(workflow_id=self._workflow_instance_id).status
+            status = self._processor.get_workflow(
+                workflow_id=self._workflow_instance_id
+            ).status
             if status in terminal_status:
                 history.append({"role": "assistant", "content": f"completed"})
                 yield history
@@ -266,19 +323,33 @@ class WebpageClient:
                 break
             sleep(0.01)
 
-    def _get_redis_stream_message(self, group_name: str, consumer_name: str, stream_name: str):
-        messages = container.get_connector('redis_stream_client')._client.xreadgroup(
-                    group_name, consumer_name, {stream_name: ">"}, count=1
-                )
+    def _get_redis_stream_message(
+        self, group_name: str, consumer_name: str, stream_name: str
+    ):
+        messages = container.get_connector("redis_stream_client")._client.xreadgroup(
+            group_name, consumer_name, {stream_name: ">"}, count=1
+        )
         messages = [
-            (stream, [(message_id, {k.decode('utf-8'): v.decode('utf-8') for k, v in message.items()}) for message_id, message in message_list])
+            (
+                stream,
+                [
+                    (
+                        message_id,
+                        {
+                            k.decode("utf-8"): v.decode("utf-8")
+                            for k, v in message.items()
+                        },
+                    )
+                    for message_id, message in message_list
+                ],
+            )
             for stream, message_list in messages
         ]
         return messages
-    
+
     def _check_redis_stream_exist(self, stream_name: str, group_name: str):
         try:
-            container.get_connector('redis_stream_client')._client.xgroup_create(
+            container.get_connector("redis_stream_client")._client.xgroup_create(
                 stream_name, group_name, id="0", mkstream=True
             )
         except Exception as e:

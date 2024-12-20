@@ -5,11 +5,11 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from time import time
 
+from omagent_core.base import BotBase
 from pydantic import model_validator
 
 from ..utils.error import VQLError
 from ..utils.logger import logging
-from omagent_core.base import BotBase
 
 
 class CallbackBase(BotBase, ABC):
@@ -48,7 +48,7 @@ class CallbackBase(BotBase, ABC):
         pass
 
     def filter_special_symbols_in_msg(self, msg):
-        msg = re.sub(r'[-*#]', '', msg)
+        msg = re.sub(r"[-*#]", "", msg)
         return msg
 
     def remove_duplicates(self, sorted_list):
@@ -68,9 +68,7 @@ class CallbackBase(BotBase, ABC):
             [
                 each.frame.f_locals.get("self").__class__.__name__
                 for each in stack[2:]
-                if isinstance(
-                    each.frame.f_locals.get("self"), BotBase
-                )
+                if isinstance(each.frame.f_locals.get("self"), BotBase)
             ]
         )
         for frame_info in stack[2:]:

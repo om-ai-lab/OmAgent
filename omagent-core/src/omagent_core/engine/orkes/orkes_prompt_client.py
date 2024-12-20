@@ -5,12 +5,12 @@ from typing import List
 
 from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.http.models.prompt_template import PromptTemplate
-from omagent_core.engine.http.models.prompt_test_request import PromptTemplateTestRequest
+from omagent_core.engine.http.models.prompt_test_request import \
+    PromptTemplateTestRequest
 from omagent_core.engine.http.rest import ApiException
 from omagent_core.engine.orkes.models.metadata_tag import MetadataTag
 from omagent_core.engine.orkes.orkes_base_client import OrkesBaseClient
 from omagent_core.engine.prompt_client import PromptClient
-
 
 # python 2 and python 3 compatibility library
 
@@ -46,8 +46,16 @@ class OrkesPromptClient(OrkesBaseClient, PromptClient):
     def delete_tag_for_prompt_template(self, prompt_name: str, tags: List[MetadataTag]):
         self.promptApi.delete_tag_for_prompt_template(tags, prompt_name)
 
-    def test_prompt(self, prompt_text: str, variables: dict, ai_integration: str, text_complete_model: str,
-                    temperature: float = 0.1, top_p: float = 0.9, stop_words: List[str] = None) -> str:
+    def test_prompt(
+        self,
+        prompt_text: str,
+        variables: dict,
+        ai_integration: str,
+        text_complete_model: str,
+        temperature: float = 0.1,
+        top_p: float = 0.9,
+        stop_words: List[str] = None,
+    ) -> str:
         request = PromptTemplateTestRequest()
         request.prompt = prompt_text
         request.llm_provider = ai_integration

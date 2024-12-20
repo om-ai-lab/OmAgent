@@ -9,6 +9,7 @@ class WorkflowSummary(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,56 +18,74 @@ class WorkflowSummary(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'workflow_type': 'str',
-        'version': 'int',
-        'workflow_id': 'str',
-        'correlation_id': 'str',
-        'start_time': 'str',
-        'update_time': 'str',
-        'end_time': 'str',
-        'status': 'str',
-        'input': 'str',
-        'output': 'str',
-        'reason_for_incompletion': 'str',
-        'execution_time': 'int',
-        'event': 'str',
-        'failed_reference_task_names': 'str',
-        'external_input_payload_storage_path': 'str',
-        'external_output_payload_storage_path': 'str',
-        'priority': 'int',
-        'created_by': 'str',
-        'output_size': 'int',
-        'input_size': 'int'
+        "workflow_type": "str",
+        "version": "int",
+        "workflow_id": "str",
+        "correlation_id": "str",
+        "start_time": "str",
+        "update_time": "str",
+        "end_time": "str",
+        "status": "str",
+        "input": "str",
+        "output": "str",
+        "reason_for_incompletion": "str",
+        "execution_time": "int",
+        "event": "str",
+        "failed_reference_task_names": "str",
+        "external_input_payload_storage_path": "str",
+        "external_output_payload_storage_path": "str",
+        "priority": "int",
+        "created_by": "str",
+        "output_size": "int",
+        "input_size": "int",
     }
 
     attribute_map = {
-        'workflow_type': 'workflowType',
-        'version': 'version',
-        'workflow_id': 'workflowId',
-        'correlation_id': 'correlationId',
-        'start_time': 'startTime',
-        'update_time': 'updateTime',
-        'end_time': 'endTime',
-        'status': 'status',
-        'input': 'input',
-        'output': 'output',
-        'reason_for_incompletion': 'reasonForIncompletion',
-        'execution_time': 'executionTime',
-        'event': 'event',
-        'failed_reference_task_names': 'failedReferenceTaskNames',
-        'external_input_payload_storage_path': 'externalInputPayloadStoragePath',
-        'external_output_payload_storage_path': 'externalOutputPayloadStoragePath',
-        'priority': 'priority',
-        'created_by': 'createdBy',
-        'output_size': 'outputSize',
-        'input_size': 'inputSize'
+        "workflow_type": "workflowType",
+        "version": "version",
+        "workflow_id": "workflowId",
+        "correlation_id": "correlationId",
+        "start_time": "startTime",
+        "update_time": "updateTime",
+        "end_time": "endTime",
+        "status": "status",
+        "input": "input",
+        "output": "output",
+        "reason_for_incompletion": "reasonForIncompletion",
+        "execution_time": "executionTime",
+        "event": "event",
+        "failed_reference_task_names": "failedReferenceTaskNames",
+        "external_input_payload_storage_path": "externalInputPayloadStoragePath",
+        "external_output_payload_storage_path": "externalOutputPayloadStoragePath",
+        "priority": "priority",
+        "created_by": "createdBy",
+        "output_size": "outputSize",
+        "input_size": "inputSize",
     }
 
-    def __init__(self, workflow_type=None, version=None, workflow_id=None, correlation_id=None, start_time=None,
-                 update_time=None, end_time=None, status=None, input=None, output=None, reason_for_incompletion=None,
-                 execution_time=None, event=None, failed_reference_task_names=None,
-                 external_input_payload_storage_path=None, external_output_payload_storage_path=None, priority=None,
-                 created_by=None, output_size=None, input_size=None):  # noqa: E501
+    def __init__(
+        self,
+        workflow_type=None,
+        version=None,
+        workflow_id=None,
+        correlation_id=None,
+        start_time=None,
+        update_time=None,
+        end_time=None,
+        status=None,
+        input=None,
+        output=None,
+        reason_for_incompletion=None,
+        execution_time=None,
+        event=None,
+        failed_reference_task_names=None,
+        external_input_payload_storage_path=None,
+        external_output_payload_storage_path=None,
+        priority=None,
+        created_by=None,
+        output_size=None,
+        input_size=None,
+    ):  # noqa: E501
         """WorkflowSummary - a model defined in Swagger"""  # noqa: E501
         self._workflow_type = None
         self._version = None
@@ -118,9 +137,13 @@ class WorkflowSummary(object):
         if failed_reference_task_names is not None:
             self.failed_reference_task_names = failed_reference_task_names
         if external_input_payload_storage_path is not None:
-            self.external_input_payload_storage_path = external_input_payload_storage_path
+            self.external_input_payload_storage_path = (
+                external_input_payload_storage_path
+            )
         if external_output_payload_storage_path is not None:
-            self.external_output_payload_storage_path = external_output_payload_storage_path
+            self.external_output_payload_storage_path = (
+                external_output_payload_storage_path
+            )
         if priority is not None:
             self.priority = priority
         if created_by is not None:
@@ -295,11 +318,19 @@ class WorkflowSummary(object):
         :param status: The status of this WorkflowSummary.  # noqa: E501
         :type: str
         """
-        allowed_values = ["RUNNING", "COMPLETED", "FAILED", "TIMED_OUT", "TERMINATED", "PAUSED"]  # noqa: E501
+        allowed_values = [
+            "RUNNING",
+            "COMPLETED",
+            "FAILED",
+            "TIMED_OUT",
+            "TERMINATED",
+            "PAUSED",
+        ]  # noqa: E501
         if status not in allowed_values:
             raise ValueError(
-                "Invalid value for `status` ({0}), must be one of {1}"  # noqa: E501
-                .format(status, allowed_values)
+                "Invalid value for `status` ({0}), must be one of {1}".format(  # noqa: E501
+                    status, allowed_values
+                )
             )
 
         self._status = status
@@ -462,7 +493,9 @@ class WorkflowSummary(object):
         return self._external_output_payload_storage_path
 
     @external_output_payload_storage_path.setter
-    def external_output_payload_storage_path(self, external_output_payload_storage_path):
+    def external_output_payload_storage_path(
+        self, external_output_payload_storage_path
+    ):
         """Sets the external_output_payload_storage_path of this WorkflowSummary.
 
 
@@ -470,7 +503,9 @@ class WorkflowSummary(object):
         :type: str
         """
 
-        self._external_output_payload_storage_path = external_output_payload_storage_path
+        self._external_output_payload_storage_path = (
+            external_output_payload_storage_path
+        )
 
     @property
     def priority(self):
@@ -563,18 +598,22 @@ class WorkflowSummary(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(WorkflowSummary, dict):

@@ -2,12 +2,11 @@ import pprint
 import re  # noqa: F401
 
 import six
-
 from omagent_core.engine.http.models import Task
 
-terminal_status = ('COMPLETED', 'FAILED', 'TIMED_OUT', 'TERMINATED')
-successful_status = ('PAUSED', 'COMPLETED')
-running_status = ('RUNNING', 'PAUSED')
+terminal_status = ("COMPLETED", "FAILED", "TIMED_OUT", "TERMINATED")
+successful_status = ("PAUSED", "COMPLETED")
+running_status = ("RUNNING", "PAUSED")
 
 
 class WorkflowRun(object):
@@ -15,6 +14,7 @@ class WorkflowRun(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -23,38 +23,51 @@ class WorkflowRun(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'correlation_id': 'str',
-        'create_time': 'int',
-        'created_by': 'str',
-        'input': 'dict(str, object)',
-        'output': 'dict(str, object)',
-        'priority': 'int',
-        'request_id': 'str',
-        'status': 'str',
-        'tasks': 'list[Task]',
-        'update_time': 'int',
-        'variables': 'dict(str, object)',
-        'workflow_id': 'str'
+        "correlation_id": "str",
+        "create_time": "int",
+        "created_by": "str",
+        "input": "dict(str, object)",
+        "output": "dict(str, object)",
+        "priority": "int",
+        "request_id": "str",
+        "status": "str",
+        "tasks": "list[Task]",
+        "update_time": "int",
+        "variables": "dict(str, object)",
+        "workflow_id": "str",
     }
 
     attribute_map = {
-        'correlation_id': 'correlationId',
-        'create_time': 'createTime',
-        'created_by': 'createdBy',
-        'input': 'input',
-        'output': 'output',
-        'priority': 'priority',
-        'request_id': 'requestId',
-        'status': 'status',
-        'tasks': 'tasks',
-        'update_time': 'updateTime',
-        'variables': 'variables',
-        'workflow_id': 'workflowId'
+        "correlation_id": "correlationId",
+        "create_time": "createTime",
+        "created_by": "createdBy",
+        "input": "input",
+        "output": "output",
+        "priority": "priority",
+        "request_id": "requestId",
+        "status": "status",
+        "tasks": "tasks",
+        "update_time": "updateTime",
+        "variables": "variables",
+        "workflow_id": "workflowId",
     }
 
-    def __init__(self, correlation_id=None, create_time=None, created_by=None, input=None, output=None, priority=None,
-                 request_id=None, status=None, tasks=None, update_time=None, variables=None, workflow_id=None,
-                 reason_for_incompletion: str = None):  # noqa: E501
+    def __init__(
+        self,
+        correlation_id=None,
+        create_time=None,
+        created_by=None,
+        input=None,
+        output=None,
+        priority=None,
+        request_id=None,
+        status=None,
+        tasks=None,
+        update_time=None,
+        variables=None,
+        workflow_id=None,
+        reason_for_incompletion: str = None,
+    ):  # noqa: E501
         """WorkflowRun - a model defined in Swagger"""  # noqa: E501
         self._correlation_id = None
         self._create_time = None
@@ -276,11 +289,19 @@ class WorkflowRun(object):
         :param status: The status of this WorkflowRun.  # noqa: E501
         :type: str
         """
-        allowed_values = ["RUNNING", "COMPLETED", "FAILED", "TIMED_OUT", "TERMINATED", "PAUSED"]  # noqa: E501
+        allowed_values = [
+            "RUNNING",
+            "COMPLETED",
+            "FAILED",
+            "TIMED_OUT",
+            "TERMINATED",
+            "PAUSED",
+        ]  # noqa: E501
         if status not in allowed_values:
             raise ValueError(
-                "Invalid value for `status` ({0}), must be one of {1}"  # noqa: E501
-                .format(status, allowed_values)
+                "Invalid value for `status` ({0}), must be one of {1}".format(  # noqa: E501
+                    status, allowed_values
+                )
             )
 
         self._status = status
@@ -317,13 +338,20 @@ class WorkflowRun(object):
 
     def get_task(self, name: str = None, task_reference_name: str = None) -> Task:
         if name is None and task_reference_name is None:
-            raise Exception('ONLY one of name or task_reference_name MUST be provided.  None were provided')
+            raise Exception(
+                "ONLY one of name or task_reference_name MUST be provided.  None were provided"
+            )
         if name is not None and not task_reference_name is None:
-            raise Exception('ONLY one of name or task_reference_name MUST be provided.  both were provided')
+            raise Exception(
+                "ONLY one of name or task_reference_name MUST be provided.  both were provided"
+            )
 
         current = None
         for task in self.tasks:
-            if task.task_def_name == name or task.workflow_task.task_reference_name == task_reference_name:
+            if (
+                task.task_def_name == name
+                or task.workflow_task.task_reference_name == task_reference_name
+            ):
                 current = task
         return current
 
@@ -397,18 +425,22 @@ class WorkflowRun(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(WorkflowRun, dict):
@@ -440,6 +472,6 @@ class WorkflowRun(object):
     def current_task(self) -> Task:
         current = None
         for task in self.tasks:
-            if task.status == 'SCHEDULED' or task.status == 'IN_PROGRESS':
+            if task.status == "SCHEDULED" or task.status == "IN_PROGRESS":
                 current = task
         return current

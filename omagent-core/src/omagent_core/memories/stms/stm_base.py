@@ -1,16 +1,18 @@
 from abc import ABC, abstractmethod
 from typing import Any
+
 from omagent_core.base import BotBase
+
 
 class STMBase(BotBase):
     @abstractmethod
     def __call__(self, workflow_instance_id: str):
         """
         Return a WorkflowInstanceProxy for the given workflow instance ID.
-        
+
         Args:
             workflow_instance_id (str): The ID of the workflow instance.
-            
+
         Returns:
             WorkflowInstanceProxy: A proxy object for accessing the workflow instance data.
         """
@@ -43,7 +45,7 @@ class STMBase(BotBase):
         """
         pass
 
-    @abstractmethod 
+    @abstractmethod
     def __delitem__(self, workflow_instance_id: str, key: str) -> None:
         """
         Delete an item from storage.

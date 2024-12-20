@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 from typing import List
 
+import json_repair
 from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.models.llms.prompt import PromptTemplate
 from omagent_core.tool_system.base import ArgSchema, BaseTool
@@ -10,9 +11,8 @@ from omagent_core.utils.logger import logging
 from omagent_core.utils.registry import registry
 from pydantic import Field
 from scenedetect import FrameTimecode
-import json_repair
-from ...misc.scene import VideoScenes
 
+from ...misc.scene import VideoScenes
 
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -54,14 +54,15 @@ class Rewinder(BaseTool, BaseLLMBackend):
         ]
     )
 
-
     def _run(
         self, start_time: float = 0.0, end_time: float = None, number: int = 1
     ) -> str:
         if self.stm(self.workflow_instance_id).get("video", None) is None:
             raise ValueError("No video is loaded.")
         else:
-            video: VideoScenes = VideoScenes.from_serializable(self.stm(self.workflow_instance_id)['video'])
+            video: VideoScenes = VideoScenes.from_serializable(
+                self.stm(self.workflow_instance_id)["video"]
+            )
         if number > 10:
             logging.warning("Number of frames exceeds 10. Will extract 10 frames.")
             number = 10
@@ -85,9 +86,11 @@ class Rewinder(BaseTool, BaseLLMBackend):
         for i, (frame, time_stamp) in enumerate(zip(frames, time_stamps)):
             payload.append(f"timestamp_{time_stamp}")
             payload.append(frame)
-        res = self.infer(input_list=[{"timestamp_with_images": payload}])[0]["choices"][0]["message"]["content"]
+        res = self.infer(input_list=[{"timestamp_with_images": payload}])[0]["choices"][
+            0
+        ]["message"]["content"]
         image_contents = json_repair.loads(res)
-        self.stm(self.workflow_instance_id)['image_cache'] = {}
+        self.stm(self.workflow_instance_id)["image_cache"] = {}
         return f"extracted_frames described as: {image_contents}."
 
     async def _arun(

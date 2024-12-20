@@ -6,13 +6,8 @@ from PIL import Image
 from pydantic import BaseModel
 from pydub import AudioSegment
 from pydub.effects import normalize
-from scenedetect import (
-    ContentDetector,
-    FrameTimecode,
-    SceneManager,
-    VideoStream,
-    open_video,
-)
+from scenedetect import (ContentDetector, FrameTimecode, SceneManager,
+                         VideoStream, open_video)
 
 
 class Scene(BaseModel):
