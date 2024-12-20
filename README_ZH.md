@@ -1,5 +1,5 @@
 <div>
-    <h1> <img src="docs/images/logo.png" height=30 align="texttop">OmAgent</h1>
+    <h1> <img src="docs/images/logo.png" height=40 align="top"> OmAgent</h1>
 </div>
 
 <p align="center">
