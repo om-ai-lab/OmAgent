@@ -69,6 +69,4 @@ class VideoQA(BaseWorker, BaseLLMBackend):
                 "frame_rate": video.stream.frame_rate,
                 "video_summary": "\n---\n".join(related_information),
             }
-        tree = TaskTree()
-        tree.add_node({"task": question})
-        return {"agent_task": tree.model_dump(), 'last_output': None}
+        return {"query": question, 'last_output': None}
