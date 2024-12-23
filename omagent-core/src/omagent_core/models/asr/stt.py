@@ -11,7 +11,7 @@ class STT(BotBase):
     model_id: str = "whisper-1"
     endpoint: Optional[str] = None
     api_key: str
-    lang: Optional[str] = None
+    language: Optional[str] = None
     response_format: str = "verbose_json"
 
     class Config:
@@ -39,7 +39,7 @@ class STT(BotBase):
             model=self.model_id,
             file=audio_bytes,
             response_format=self.response_format,
-            language=NOT_GIVEN if self.lang is None else self.lang,
+            language=NOT_GIVEN if self.language is None else self.language,
         )
         return trans.to_dict()
 
@@ -50,6 +50,6 @@ class STT(BotBase):
             model=self.model_id,
             file=audio_bytes,
             response_format=self.response_format,
-            language=NOT_GIVEN if self.lang is None else self.lang,
+            language=NOT_GIVEN if self.language is None else self.language,
         )
         return trans.to_dict()
