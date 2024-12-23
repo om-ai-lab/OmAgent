@@ -23,7 +23,7 @@ for i in range(3):
         "id": str(i), 
         "file_path": f"/path/to/test{i}.png"
     })
-programmatic_client.start_batch_processor(workflow_input_list=workflow_input_list)
+results = programmatic_client.start_batch_processor(workflow_input_list=workflow_input_list)
 programmatic_client.stop_processor()
 ```
 
@@ -35,11 +35,12 @@ Features:
 ### 2. start_processor_with_input
 Serial processing of individual tasks:
 ```python
-# Usage example
+# Usage example 
+results = []
 for i in range(3):
-    programmatic_client.start_processor_with_input(
+    results.append(programmatic_client.start_processor_with_input(
         workflow_input={"id": str(i), "file_path": f"/path/to/test{i}.png"}
-    )
+    ))
 programmatic_client.stop_processor()
 ```
 
@@ -60,7 +61,7 @@ class SimpleTest(BaseWorker):
         print("id:", id)
         print("file_path:", file_path)
         # do something
-
+        return {"id": id, "file_path": file_path}
 # Define task
 task1 = simple_task(
     task_def_name="SimpleTest",
