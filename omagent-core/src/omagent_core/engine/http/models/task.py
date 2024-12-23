@@ -2,7 +2,7 @@ import pprint
 import re  # noqa: F401
 
 import six
-from omagent_core.engine.http.models import WorkflowTask
+from omagent_core.engine.http.models.workflow_task import WorkflowTask
 from omagent_core.engine.http.models.task_result import TaskResult
 from omagent_core.engine.http.models.task_result_status import TaskResultStatus
 

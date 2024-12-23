@@ -5,7 +5,7 @@ from typing import List
 
 import six
 from omagent_core.engine.helpers.helper import ObjectMapper
-from omagent_core.engine.http.models import WorkflowTask
+from omagent_core.engine.http.models.workflow_task import WorkflowTask
 
 object_mapper = ObjectMapper()
 
