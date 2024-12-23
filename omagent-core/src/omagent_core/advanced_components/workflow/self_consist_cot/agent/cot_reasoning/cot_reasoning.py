@@ -36,7 +36,7 @@ class COTReasoning(BaseLLMBackend, BaseWorker):
 
         self.stm(self.workflow_instance_id)['reasoning_result'] = reason_path
 
-        self.callback.send_answer(self.workflow_instance_id, msg=reason_path)
+        self.callback.send_answer(self.workflow_instance_id, msg=",".join(reason_path))
 
 
 

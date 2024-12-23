@@ -4,12 +4,14 @@ from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()  # 加载.env文件中的变量
+
 from omagent_core.utils.registry import registry
 from omagent_core.clients.devices.app.client import AppClient
 from omagent_core.utils.logger import logging
 from agent.input_interface.input_interface import COTInputInterface  # Change to COTInputInterface
 from omagent_core.advanced_components.workflow.self_consist_cot.workflow import SelfConsistentWorkflow  # Change to SelfConsistentWorkflow
-from agent.conclude.conclude import Conclude
 logging.init_logger("omagent", "omagent", level="INFO")
 
 # Set current working directory path

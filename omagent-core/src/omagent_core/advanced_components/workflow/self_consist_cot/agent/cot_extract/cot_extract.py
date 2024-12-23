@@ -38,6 +38,6 @@ class COTExtract(BaseLLMBackend, BaseWorker):
         self.stm(self.workflow_instance_id)['final_answer'] = final_answer
 
 
-        self.callback.send_answer(self.workflow_instance_id, msg=final_answer)
+        self.callback.send_answer(self.workflow_instance_id, msg=",".join(final_answer))
 
         return {'final_answer': final_answer}
