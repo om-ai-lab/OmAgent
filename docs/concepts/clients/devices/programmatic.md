@@ -31,6 +31,10 @@ Features:
 - Supports multi-process parallel execution
 - Default of 5 processes per worker
 - Process count can be adjusted via the `concurrency` parameter in the worker configuration file
+- `max_tasks`: Specifies the maximum number of task processes that can be created. The default value is 10. This can be modified by passing the parameter when calling the method, for example:
+```python
+results = programmatic_client.start_batch_processor(workflow_input_list=workflow_input_list, max_tasks=100)
+```
 
 ### 2. start_processor_with_input
 Serial processing of individual tasks:

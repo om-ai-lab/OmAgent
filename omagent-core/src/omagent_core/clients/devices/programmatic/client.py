@@ -14,24 +14,14 @@ registry.import_module()
 class ProgrammaticClient:
     def __init__(
         self,
-        interactor: ConductorWorkflow = None,
         processor: ConductorWorkflow = None,
         config_path: str = "./config",
-        workers: list = [],
-        input_prompt: str = None,
+        workers: list = []
     ) -> None:
-        self._interactor = interactor
         self._processor = processor
         self._config_path = config_path
         self._workers = workers
-        self._input_prompt = input_prompt
         self._task_handler_processor = None
-
-    def start_interactor(self):
-        pass
-
-    def stop_interactor(self):
-        pass
 
     def start_processor(self):
         worker_config = build_from_file(self._config_path)
@@ -53,26 +43,35 @@ class ProgrammaticClient:
         except Exception as e:
             logging.error(f"Error in start_processor_with_input: {e}")
 
-    def start_batch_processor(self, workflow_input_list: list[dict]):
+    def start_batch_processor(self, workflow_input_list: list[dict], max_tasks: int = 10):
         results = []
         worker_config = build_from_file(self._config_path)
         self._task_handler_processor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_processor.start_processes()
         
         result_queue = multiprocessing.Queue()
-        processes = []
+        active_processes = []
         
         for workflow_input in workflow_input_list:
+            while len(active_processes) >= max_tasks:
+                for p in active_processes[:]:
+                    if not p.is_alive():
+                        p.join()
+                        active_processes.remove(p)
+                        if not result_queue.empty():
+                            results.append(result_queue.get())
+                sleep(0.1)
+            
             p = multiprocessing.Process(
                 target=self._process_workflow_with_queue, 
                 args=(self._processor, workflow_input, result_queue,)
             )
             p.start()
-            processes.append(p)
+            active_processes.append(p)
 
-        for p in processes:
+        for p in active_processes:
             p.join()
-
+        
         while not result_queue.empty():
             results.append(result_queue.get())
             
