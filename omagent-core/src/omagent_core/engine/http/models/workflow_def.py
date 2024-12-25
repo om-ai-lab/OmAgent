@@ -4,9 +4,8 @@ import re  # noqa: F401
 from typing import List
 
 import six
-
 from omagent_core.engine.helpers.helper import ObjectMapper
-from omagent_core.engine.http.models import WorkflowTask
+from omagent_core.engine.http.models.workflow_task import WorkflowTask
 
 object_mapper = ObjectMapper()
 
@@ -19,60 +18,79 @@ class WorkflowDef(object):
       attribute_map (dict): The key is attribute name
                             and the value is json key in definition.
     """
+
     swagger_types = {
-        'owner_app': 'str',
-        'create_time': 'int',
-        'update_time': 'int',
-        'created_by': 'str',
-        'updated_by': 'str',
-        'name': 'str',
-        'description': 'str',
-        'version': 'int',
-        'tasks': 'list[WorkflowTask]',
-        'input_parameters': 'list[str]',
-        'output_parameters': 'dict(str, object)',
-        'failure_workflow': 'str',
-        'schema_version': 'int',
-        'restartable': 'bool',
-        'workflow_status_listener_enabled': 'bool',
-        'workflow_status_listener_sink': 'str',
-        'owner_email': 'str',
-        'timeout_policy': 'str',
-        'timeout_seconds': 'int',
-        'variables': 'dict(str, object)',
-        'input_template': 'dict(str, object)'
+        "owner_app": "str",
+        "create_time": "int",
+        "update_time": "int",
+        "created_by": "str",
+        "updated_by": "str",
+        "name": "str",
+        "description": "str",
+        "version": "int",
+        "tasks": "list[WorkflowTask]",
+        "input_parameters": "list[str]",
+        "output_parameters": "dict(str, object)",
+        "failure_workflow": "str",
+        "schema_version": "int",
+        "restartable": "bool",
+        "workflow_status_listener_enabled": "bool",
+        "workflow_status_listener_sink": "str",
+        "owner_email": "str",
+        "timeout_policy": "str",
+        "timeout_seconds": "int",
+        "variables": "dict(str, object)",
+        "input_template": "dict(str, object)",
     }
 
     attribute_map = {
-        'owner_app': 'ownerApp',
-        'create_time': 'createTime',
-        'update_time': 'updateTime',
-        'created_by': 'createdBy',
-        'updated_by': 'updatedBy',
-        'name': 'name',
-        'description': 'description',
-        'version': 'version',
-        'tasks': 'tasks',
-        'input_parameters': 'inputParameters',
-        'output_parameters': 'outputParameters',
-        'failure_workflow': 'failureWorkflow',
-        'schema_version': 'schemaVersion',
-        'restartable': 'restartable',
-        'workflow_status_listener_enabled': 'workflowStatusListenerEnabled',
-        'workflow_status_listener_sink': 'workflowStatusListenerSink',
-        'owner_email': 'ownerEmail',
-        'timeout_policy': 'timeoutPolicy',
-        'timeout_seconds': 'timeoutSeconds',
-        'variables': 'variables',
-        'input_template': 'inputTemplate'
+        "owner_app": "ownerApp",
+        "create_time": "createTime",
+        "update_time": "updateTime",
+        "created_by": "createdBy",
+        "updated_by": "updatedBy",
+        "name": "name",
+        "description": "description",
+        "version": "version",
+        "tasks": "tasks",
+        "input_parameters": "inputParameters",
+        "output_parameters": "outputParameters",
+        "failure_workflow": "failureWorkflow",
+        "schema_version": "schemaVersion",
+        "restartable": "restartable",
+        "workflow_status_listener_enabled": "workflowStatusListenerEnabled",
+        "workflow_status_listener_sink": "workflowStatusListenerSink",
+        "owner_email": "ownerEmail",
+        "timeout_policy": "timeoutPolicy",
+        "timeout_seconds": "timeoutSeconds",
+        "variables": "variables",
+        "input_template": "inputTemplate",
     }
 
-    def __init__(self, owner_app=None, create_time=None, update_time=None, created_by=None, updated_by=None, name=None,
-                 description=None, version=None, tasks=None, input_parameters=None, output_parameters: dict = {},
-                 failure_workflow=None, schema_version=None, restartable=None, workflow_status_listener_enabled=None,
-                 workflow_status_listener_sink=None,
-                 owner_email=None, timeout_policy=None, timeout_seconds=None, variables=None,
-                 input_template=None):  # noqa: E501
+    def __init__(
+        self,
+        owner_app=None,
+        create_time=None,
+        update_time=None,
+        created_by=None,
+        updated_by=None,
+        name=None,
+        description=None,
+        version=None,
+        tasks=None,
+        input_parameters=None,
+        output_parameters: dict = {},
+        failure_workflow=None,
+        schema_version=None,
+        restartable=None,
+        workflow_status_listener_enabled=None,
+        workflow_status_listener_sink=None,
+        owner_email=None,
+        timeout_policy=None,
+        timeout_seconds=None,
+        variables=None,
+        input_template=None,
+    ):  # noqa: E501
         """WorkflowDef - a model defined in Swagger"""  # noqa: E501
         self._owner_app = None
         self._create_time = None
@@ -501,8 +519,9 @@ class WorkflowDef(object):
         allowed_values = ["TIME_OUT_WF", "ALERT_ONLY"]  # noqa: E501
         if timeout_policy not in allowed_values:
             raise ValueError(
-                "Invalid value for `timeout_policy` ({0}), must be one of {1}"  # noqa: E501
-                .format(timeout_policy, allowed_values)
+                "Invalid value for `timeout_policy` ({0}), must be one of {1}".format(  # noqa: E501
+                    timeout_policy, allowed_values
+                )
             )
 
         self._timeout_policy = timeout_policy
@@ -576,18 +595,22 @@ class WorkflowDef(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(WorkflowDef, dict):
@@ -624,6 +647,4 @@ def to_workflow_def(data: str = None, json_data: dict = None) -> WorkflowDef:
         return object_mapper.from_json(json_data, WorkflowDef)
     if data is not None:
         return object_mapper.from_json(json.loads(data), WorkflowDef)
-    raise Exception('missing data or json_data parameter')
-
-
+    raise Exception("missing data or json_data parameter")

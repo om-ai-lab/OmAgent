@@ -9,6 +9,7 @@ class Health(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,15 +18,15 @@ class Health(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'details': 'dict(str, object)',
-        'error_message': 'str',
-        'healthy': 'bool'
+        "details": "dict(str, object)",
+        "error_message": "str",
+        "healthy": "bool",
     }
 
     attribute_map = {
-        'details': 'details',
-        'error_message': 'errorMessage',
-        'healthy': 'healthy'
+        "details": "details",
+        "error_message": "errorMessage",
+        "healthy": "healthy",
     }
 
     def __init__(self, details=None, error_message=None, healthy=None):  # noqa: E501
@@ -111,18 +112,22 @@ class Health(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(Health, dict):

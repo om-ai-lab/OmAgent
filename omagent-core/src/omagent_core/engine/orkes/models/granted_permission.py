@@ -1,8 +1,7 @@
 from typing import List
 
-from typing_extensions import Self
-
 from omagent_core.engine.http.models.target_ref import TargetRef
+from typing_extensions import Self
 
 
 class GrantedPermission:

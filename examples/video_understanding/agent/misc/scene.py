@@ -27,7 +27,9 @@ class Scene(BaseModel):
     def conversation(self):
         # for self deployed whisper
         if isinstance(self.stt_res, list):
-            output_conversation = "\n".join([f"{item.get('text', None)}" for item in self.stt_res])
+            output_conversation = "\n".join(
+                [f"{item.get('text', None)}" for item in self.stt_res]
+            )
         else:
             output_conversation = self.stt_res
         return output_conversation
@@ -75,13 +77,18 @@ class VideoScenes(BaseModel):
         if kernel_size is None:
             scene_manager.add_detector(
                 ContentDetector(
-                    threshold=threshold, min_scene_len=video.frame_rate * min_scene_len, weights=weight
+                    threshold=threshold,
+                    min_scene_len=video.frame_rate * min_scene_len,
+                    weights=weight,
                 )
             )
         else:
             scene_manager.add_detector(
                 ContentDetector(
-                    threshold=threshold, min_scene_len=video.frame_rate * min_scene_len, weights=weight, kernel_size=kernel_size
+                    threshold=threshold,
+                    min_scene_len=video.frame_rate * min_scene_len,
+                    weights=weight,
+                    kernel_size=kernel_size,
                 )
             )
         scene_manager.detect_scenes(video, show_progress=show_progress)
@@ -198,43 +205,45 @@ class VideoScenes(BaseModel):
         """Convert VideoScenes to a serializable dictionary."""
         scenes_data = []
         for scene in self.scenes:
-            scenes_data.append({
-                'start_frame': scene.start.frame_num,
-                'end_frame': scene.end.frame_num,
-                'stt_res': scene.stt_res,
-                'summary': scene.summary
-            })
-            
+            scenes_data.append(
+                {
+                    "start_frame": scene.start.frame_num,
+                    "end_frame": scene.end.frame_num,
+                    "stt_res": scene.stt_res,
+                    "summary": scene.summary,
+                }
+            )
+
         return {
-            'video_path': self.stream.path,
-            'frame_rate': self.stream.frame_rate,
-            'scenes': scenes_data,
-            'frame_extraction_interval': self.frame_extraction_interval
+            "video_path": self.stream.path,
+            "frame_rate": self.stream.frame_rate,
+            "scenes": scenes_data,
+            "frame_extraction_interval": self.frame_extraction_interval,
         }
 
     @classmethod
     def from_serializable(cls, data: dict):
         """Rebuild VideoScenes from serialized data."""
-        video = open_video(data['video_path'])
+        video = open_video(data["video_path"])
         try:
-            audio = AudioSegment.from_file(data['video_path'])
+            audio = AudioSegment.from_file(data["video_path"])
             audio = normalize(audio)
         except Exception:
             audio = None
-        
+
         # Rebuild scenes list
         scenes = []
-        for scene_data in data['scenes']:
-            start = FrameTimecode(scene_data['start_frame'], data['frame_rate'])
-            end = FrameTimecode(scene_data['end_frame'], data['frame_rate'])
+        for scene_data in data["scenes"]:
+            start = FrameTimecode(scene_data["start_frame"], data["frame_rate"])
+            end = FrameTimecode(scene_data["end_frame"], data["frame_rate"])
             scene = Scene.init(start, end)
-            scene.stt_res = scene_data['stt_res']
-            scene.summary = scene_data['summary']
+            scene.stt_res = scene_data["stt_res"]
+            scene.summary = scene_data["summary"]
             scenes.append(scene)
-            
+
         return cls(
             stream=video,
             scenes=scenes,
             audio=audio,
-            frame_extraction_interval=data['frame_extraction_interval']
+            frame_extraction_interval=data["frame_extraction_interval"],
         )

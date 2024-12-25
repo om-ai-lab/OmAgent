@@ -1,8 +1,7 @@
 import os
 
-from ...base import ArgSchema, BaseTool
-
 from ....utils.registry import registry
+from ...base import ArgSchema, BaseTool
 
 ARGSCHEMA = {"file_path": {"type": "string", "description": "The file path to read."}}
 

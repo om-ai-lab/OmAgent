@@ -6,7 +6,6 @@ import re  # noqa: F401
 
 # python 2 and python 3 compatibility library
 import six
-
 from omagent_core.engine.http.api_client import ApiClient
 
 
@@ -36,8 +35,8 @@ class SecretResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.delete_secret_with_http_info(key, **kwargs)  # noqa: E501
         else:
             (data) = self.delete_secret_with_http_info(key, **kwargs)  # noqa: E501
@@ -58,31 +57,32 @@ class SecretResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['key']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["key"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method delete_secret" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'key' is set
-        if ('key' not in params or
-                params['key'] is None):
-            raise ValueError("Missing the required parameter `key` when calling `delete_secret`")  # noqa: E501
+        if "key" not in params or params["key"] is None:
+            raise ValueError(
+                "Missing the required parameter `key` when calling `delete_secret`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'key' in params:
-            path_params['key'] = params['key']  # noqa: E501
+        if "key" in params:
+            path_params["key"] = params["key"]  # noqa: E501
 
         query_params = []
 
@@ -93,27 +93,30 @@ class SecretResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/secrets/{key}', 'DELETE',
+            "/secrets/{key}",
+            "DELETE",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='object',  # noqa: E501
+            response_type="object",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def delete_tag_for_secret(self, body, key, **kwargs):  # noqa: E501
         """Delete tags of the secret  # noqa: E501
@@ -130,11 +133,15 @@ class SecretResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.delete_tag_for_secret_with_http_info(body, key, **kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.delete_tag_for_secret_with_http_info(
+                body, key, **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.delete_tag_for_secret_with_http_info(body, key, **kwargs)  # noqa: E501
+            (data) = self.delete_tag_for_secret_with_http_info(
+                body, key, **kwargs
+            )  # noqa: E501
             return data
 
     def delete_tag_for_secret_with_http_info(self, body, key, **kwargs):  # noqa: E501
@@ -153,35 +160,37 @@ class SecretResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['body', 'key']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["body", "key"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method delete_tag_for_secret" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'body' is set
-        if ('body' not in params or
-                params['body'] is None):
-            raise ValueError("Missing the required parameter `body` when calling `delete_tag_for_secret`")  # noqa: E501
+        if "body" not in params or params["body"] is None:
+            raise ValueError(
+                "Missing the required parameter `body` when calling `delete_tag_for_secret`"
+            )  # noqa: E501
         # verify the required parameter 'key' is set
-        if ('key' not in params or
-                params['key'] is None):
-            raise ValueError("Missing the required parameter `key` when calling `delete_tag_for_secret`")  # noqa: E501
+        if "key" not in params or params["key"] is None:
+            raise ValueError(
+                "Missing the required parameter `key` when calling `delete_tag_for_secret`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'key' in params:
-            path_params['key'] = params['key']  # noqa: E501
+        if "key" in params:
+            path_params["key"] = params["key"]  # noqa: E501
 
         query_params = []
 
@@ -191,17 +200,21 @@ class SecretResourceApi(object):
         local_var_files = {}
 
         body_params = None
-        if 'body' in params:
-            body_params = params['body']
+        if "body" in params:
+            body_params = params["body"]
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
-            ['application/json'])  # noqa: E501
+        header_params["Content-Type"] = (
+            self.api_client.select_header_content_type(  # noqa: E501
+                ["application/json"]
+            )
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/secrets/{key}/tags', 'DELETE',
+            "/secrets/{key}/tags",
+            "DELETE",
             path_params,
             query_params,
             header_params,
@@ -210,11 +223,12 @@ class SecretResourceApi(object):
             files=local_var_files,
             response_type=None,  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def get_secret(self, key, **kwargs):  # noqa: E501
         """Get secret value by key  # noqa: E501
@@ -230,8 +244,8 @@ class SecretResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.get_secret_with_http_info(key, **kwargs)  # noqa: E501
         else:
             (data) = self.get_secret_with_http_info(key, **kwargs)  # noqa: E501
@@ -252,31 +266,32 @@ class SecretResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['key']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["key"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method get_secret" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'key' is set
-        if ('key' not in params or
-                params['key'] is None):
-            raise ValueError("Missing the required parameter `key` when calling `get_secret`")  # noqa: E501
+        if "key" not in params or params["key"] is None:
+            raise ValueError(
+                "Missing the required parameter `key` when calling `get_secret`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'key' in params:
-            path_params['key'] = params['key']  # noqa: E501
+        if "key" in params:
+            path_params["key"] = params["key"]  # noqa: E501
 
         query_params = []
 
@@ -287,27 +302,30 @@ class SecretResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/secrets/{key}', 'GET',
+            "/secrets/{key}",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='object',  # noqa: E501
+            response_type="object",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def get_tags(self, key, **kwargs):  # noqa: E501
         """Get tags by secret  # noqa: E501
@@ -323,8 +341,8 @@ class SecretResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.get_tags_with_http_info(key, **kwargs)  # noqa: E501
         else:
             (data) = self.get_tags_with_http_info(key, **kwargs)  # noqa: E501
@@ -345,31 +363,32 @@ class SecretResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['key']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["key"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method get_tags" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'key' is set
-        if ('key' not in params or
-                params['key'] is None):
-            raise ValueError("Missing the required parameter `key` when calling `get_tags`")  # noqa: E501
+        if "key" not in params or params["key"] is None:
+            raise ValueError(
+                "Missing the required parameter `key` when calling `get_tags`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'key' in params:
-            path_params['key'] = params['key']  # noqa: E501
+        if "key" in params:
+            path_params["key"] = params["key"]  # noqa: E501
 
         query_params = []
 
@@ -380,27 +399,30 @@ class SecretResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/secrets/{key}/tags', 'GET',
+            "/secrets/{key}/tags",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='list[TagObject]',  # noqa: E501
+            response_type="list[TagObject]",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def list_all_secret_names(self, **kwargs):  # noqa: E501
         """List all secret names  # noqa: E501
@@ -415,8 +437,8 @@ class SecretResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.list_all_secret_names_with_http_info(**kwargs)  # noqa: E501
         else:
             (data) = self.list_all_secret_names_with_http_info(**kwargs)  # noqa: E501
@@ -437,20 +459,20 @@ class SecretResourceApi(object):
         """
 
         all_params = []  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method list_all_secret_names" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
 
         collection_formats = {}
 
@@ -465,27 +487,30 @@ class SecretResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/secrets', 'POST',
+            "/secrets",
+            "POST",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='object',  # noqa: E501
+            response_type="object",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def list_secrets_that_user_can_grant_access_to(self, **kwargs):  # noqa: E501
         """List all secret names user can grant access to  # noqa: E501
@@ -500,14 +525,20 @@ class SecretResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.list_secrets_that_user_can_grant_access_to_with_http_info(**kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.list_secrets_that_user_can_grant_access_to_with_http_info(
+                **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.list_secrets_that_user_can_grant_access_to_with_http_info(**kwargs)  # noqa: E501
+            (data) = self.list_secrets_that_user_can_grant_access_to_with_http_info(
+                **kwargs
+            )  # noqa: E501
             return data
 
-    def list_secrets_that_user_can_grant_access_to_with_http_info(self, **kwargs):  # noqa: E501
+    def list_secrets_that_user_can_grant_access_to_with_http_info(
+        self, **kwargs
+    ):  # noqa: E501
         """List all secret names user can grant access to  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -522,20 +553,20 @@ class SecretResourceApi(object):
         """
 
         all_params = []  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method list_secrets_that_user_can_grant_access_to" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
 
         collection_formats = {}
 
@@ -550,29 +581,34 @@ class SecretResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/secrets', 'GET',
+            "/secrets",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='list[str]',  # noqa: E501
+            response_type="list[str]",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
-    def list_secrets_with_tags_that_user_can_grant_access_to(self, **kwargs):  # noqa: E501
+    def list_secrets_with_tags_that_user_can_grant_access_to(
+        self, **kwargs
+    ):  # noqa: E501
         """List all secret names along with tags user can grant access to  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -585,14 +621,22 @@ class SecretResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.list_secrets_with_tags_that_user_can_grant_access_to_with_http_info(**kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.list_secrets_with_tags_that_user_can_grant_access_to_with_http_info(
+                **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.list_secrets_with_tags_that_user_can_grant_access_to_with_http_info(**kwargs)  # noqa: E501
+            (data) = (
+                self.list_secrets_with_tags_that_user_can_grant_access_to_with_http_info(
+                    **kwargs
+                )
+            )  # noqa: E501
             return data
 
-    def list_secrets_with_tags_that_user_can_grant_access_to_with_http_info(self, **kwargs):  # noqa: E501
+    def list_secrets_with_tags_that_user_can_grant_access_to_with_http_info(
+        self, **kwargs
+    ):  # noqa: E501
         """List all secret names along with tags user can grant access to  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -607,20 +651,21 @@ class SecretResourceApi(object):
         """
 
         all_params = []  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method list_secrets_with_tags_that_user_can_grant_access_to" % key
+                    " to method list_secrets_with_tags_that_user_can_grant_access_to"
+                    % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
 
         collection_formats = {}
 
@@ -635,27 +680,30 @@ class SecretResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/secrets-v2', 'GET',
+            "/secrets-v2",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='list[ExtendedSecret]',  # noqa: E501
+            response_type="list[ExtendedSecret]",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def put_secret(self, body, key, **kwargs):  # noqa: E501
         """Put a secret value by key  # noqa: E501
@@ -672,8 +720,8 @@ class SecretResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.put_secret_with_http_info(body, key, **kwargs)  # noqa: E501
         else:
             (data) = self.put_secret_with_http_info(body, key, **kwargs)  # noqa: E501
@@ -695,35 +743,37 @@ class SecretResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['body', 'key']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["body", "key"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method put_secret" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'body' is set
-        if ('body' not in params or
-                params['body'] is None):
-            raise ValueError("Missing the required parameter `body` when calling `put_secret`")  # noqa: E501
+        if "body" not in params or params["body"] is None:
+            raise ValueError(
+                "Missing the required parameter `body` when calling `put_secret`"
+            )  # noqa: E501
         # verify the required parameter 'key' is set
-        if ('key' not in params or
-                params['key'] is None):
-            raise ValueError("Missing the required parameter `key` when calling `put_secret`")  # noqa: E501
+        if "key" not in params or params["key"] is None:
+            raise ValueError(
+                "Missing the required parameter `key` when calling `put_secret`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'key' in params:
-            path_params['key'] = params['key']  # noqa: E501
+        if "key" in params:
+            path_params["key"] = params["key"]  # noqa: E501
 
         query_params = []
 
@@ -733,34 +783,40 @@ class SecretResourceApi(object):
         local_var_files = {}
 
         body_params = None
-        if 'body' in params:
-            body_params = params['body']
+        if "body" in params:
+            body_params = params["body"]
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
-            ['application/json'])  # noqa: E501
+        header_params["Content-Type"] = (
+            self.api_client.select_header_content_type(  # noqa: E501
+                ["application/json"]
+            )
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/secrets/{key}', 'PUT',
+            "/secrets/{key}",
+            "PUT",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='object',  # noqa: E501
+            response_type="object",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def put_tag_for_secret(self, body, key, **kwargs):  # noqa: E501
         """Tag a secret  # noqa: E501
@@ -777,11 +833,15 @@ class SecretResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.put_tag_for_secret_with_http_info(body, key, **kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.put_tag_for_secret_with_http_info(
+                body, key, **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.put_tag_for_secret_with_http_info(body, key, **kwargs)  # noqa: E501
+            (data) = self.put_tag_for_secret_with_http_info(
+                body, key, **kwargs
+            )  # noqa: E501
             return data
 
     def put_tag_for_secret_with_http_info(self, body, key, **kwargs):  # noqa: E501
@@ -800,35 +860,37 @@ class SecretResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['body', 'key']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["body", "key"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method put_tag_for_secret" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'body' is set
-        if ('body' not in params or
-                params['body'] is None):
-            raise ValueError("Missing the required parameter `body` when calling `put_tag_for_secret`")  # noqa: E501
+        if "body" not in params or params["body"] is None:
+            raise ValueError(
+                "Missing the required parameter `body` when calling `put_tag_for_secret`"
+            )  # noqa: E501
         # verify the required parameter 'key' is set
-        if ('key' not in params or
-                params['key'] is None):
-            raise ValueError("Missing the required parameter `key` when calling `put_tag_for_secret`")  # noqa: E501
+        if "key" not in params or params["key"] is None:
+            raise ValueError(
+                "Missing the required parameter `key` when calling `put_tag_for_secret`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'key' in params:
-            path_params['key'] = params['key']  # noqa: E501
+        if "key" in params:
+            path_params["key"] = params["key"]  # noqa: E501
 
         query_params = []
 
@@ -838,17 +900,21 @@ class SecretResourceApi(object):
         local_var_files = {}
 
         body_params = None
-        if 'body' in params:
-            body_params = params['body']
+        if "body" in params:
+            body_params = params["body"]
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
-            ['application/json'])  # noqa: E501
+        header_params["Content-Type"] = (
+            self.api_client.select_header_content_type(  # noqa: E501
+                ["application/json"]
+            )
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/secrets/{key}/tags', 'PUT',
+            "/secrets/{key}/tags",
+            "PUT",
             path_params,
             query_params,
             header_params,
@@ -857,11 +923,12 @@ class SecretResourceApi(object):
             files=local_var_files,
             response_type=None,  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def secret_exists(self, key, **kwargs):  # noqa: E501
         """Check if secret exists  # noqa: E501
@@ -877,8 +944,8 @@ class SecretResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.secret_exists_with_http_info(key, **kwargs)  # noqa: E501
         else:
             (data) = self.secret_exists_with_http_info(key, **kwargs)  # noqa: E501
@@ -899,31 +966,32 @@ class SecretResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['key']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["key"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method secret_exists" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'key' is set
-        if ('key' not in params or
-                params['key'] is None):
-            raise ValueError("Missing the required parameter `key` when calling `secret_exists`")  # noqa: E501
+        if "key" not in params or params["key"] is None:
+            raise ValueError(
+                "Missing the required parameter `key` when calling `secret_exists`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'key' in params:
-            path_params['key'] = params['key']  # noqa: E501
+        if "key" in params:
+            path_params["key"] = params["key"]  # noqa: E501
 
         query_params = []
 
@@ -934,24 +1002,27 @@ class SecretResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/secrets/{key}/exists', 'GET',
+            "/secrets/{key}/exists",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='object',  # noqa: E501
+            response_type="object",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )

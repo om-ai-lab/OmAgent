@@ -1,9 +1,8 @@
 from abc import ABC
 
-from typing_extensions import Self
-
 from omagent_core.engine.workflow.task.task import TaskInterface
 from omagent_core.engine.workflow.task.task_type import TaskType
+from typing_extensions import Self
 
 
 class WaitForWebHookTask(TaskInterface, ABC):
@@ -31,13 +30,14 @@ class WaitForWebHookTask(TaskInterface, ABC):
         the task.
         """
         super().__init__(
-            task_reference_name=task_ref_name,
-            task_type=TaskType.WAIT_FOR_WEBHOOK
+            task_reference_name=task_ref_name, task_type=TaskType.WAIT_FOR_WEBHOOK
         )
-        self.input_parameters['matches'] = matches
+        self.input_parameters["matches"] = matches
 
 
-def wait_for_webhook(task_ref_name: str, matches: dict[str, object], task_def_name: str = None) -> TaskInterface:
+def wait_for_webhook(
+    task_ref_name: str, matches: dict[str, object], task_def_name: str = None
+) -> TaskInterface:
     task = WaitForWebHookTask(task_ref_name=task_ref_name, matches=matches)
     if task_def_name is not None:
         task.name = task_def_name

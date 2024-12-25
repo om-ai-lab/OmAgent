@@ -1,9 +1,9 @@
 from abc import ABC
-
 from datetime import datetime
 from typing import Any, Dict, Optional
 
 from sqlmodel import Column, DateTime, Field, SQLModel, func
+
 
 class BaseTable(SQLModel):
     id: Optional[int] = Field(default=None, primary_key=True)

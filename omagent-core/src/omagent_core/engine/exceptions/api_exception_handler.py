@@ -36,7 +36,7 @@ def api_exception_handler(function):
             try:
                 if e.body:
                     error = json.loads(e.body)
-                    message = error['message']
+                    message = error["message"]
             except ValueError:
                 message = e.body
 

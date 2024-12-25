@@ -2,12 +2,13 @@ from pathlib import Path
 from typing import List
 
 import requests
-from ...base import ArgSchema, BaseModelTool
+from PIL import Image
+from scenedetect import FrameTimecode
+
 from ....models.od.schemas import Target
 from ....utils.general import encode_image
 from ....utils.registry import registry
-from PIL import Image
-from scenedetect import FrameTimecode
+from ...base import ArgSchema, BaseModelTool
 
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -32,7 +33,7 @@ class ObjectDetection(BaseModelTool):
         "Object detection tool, which can detect any objects and add visual prompting(bounding box and label) to the image."
         "Tasks like object counting, specific object detection, etc. must use this tool."
     )
-    ovd_endpoint: str = ''
+    ovd_endpoint: str = ""
     model_id: str = "OmDet-Turbo_tiny_SWIN_T"
 
     class Config:

@@ -7,11 +7,11 @@ from bs4 import BeautifulSoup
 from duckduckgo_search import DDGS
 from pydantic import Field, field_validator
 
-from ....utils.logger import logging
-from ....utils.registry import registry
-from ....models.llms.base import BaseLLMBackend, BaseLLM
+from ....models.llms.base import BaseLLM, BaseLLMBackend
 from ....models.llms.openai_gpt import OpenaiGPTLLM
 from ....models.llms.prompt import PromptTemplate
+from ....utils.logger import logging
+from ....utils.registry import registry
 from ...base import ArgSchema, BaseTool
 
 CURRENT_PATH = Path(__file__).parents[0]
@@ -114,7 +114,11 @@ class WebSearch(BaseTool, BaseLLMBackend):
         :param string? region: The region code of the search, default to `en-US`. Available regions: `en-US`, `zh-CN`, `ja-JP`, `de-DE`, `fr-FR`, `en-GB`.
         :return string: The results of the search.
         """
-        self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Searching for "{search_query}".')
+        self.callback.info(
+            agent_id=self.workflow_instance_id,
+            progress=f"Conqueror",
+            message=f'Searching for "{search_query}".',
+        )
         if region is None:
             region = "en-US"
         if self.bing_api_key is None:
@@ -137,12 +141,14 @@ class WebSearch(BaseTool, BaseLLMBackend):
                 pages = result["webPages"]["value"]
             except Exception as e:
                 logging.error(f"Bing search failed: {e}")
-                return [{
-                    "name": '',
-                    "snippet": '',
-                    "url": '',
-                    "page": '',
-                }]
+                return [
+                    {
+                        "name": "",
+                        "snippet": "",
+                        "url": "",
+                        "page": "",
+                    }
+                ]
 
         search_results = []
 

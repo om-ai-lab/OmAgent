@@ -6,10 +6,10 @@ from typing import Any, Dict, List
 import geocoder
 from openai import AsyncAzureOpenAI, AzureOpenAI
 
-from .schemas import Content, Message
 from ...utils.general import encode_image
 from ...utils.registry import registry
 from .base import BaseLLM
+from .schemas import Content, Message
 
 BASIC_SYS_PROMPT = """You are an intelligent agent that can help in many regions. 
 Flowing are some basic information about your working environment, please try your best to answer the questions based on them if needed. 

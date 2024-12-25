@@ -6,7 +6,6 @@ from typing import List
 
 # python 2 and python 3 compatibility library
 import six
-
 from omagent_core.engine.http.api_client import ApiClient
 from omagent_core.engine.http.models.prompt_template import PromptTemplate
 from omagent_core.engine.orkes.models.metadata_tag import MetadataTag
@@ -43,6 +42,14 @@ class PromptClient(ABC):
         pass
 
     @abstractmethod
-    def test_prompt(self, prompt_text: str, variables: dict, ai_integration: str, text_complete_model: str,
-                    temperature : float = 0.1, top_p : float = 0.9, stop_words: List[str] = None) -> str:
+    def test_prompt(
+        self,
+        prompt_text: str,
+        variables: dict,
+        ai_integration: str,
+        text_complete_model: str,
+        temperature: float = 0.1,
+        top_p: float = 0.9,
+        stop_words: List[str] = None,
+    ) -> str:
         pass

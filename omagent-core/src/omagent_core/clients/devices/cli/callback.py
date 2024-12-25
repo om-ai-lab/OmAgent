@@ -3,9 +3,9 @@ import os
 import sys
 
 from colorama import Fore, Style
-from omagent_core.utils.registry import registry
-from omagent_core.utils.logger import logging
 from omagent_core.clients.base import CallbackBase
+from omagent_core.utils.logger import logging
+from omagent_core.utils.registry import registry
 
 
 @registry.register_component()
@@ -26,13 +26,8 @@ class DefaultCallback(CallbackBase):
         sys.stdout.flush()
         self.incomplete_flag = True
 
-    def send_block(
-        self,
-        agent_id,
-        msg,
-        **kwargs
-    ):
-        if kwargs.get('filter_special_symbols', False):
+    def send_block(self, agent_id, msg, **kwargs):
+        if kwargs.get("filter_special_symbols", False):
             msg = self.filter_special_symbols_in_msg(msg)
         if self.incomplete_flag:
             sys.stdout.write(f"{Fore.BLUE}{msg}{Style.RESET_ALL}")
@@ -40,12 +35,12 @@ class DefaultCallback(CallbackBase):
             self.incomplete_flag = False
         else:
             logging.info(f"\n{Fore.BLUE}block:{msg}{Style.RESET_ALL}")
-        
+
     def error(self, agent_id, error_code, error_info, **kwargs):
         logging.error(f"\n{Fore.RED}{error_info}{Style.RESET_ALL}")
 
-    def send_answer(self, agent_id, msg, **kwargs):        
-        if kwargs.get('filter_special_symbols', False):
+    def send_answer(self, agent_id, msg, **kwargs):
+        if kwargs.get("filter_special_symbols", False):
             msg = self.filter_special_symbols_in_msg(msg)
         if self.incomplete_flag:
             sys.stdout.write(f"{Fore.BLUE}{msg}{Style.RESET_ALL}")

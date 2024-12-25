@@ -1,10 +1,11 @@
-from omagent_core.memories.stms.stm_base import STMBase, WorkflowInstanceProxy
-import pickle
-from typing import Any
-from omagent_core.utils.registry import registry
-from multiprocessing import shared_memory
-import numpy as np
 import hashlib
+import pickle
+from multiprocessing import shared_memory
+from typing import Any
+
+import numpy as np
+from omagent_core.memories.stms.stm_base import STMBase, WorkflowInstanceProxy
+from omagent_core.utils.registry import registry
 
 
 @registry.register_component()
@@ -12,22 +13,22 @@ class SharedMemSTM(STMBase):
     def __call__(self, workflow_instance_id: str):
         """
         Return a WorkflowInstanceProxy for the given workflow instance ID.
-        
+
         Args:
             workflow_instance_id (str): The ID of the workflow instance.
-            
+
         Returns:
             WorkflowInstanceProxy: A proxy object for accessing the workflow instance data.
         """
         return WorkflowInstanceProxy(self, workflow_instance_id)
 
-    def _create_shm(self, workflow_instance_id: str, size: int = 1024*1024*100):
+    def _create_shm(self, workflow_instance_id: str, size: int = 1024 * 1024 * 100):
         """Create a new shared memory block"""
         shortened_id = hashlib.md5(workflow_instance_id.encode()).hexdigest()[:8]
         shm = shared_memory.SharedMemory(name=shortened_id, create=True, size=size)
         return shm
 
-    def _get_shm(self, workflow_instance_id, size: int = 1024*1024*100):
+    def _get_shm(self, workflow_instance_id, size: int = 1024 * 1024 * 100):
         # Hash the long workflow_instance_id to a shorter fixed-length string
         shortened_id = hashlib.md5(workflow_instance_id.encode()).hexdigest()[:8]
         try:
@@ -53,7 +54,7 @@ class SharedMemSTM(STMBase):
             workflow_instance_id, key = key
             shm = self._get_shm(workflow_instance_id)
             try:
-                data = pickle.loads(bytes(shm.buf).strip(b'\x00'))
+                data = pickle.loads(bytes(shm.buf).strip(b"\x00"))
                 if key not in data:
                     raise KeyError(key)
                 return data[key]
@@ -65,7 +66,7 @@ class SharedMemSTM(STMBase):
             workflow_instance_id = key
             shm = self._get_shm(workflow_instance_id)
             try:
-                return pickle.loads(bytes(shm.buf).strip(b'\x00'))
+                return pickle.loads(bytes(shm.buf).strip(b"\x00"))
             except (pickle.UnpicklingError, EOFError):
                 return {}
             finally:
@@ -82,13 +83,13 @@ class SharedMemSTM(STMBase):
         workflow_instance_id, key = key
         shm = self._get_shm(workflow_instance_id)
         try:
-            data = pickle.loads(bytes(shm.buf).strip(b'\x00'))
+            data = pickle.loads(bytes(shm.buf).strip(b"\x00"))
         except (pickle.UnpicklingError, EOFError):
             data = {}
-            
+
         data[key] = value
         pickled_data = pickle.dumps(data)
-        shm.buf[:len(pickled_data)] = pickled_data
+        shm.buf[: len(pickled_data)] = pickled_data
         shm.close()
 
     def __delitem__(self, workflow_instance_id: str, key: str) -> None:
@@ -104,13 +105,13 @@ class SharedMemSTM(STMBase):
         """
         shm = self._get_shm(workflow_instance_id)
         try:
-            data = pickle.loads(bytes(shm.buf).strip(b'\x00'))
+            data = pickle.loads(bytes(shm.buf).strip(b"\x00"))
             if key not in data:
                 raise KeyError(key)
             del data[key]
             pickled_data = pickle.dumps(data)
-            shm.buf[:] = b'\x00' * len(shm.buf)  # Clear buffer
-            shm.buf[:len(pickled_data)] = pickled_data
+            shm.buf[:] = b"\x00" * len(shm.buf)  # Clear buffer
+            shm.buf[: len(pickled_data)] = pickled_data
         except (pickle.UnpicklingError, EOFError):
             raise KeyError(key)
         finally:
@@ -205,7 +206,7 @@ class SharedMemSTM(STMBase):
         try:
             shortened_id = hashlib.md5(workflow_instance_id.encode()).hexdigest()[:8]
             shm = shared_memory.SharedMemory(name=shortened_id)
-            shm.buf[:] = b'\x00' * len(shm.buf)
+            shm.buf[:] = b"\x00" * len(shm.buf)
             shm.close()
             shm.unlink()
         except FileNotFoundError:
@@ -260,43 +261,43 @@ class SharedMemSTM(STMBase):
 if __name__ == "__main__":
     # Create SharedMemSTM instance
     stm = SharedMemSTM()
-    
+
     # Test workflow instance ID
     workflow_id = "test_workflow"
-    
+
     # Get workflow instance proxy
     workflow = stm(workflow_id)
-    
+
     # # Test basic operations
     # print("Testing basic operations...")
-    
+
     # # Set items
     # workflow["key1"] = "value1"
     # workflow["key2"] = {"nested": "value2"}
-    
+
     # # Get items
     # print(f"Get key1: {workflow['key1']}")
     # print(f"Get key2: {workflow['key2']}")
-    
+
     # # Test contains
     # print(f"Contains key1: {'key1' in workflow}")
-    
+
     # # Test keys, values, items
     # print(f"Keys: {workflow.keys()}")
     # print(f"Values: {workflow.values()}")
     # print(f"Items: {workflow.items()}")
-    
+
     # # Test length
     # print(f"Length: {len(workflow)}")
-    
+
     # # Test pop
     # popped = workflow.pop("key1")
     # print(f"Popped value: {popped}")
-    
+
     # # Test update
     # workflow.update({"key3": "value3", "key4": "value4"})
     # print(f"After update - keys: {workflow.keys()}")
-    
+
     # # Test clear
     # workflow.clear()
     # print(f"After clear - length: {len(workflow)}")
@@ -304,6 +305,6 @@ if __name__ == "__main__":
     workflow["key1"] = {}
     print(workflow["key1"])
     x = workflow["key1"]
-    x['a'] = 1
+    x["a"] = 1
     workflow["key1"] = x
     print(workflow["key1"])

@@ -16,7 +16,6 @@ import re  # noqa: F401
 
 # python 2 and python 3 compatibility library
 import six
-
 from omagent_core.engine.http.api_client import ApiClient
 
 
@@ -46,11 +45,15 @@ class PromptResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.delete_message_template_with_http_info(name, **kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.delete_message_template_with_http_info(
+                name, **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.delete_message_template_with_http_info(name, **kwargs)  # noqa: E501
+            (data) = self.delete_message_template_with_http_info(
+                name, **kwargs
+            )  # noqa: E501
             return data
 
     def delete_message_template_with_http_info(self, name, **kwargs):  # noqa: E501
@@ -68,32 +71,32 @@ class PromptResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['name']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["name"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method delete_message_template" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'name' is set
-        if ('name' not in params or
-                params['name'] is None):
+        if "name" not in params or params["name"] is None:
             raise ValueError(
-                "Missing the required parameter `name` when calling `delete_message_template`")  # noqa: E501
+                "Missing the required parameter `name` when calling `delete_message_template`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'name' in params:
-            path_params['name'] = params['name']  # noqa: E501
+        if "name" in params:
+            path_params["name"] = params["name"]  # noqa: E501
 
         query_params = []
 
@@ -104,10 +107,11 @@ class PromptResourceApi(object):
 
         body_params = None
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/prompts/{name}', 'DELETE',
+            "/prompts/{name}",
+            "DELETE",
             path_params,
             query_params,
             header_params,
@@ -116,11 +120,12 @@ class PromptResourceApi(object):
             files=local_var_files,
             response_type=None,  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def delete_tag_for_prompt_template(self, body, name, **kwargs):  # noqa: E501
         """Delete a tag for Prompt Template  # noqa: E501
@@ -137,14 +142,20 @@ class PromptResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.delete_tag_for_prompt_template_with_http_info(body, name, **kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.delete_tag_for_prompt_template_with_http_info(
+                body, name, **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.delete_tag_for_prompt_template_with_http_info(body, name, **kwargs)  # noqa: E501
+            (data) = self.delete_tag_for_prompt_template_with_http_info(
+                body, name, **kwargs
+            )  # noqa: E501
             return data
 
-    def delete_tag_for_prompt_template_with_http_info(self, body, name, **kwargs):  # noqa: E501
+    def delete_tag_for_prompt_template_with_http_info(
+        self, body, name, **kwargs
+    ):  # noqa: E501
         """Delete a tag for Prompt Template  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -160,37 +171,37 @@ class PromptResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['body', 'name']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["body", "name"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method delete_tag_for_prompt_template" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'body' is set
-        if ('body' not in params or
-                params['body'] is None):
+        if "body" not in params or params["body"] is None:
             raise ValueError(
-                "Missing the required parameter `body` when calling `delete_tag_for_prompt_template`")  # noqa: E501
+                "Missing the required parameter `body` when calling `delete_tag_for_prompt_template`"
+            )  # noqa: E501
         # verify the required parameter 'name' is set
-        if ('name' not in params or
-                params['name'] is None):
+        if "name" not in params or params["name"] is None:
             raise ValueError(
-                "Missing the required parameter `name` when calling `delete_tag_for_prompt_template`")  # noqa: E501
+                "Missing the required parameter `name` when calling `delete_tag_for_prompt_template`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'name' in params:
-            path_params['name'] = params['name']  # noqa: E501
+        if "name" in params:
+            path_params["name"] = params["name"]  # noqa: E501
 
         query_params = []
 
@@ -200,17 +211,21 @@ class PromptResourceApi(object):
         local_var_files = {}
 
         body_params = None
-        if 'body' in params:
-            body_params = params['body']
+        if "body" in params:
+            body_params = params["body"]
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
-            ['application/json'])  # noqa: E501
+        header_params["Content-Type"] = (
+            self.api_client.select_header_content_type(  # noqa: E501
+                ["application/json"]
+            )
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/prompts/{name}/tags', 'DELETE',
+            "/prompts/{name}/tags",
+            "DELETE",
             path_params,
             query_params,
             header_params,
@@ -219,11 +234,12 @@ class PromptResourceApi(object):
             files=local_var_files,
             response_type=None,  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def get_message_template(self, name, **kwargs):  # noqa: E501
         """Get Template  # noqa: E501
@@ -239,11 +255,15 @@ class PromptResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.get_message_template_with_http_info(name, **kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.get_message_template_with_http_info(
+                name, **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.get_message_template_with_http_info(name, **kwargs)  # noqa: E501
+            (data) = self.get_message_template_with_http_info(
+                name, **kwargs
+            )  # noqa: E501
             return data
 
     def get_message_template_with_http_info(self, name, **kwargs):  # noqa: E501
@@ -261,31 +281,32 @@ class PromptResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['name']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["name"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method get_message_template" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'name' is set
-        if ('name' not in params or
-                params['name'] is None):
-            raise ValueError("Missing the required parameter `name` when calling `get_message_template`")  # noqa: E501
+        if "name" not in params or params["name"] is None:
+            raise ValueError(
+                "Missing the required parameter `name` when calling `get_message_template`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'name' in params:
-            path_params['name'] = params['name']  # noqa: E501
+        if "name" in params:
+            path_params["name"] = params["name"]  # noqa: E501
 
         query_params = []
 
@@ -296,27 +317,30 @@ class PromptResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/prompts/{name}', 'GET',
+            "/prompts/{name}",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='PromptTemplate',  # noqa: E501
+            response_type="PromptTemplate",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def get_message_templates(self, **kwargs):  # noqa: E501
         """Get Templates  # noqa: E501
@@ -331,8 +355,8 @@ class PromptResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.get_message_templates_with_http_info(**kwargs)  # noqa: E501
         else:
             (data) = self.get_message_templates_with_http_info(**kwargs)  # noqa: E501
@@ -353,20 +377,20 @@ class PromptResourceApi(object):
         """
 
         all_params = []  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method get_message_templates" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
 
         collection_formats = {}
 
@@ -381,27 +405,30 @@ class PromptResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/prompts', 'GET',
+            "/prompts",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='list[PromptTemplate]',  # noqa: E501
+            response_type="list[PromptTemplate]",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def get_tags_for_prompt_template(self, name, **kwargs):  # noqa: E501
         """Get tags by Prompt Template  # noqa: E501
@@ -417,11 +444,15 @@ class PromptResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.get_tags_for_prompt_template_with_http_info(name, **kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.get_tags_for_prompt_template_with_http_info(
+                name, **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.get_tags_for_prompt_template_with_http_info(name, **kwargs)  # noqa: E501
+            (data) = self.get_tags_for_prompt_template_with_http_info(
+                name, **kwargs
+            )  # noqa: E501
             return data
 
     def get_tags_for_prompt_template_with_http_info(self, name, **kwargs):  # noqa: E501
@@ -439,32 +470,32 @@ class PromptResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['name']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["name"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method get_tags_for_prompt_template" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'name' is set
-        if ('name' not in params or
-                params['name'] is None):
+        if "name" not in params or params["name"] is None:
             raise ValueError(
-                "Missing the required parameter `name` when calling `get_tags_for_prompt_template`")  # noqa: E501
+                "Missing the required parameter `name` when calling `get_tags_for_prompt_template`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'name' in params:
-            path_params['name'] = params['name']  # noqa: E501
+        if "name" in params:
+            path_params["name"] = params["name"]  # noqa: E501
 
         query_params = []
 
@@ -475,27 +506,30 @@ class PromptResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/prompts/{name}/tags', 'GET',
+            "/prompts/{name}/tags",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='list[TagObject]',  # noqa: E501
+            response_type="list[TagObject]",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def put_tag_for_prompt_template(self, body, name, **kwargs):  # noqa: E501
         """Put a tag to Prompt Template  # noqa: E501
@@ -512,14 +546,20 @@ class PromptResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.put_tag_for_prompt_template_with_http_info(body, name, **kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.put_tag_for_prompt_template_with_http_info(
+                body, name, **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.put_tag_for_prompt_template_with_http_info(body, name, **kwargs)  # noqa: E501
+            (data) = self.put_tag_for_prompt_template_with_http_info(
+                body, name, **kwargs
+            )  # noqa: E501
             return data
 
-    def put_tag_for_prompt_template_with_http_info(self, body, name, **kwargs):  # noqa: E501
+    def put_tag_for_prompt_template_with_http_info(
+        self, body, name, **kwargs
+    ):  # noqa: E501
         """Put a tag to Prompt Template  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -535,37 +575,37 @@ class PromptResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['body', 'name']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["body", "name"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method put_tag_for_prompt_template" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'body' is set
-        if ('body' not in params or
-                params['body'] is None):
+        if "body" not in params or params["body"] is None:
             raise ValueError(
-                "Missing the required parameter `body` when calling `put_tag_for_prompt_template`")  # noqa: E501
+                "Missing the required parameter `body` when calling `put_tag_for_prompt_template`"
+            )  # noqa: E501
         # verify the required parameter 'name' is set
-        if ('name' not in params or
-                params['name'] is None):
+        if "name" not in params or params["name"] is None:
             raise ValueError(
-                "Missing the required parameter `name` when calling `put_tag_for_prompt_template`")  # noqa: E501
+                "Missing the required parameter `name` when calling `put_tag_for_prompt_template`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'name' in params:
-            path_params['name'] = params['name']  # noqa: E501
+        if "name" in params:
+            path_params["name"] = params["name"]  # noqa: E501
 
         query_params = []
 
@@ -575,17 +615,21 @@ class PromptResourceApi(object):
         local_var_files = {}
 
         body_params = None
-        if 'body' in params:
-            body_params = params['body']
+        if "body" in params:
+            body_params = params["body"]
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
-            ['application/json'])  # noqa: E501
+        header_params["Content-Type"] = (
+            self.api_client.select_header_content_type(  # noqa: E501
+                ["application/json"]
+            )
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/prompts/{name}/tags', 'PUT',
+            "/prompts/{name}/tags",
+            "PUT",
             path_params,
             query_params,
             header_params,
@@ -594,11 +638,12 @@ class PromptResourceApi(object):
             files=local_var_files,
             response_type=None,  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def save_message_template(self, body, description, name, **kwargs):  # noqa: E501
         """Create or Update Template  # noqa: E501
@@ -617,14 +662,20 @@ class PromptResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.save_message_template_with_http_info(body, description, name, **kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.save_message_template_with_http_info(
+                body, description, name, **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.save_message_template_with_http_info(body, description, name, **kwargs)  # noqa: E501
+            (data) = self.save_message_template_with_http_info(
+                body, description, name, **kwargs
+            )  # noqa: E501
             return data
 
-    def save_message_template_with_http_info(self, body, description, name, **kwargs):  # noqa: E501
+    def save_message_template_with_http_info(
+        self, body, description, name, **kwargs
+    ):  # noqa: E501
         """Create or Update Template  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -642,47 +693,49 @@ class PromptResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['body', 'description', 'name', 'models']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["body", "description", "name", "models"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method save_message_template" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'body' is set
-        if ('body' not in params or
-                params['body'] is None):
-            raise ValueError("Missing the required parameter `body` when calling `save_message_template`")  # noqa: E501
-        # verify the required parameter 'description' is set
-        if ('description' not in params or
-                params['description'] is None):
+        if "body" not in params or params["body"] is None:
             raise ValueError(
-                "Missing the required parameter `description` when calling `save_message_template`")  # noqa: E501
+                "Missing the required parameter `body` when calling `save_message_template`"
+            )  # noqa: E501
+        # verify the required parameter 'description' is set
+        if "description" not in params or params["description"] is None:
+            raise ValueError(
+                "Missing the required parameter `description` when calling `save_message_template`"
+            )  # noqa: E501
         # verify the required parameter 'name' is set
-        if ('name' not in params or
-                params['name'] is None):
-            raise ValueError("Missing the required parameter `name` when calling `save_message_template`")  # noqa: E501
+        if "name" not in params or params["name"] is None:
+            raise ValueError(
+                "Missing the required parameter `name` when calling `save_message_template`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'name' in params:
-            path_params['name'] = params['name']  # noqa: E501
+        if "name" in params:
+            path_params["name"] = params["name"]  # noqa: E501
 
         query_params = []
-        if 'description' in params:
-            query_params.append(('description', params['description']))  # noqa: E501
-        if 'models' in params:
-            query_params.append(('models', params['models']))  # noqa: E501
-            collection_formats['models'] = 'multi'  # noqa: E501
+        if "description" in params:
+            query_params.append(("description", params["description"]))  # noqa: E501
+        if "models" in params:
+            query_params.append(("models", params["models"]))  # noqa: E501
+            collection_formats["models"] = "multi"  # noqa: E501
 
         header_params = {}
 
@@ -690,17 +743,21 @@ class PromptResourceApi(object):
         local_var_files = {}
 
         body_params = None
-        if 'body' in params:
-            body_params = params['body']
+        if "body" in params:
+            body_params = params["body"]
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
-            ['application/json'])  # noqa: E501
+        header_params["Content-Type"] = (
+            self.api_client.select_header_content_type(  # noqa: E501
+                ["application/json"]
+            )
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/prompts/{name}', 'POST',
+            "/prompts/{name}",
+            "POST",
             path_params,
             query_params,
             header_params,
@@ -709,11 +766,12 @@ class PromptResourceApi(object):
             files=local_var_files,
             response_type=None,  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def test_message_template(self, body, **kwargs):  # noqa: E501
         """Test Prompt Template  # noqa: E501
@@ -729,11 +787,15 @@ class PromptResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.test_message_template_with_http_info(body, **kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.test_message_template_with_http_info(
+                body, **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.test_message_template_with_http_info(body, **kwargs)  # noqa: E501
+            (data) = self.test_message_template_with_http_info(
+                body, **kwargs
+            )  # noqa: E501
             return data
 
     def test_message_template_with_http_info(self, body, **kwargs):  # noqa: E501
@@ -751,25 +813,26 @@ class PromptResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['body']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["body"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method test_message_template" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'body' is set
-        if ('body' not in params or
-                params['body'] is None):
-            raise ValueError("Missing the required parameter `body` when calling `test_message_template`")  # noqa: E501
+        if "body" not in params or params["body"] is None:
+            raise ValueError(
+                "Missing the required parameter `body` when calling `test_message_template`"
+            )  # noqa: E501
 
         collection_formats = {}
 
@@ -783,31 +846,37 @@ class PromptResourceApi(object):
         local_var_files = {}
 
         body_params = None
-        if 'body' in params:
-            body_params = params['body']
+        if "body" in params:
+            body_params = params["body"]
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
-            ['application/json'])  # noqa: E501
+        header_params["Content-Type"] = (
+            self.api_client.select_header_content_type(  # noqa: E501
+                ["application/json"]
+            )
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/prompts/test', 'POST',
+            "/prompts/test",
+            "POST",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='str',  # noqa: E501
+            response_type="str",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )

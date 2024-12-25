@@ -3,24 +3,18 @@ from pathlib import Path
 from typing import List, Tuple
 
 from colorama import Fore, Style
-from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import TaskStatus
-from pydantic import Field
-from tenacity import (
-    retry,
-    retry_if_exception_message,
-    stop_after_attempt,
-    stop_after_delay,
-)
-
+from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import (
+    TaskStatus, TaskTree)
+from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.memories.ltms.ltm import LTM
 from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.models.llms.prompt import PromptTemplate
-from omagent_core.memories.ltms.ltm import LTM
+from omagent_core.tool_system.manager import ToolManager
 from omagent_core.utils.env import EnvVar
 from omagent_core.utils.registry import registry
-from omagent_core.tool_system.manager import ToolManager
-from omagent_core.engine.worker.base import BaseWorker
-from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import TaskTree
-
+from pydantic import Field
+from tenacity import (retry, retry_if_exception_message, stop_after_attempt,
+                      stop_after_delay)
 
 CURRENT_PATH = root_path = Path(__file__).parents[0]
 
@@ -65,10 +59,14 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
         Returns:
             dict: Contains updated task status, rescue results, and next actions
         """
-        toolcall_content = self.stm(self.workflow_instance_id).get("former_results", {}).pop("tool_call", None)
+        toolcall_content = (
+            self.stm(self.workflow_instance_id)
+            .get("former_results", {})
+            .pop("tool_call", None)
+        )
         # Get the tool call information from the former results
         if toolcall_content is not None:
-            former_results = self.stm(self.workflow_instance_id)['former_results']
+            former_results = self.stm(self.workflow_instance_id)["former_results"]
             tool_call_error = former_results.pop("tool_call_error", None)
             task = TaskTree(**dnc_structure)
             current_node = task.get_current_node()
@@ -78,8 +76,10 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
                 task=current_node.task,
                 failed_detail=tool_call_error,
             )
-            former_results['failed_detail'] = chat_complete_res["choices"][0]["message"]["content"]
-            
+            former_results["failed_detail"] = chat_complete_res["choices"][0][
+                "message"
+            ]["content"]
+
             # Re-execute the tool call with the corrected parameters
             rescue_execution_status, rescue_execution_results = (
                 self.tool_manager.execute_task(
@@ -90,24 +90,51 @@ class TaskRescue(BaseLLMBackend, BaseWorker):
             # Handle the case where the rescue execution is successful
             if rescue_execution_status == "success":
                 former_results.pop("failed_detail", None)
-                former_results['rescue_detail'] = rescue_execution_results
-                self.stm(self.workflow_instance_id)['former_results'] = former_results
-                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Rescue', message=f'Rescue tool call success.')
-                self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
-                self.stm(self.workflow_instance_id)['last_output'] = last_output
-                return {"dnc_structure": task.model_dump(), "switch_case_value": "success", "last_output": last_output, "kwargs": kwargs}
+                former_results["rescue_detail"] = rescue_execution_results
+                self.stm(self.workflow_instance_id)["former_results"] = former_results
+                self.callback.info(
+                    agent_id=self.workflow_instance_id,
+                    progress=f"Rescue",
+                    message=f"Rescue tool call success.",
+                )
+                self.stm(self.workflow_instance_id)["dnc_structure"] = task.model_dump()
+                self.stm(self.workflow_instance_id)["last_output"] = last_output
+                return {
+                    "dnc_structure": task.model_dump(),
+                    "switch_case_value": "success",
+                    "last_output": last_output,
+                    "kwargs": kwargs,
+                }
             # Handle the case where the rescue execution is failed
             else:
-                self.stm(self.workflow_instance_id)['former_results'] = former_results
+                self.stm(self.workflow_instance_id)["former_results"] = former_results
                 current_node.status = TaskStatus.RUNNING
-                self.callback.info(agent_id=self.workflow_instance_id, progress=f'Rescue', message=f'Rescue tool call failed.')
-                self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
-                self.stm(self.workflow_instance_id)['last_output'] = last_output
-                return {"dnc_structure": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
-        
+                self.callback.info(
+                    agent_id=self.workflow_instance_id,
+                    progress=f"Rescue",
+                    message=f"Rescue tool call failed.",
+                )
+                self.stm(self.workflow_instance_id)["dnc_structure"] = task.model_dump()
+                self.stm(self.workflow_instance_id)["last_output"] = last_output
+                return {
+                    "dnc_structure": task.model_dump(),
+                    "switch_case_value": "failed",
+                    "last_output": last_output,
+                    "kwargs": kwargs,
+                }
+
         # Handle the case where there is no tool call to rescue
         else:
-            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Rescue', message=f'No tool call to rescue.')
-            self.stm(self.workflow_instance_id)['dnc_structure'] = task.model_dump()
-            self.stm(self.workflow_instance_id)['last_output'] = last_output
-            return {"dnc_structure": task.model_dump(), "switch_case_value": "failed", "last_output": last_output, "kwargs": kwargs}
+            self.callback.info(
+                agent_id=self.workflow_instance_id,
+                progress=f"Rescue",
+                message=f"No tool call to rescue.",
+            )
+            self.stm(self.workflow_instance_id)["dnc_structure"] = task.model_dump()
+            self.stm(self.workflow_instance_id)["last_output"] = last_output
+            return {
+                "dnc_structure": task.model_dump(),
+                "switch_case_value": "failed",
+                "last_output": last_output,
+                "kwargs": kwargs,
+            }

@@ -9,6 +9,7 @@ class UpsertUserRequest(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -16,17 +17,9 @@ class UpsertUserRequest(object):
       attribute_map (dict): The key is attribute name
                             and the value is json key in definition.
     """
-    swagger_types = {
-        'name': 'str',
-        'roles': 'list[str]',
-        'groups': 'list[str]'
-    }
+    swagger_types = {"name": "str", "roles": "list[str]", "groups": "list[str]"}
 
-    attribute_map = {
-        'name': 'name',
-        'roles': 'roles',
-        'groups': 'groups'
-    }
+    attribute_map = {"name": "name", "roles": "roles", "groups": "groups"}
 
     def __init__(self, name=None, roles=None, groups=None):  # noqa: E501
         """UpsertUserRequest - a model defined in Swagger"""  # noqa: E501
@@ -80,12 +73,19 @@ class UpsertUserRequest(object):
         :param roles: The roles of this UpsertUserRequest.  # noqa: E501
         :type: list[str]
         """
-        allowed_values = ["ADMIN", "USER", "WORKER", "METADATA_MANAGER", "WORKFLOW_MANAGER"]  # noqa: E501
+        allowed_values = [
+            "ADMIN",
+            "USER",
+            "WORKER",
+            "METADATA_MANAGER",
+            "WORKFLOW_MANAGER",
+        ]  # noqa: E501
         if not set(roles).issubset(set(allowed_values)):
             raise ValueError(
-                "Invalid values for `roles` [{0}], must be a subset of [{1}]"  # noqa: E501
-                .format(", ".join(map(str, set(roles) - set(allowed_values))),  # noqa: E501
-                        ", ".join(map(str, allowed_values)))
+                "Invalid values for `roles` [{0}], must be a subset of [{1}]".format(  # noqa: E501
+                    ", ".join(map(str, set(roles) - set(allowed_values))),  # noqa: E501
+                    ", ".join(map(str, allowed_values)),
+                )
             )
 
         self._roles = roles
@@ -120,18 +120,22 @@ class UpsertUserRequest(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(UpsertUserRequest, dict):

@@ -1,8 +1,9 @@
-from omagent_core.memories.stms.stm_base import STMBase, WorkflowInstanceProxy
 import pickle
 from typing import Any
-from omagent_core.utils.registry import registry
+
+from omagent_core.memories.stms.stm_base import STMBase, WorkflowInstanceProxy
 from omagent_core.services.connectors.redis import RedisConnector
+from omagent_core.utils.registry import registry
 
 
 @registry.register_component()
@@ -12,10 +13,10 @@ class RedisSTM(STMBase):
     def __call__(self, workflow_instance_id: str):
         """
         Return a WorkflowInstanceProxy for the given workflow instance ID.
-        
+
         Args:
             workflow_instance_id (str): The ID of the workflow instance.
-            
+
         Returns:
             WorkflowInstanceProxy: A proxy object for accessing the workflow instance data.
         """
@@ -45,7 +46,7 @@ class RedisSTM(STMBase):
             all_items = self.redis_stm_client._client.hgetall(workflow_instance_id)
             if not all_items:
                 return {}
-            return {k.decode('utf-8'): pickle.loads(v) for k, v in all_items.items()}
+            return {k.decode("utf-8"): pickle.loads(v) for k, v in all_items.items()}
 
     def __setitem__(self, key: tuple, value: Any) -> None:
         """
@@ -56,7 +57,9 @@ class RedisSTM(STMBase):
             value (Any): The value to associate with the key.
         """
         workflow_instance_id, key = key
-        self.redis_stm_client._client.hset(workflow_instance_id, key, pickle.dumps(value))
+        self.redis_stm_client._client.hset(
+            workflow_instance_id, key, pickle.dumps(value)
+        )
 
     def __delitem__(self, workflow_instance_id: str, key: str) -> None:
         """
@@ -95,7 +98,10 @@ class RedisSTM(STMBase):
         Returns:
             list: A list containing all keys.
         """
-        return [k.decode('utf-8') for k in self.redis_stm_client._client.hkeys(workflow_instance_id)]
+        return [
+            k.decode("utf-8")
+            for k in self.redis_stm_client._client.hkeys(workflow_instance_id)
+        ]
 
     def values(self, workflow_instance_id: str) -> list:
         """
@@ -107,7 +113,10 @@ class RedisSTM(STMBase):
         Returns:
             list: A list containing all values.
         """
-        return [pickle.loads(v) for v in self.redis_stm_client._client.hvals(workflow_instance_id)]
+        return [
+            pickle.loads(v)
+            for v in self.redis_stm_client._client.hvals(workflow_instance_id)
+        ]
 
     def items(self, workflow_instance_id: str) -> list:
         """
@@ -120,7 +129,7 @@ class RedisSTM(STMBase):
             list: A list containing all key-value pairs.
         """
         items = self.redis_stm_client._client.hgetall(workflow_instance_id)
-        return [(k.decode('utf-8'), pickle.loads(v)) for k, v in items.items()]
+        return [(k.decode("utf-8"), pickle.loads(v)) for k, v in items.items()]
 
     def get(self, workflow_instance_id: str, key: str, default: Any = None) -> Any:
         """
@@ -193,50 +202,49 @@ class RedisSTM(STMBase):
         return self.redis_stm_client._client.hlen(workflow_instance_id)
 
 
-
 if __name__ == "__main__":
     # Create Redis client
     redis_client = RedisConnector()
-    
+
     # Create RedisSTM instance
     stm = RedisSTM(redis_stm_client=redis_client)
-    
+
     # Test workflow instance ID
     workflow_id = "test_workflow"
-    
+
     # Get workflow instance proxy
     workflow = stm(workflow_id)
-    
+
     # Test basic operations
     print("Testing basic operations...")
-    
+
     # Set items
     workflow["key1"] = "value1"
     workflow["key2"] = {"nested": "value2"}
-    
+
     # Get items
     print(f"Get key1: {workflow['key1']}")
     print(f"Get key2: {workflow['key2']}")
-    
+
     # Test contains
     print(f"Contains key1: {'key1' in workflow}")
-    
+
     # Test keys, values, items
     print(f"Keys: {workflow.keys()}")
     print(f"Values: {workflow.values()}")
     print(f"Items: {workflow.items()}")
-    
+
     # Test length
     print(f"Length: {len(workflow)}")
-    
+
     # Test pop
     popped = workflow.pop("key1")
     print(f"Popped value: {popped}")
-    
+
     # Test update
     workflow.update({"key3": "value3", "key4": "value4"})
     print(f"After update - keys: {workflow.keys()}")
-    
+
     # Test clear
     workflow.clear()
     print(f"After clear - length: {len(workflow)}")

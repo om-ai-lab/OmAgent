@@ -3,6 +3,7 @@ import logging as _logging
 import logging.handlers as handlers
 import os
 from distutils.util import strtobool
+
 from omagent_core.utils.container import container
 
 
@@ -27,7 +28,9 @@ class Logger(_logging.Logger):
         :param backup_count: How many log files to keep.
         """
         if level is None:
-            level = _logging.DEBUG if container.conductor_config.debug else _logging.INFO
+            level = (
+                _logging.DEBUG if container.conductor_config.debug else _logging.INFO
+            )
         super().__init__(name, level)
 
         formatter = _logging.Formatter(
