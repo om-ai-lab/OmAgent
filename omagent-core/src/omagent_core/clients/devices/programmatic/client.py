@@ -14,24 +14,14 @@ registry.import_module()
 class ProgrammaticClient:
     def __init__(
         self,
-        interactor: ConductorWorkflow = None,
         processor: ConductorWorkflow = None,
         config_path: str = "./config",
-        workers: list = [],
-        input_prompt: str = None,
+        workers: list = []
     ) -> None:
-        self._interactor = interactor
         self._processor = processor
         self._config_path = config_path
         self._workers = workers
-        self._input_prompt = input_prompt
         self._task_handler_processor = None
-
-    def start_interactor(self):
-        pass
-
-    def stop_interactor(self):
-        pass
 
     def start_processor(self):
         worker_config = build_from_file(self._config_path)
@@ -49,29 +39,43 @@ class ProgrammaticClient:
                     worker_config=worker_config, workers=self._workers
                 )
                 self._task_handler_processor.start_processes()
-            self._process_workflow(self._processor, workflow_input)
+            return self._process_workflow(self._processor, workflow_input)
         except Exception as e:
             logging.error(f"Error in start_processor_with_input: {e}")
 
-    def start_batch_processor(self, workflow_input_list: list[dict]):
+    def start_batch_processor(self, workflow_input_list: list[dict], max_tasks: int = 10):
+        results = []
         worker_config = build_from_file(self._config_path)
-        self._task_handler_processor = TaskHandler(
-            worker_config=worker_config, workers=self._workers
-        )
+        self._task_handler_processor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_processor.start_processes()
-        processes = []
+        
+        result_queue = multiprocessing.Queue()
+        active_processes = []
+        
         for workflow_input in workflow_input_list:
+            while len(active_processes) >= max_tasks:
+                for p in active_processes[:]:
+                    if not p.is_alive():
+                        p.join()
+                        active_processes.remove(p)
+                        if not result_queue.empty():
+                            results.append(result_queue.get())
+                sleep(0.1)
+            
             p = multiprocessing.Process(
-                target=self._process_workflow,
-                args=(
-                    self._processor,
-                    workflow_input,
-                ),
+                target=self._process_workflow_with_queue, 
+                args=(self._processor, workflow_input, result_queue,)
             )
             p.start()
-            processes.append(p)
-        for p in processes:
+            active_processes.append(p)
+
+        for p in active_processes:
             p.join()
+        
+        while not result_queue.empty():
+            results.append(result_queue.get())
+            
+        return results
 
     def stop_processor(self):
         if self._task_handler_processor is not None:
@@ -88,8 +92,17 @@ class ProgrammaticClient:
                 if status in terminal_status:
                     break
                 sleep(1)
+            return workflow.get_workflow(workflow_id=workflow_instance_id).output
         except KeyboardInterrupt:
             logging.info("\nDetected Ctrl+C, stopping workflow...")
             if workflow_instance_id is not None:
                 workflow._executor.terminate(workflow_id=workflow_instance_id)
             raise  # Rethrow the exception to allow the program to exit normally
+
+    def _process_workflow_with_queue(self, workflow: ConductorWorkflow, workflow_input: dict, queue: multiprocessing.Queue):
+        try:
+            result = self._process_workflow(workflow, workflow_input)
+            queue.put(result)
+        except Exception as e:
+            logging.error(f"Error in process workflow: {e}")
+            queue.put(None)
