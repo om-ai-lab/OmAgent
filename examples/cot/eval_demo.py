@@ -125,7 +125,7 @@ def evaluator( model_id, dataset_name, dataset_path, output_path, output_name, c
     programmatic_client = ProgrammaticClient( processor=workflow, config_path=config_path, workers=[] )
 
     workflow_input_list = prepare_data( file_path=dataset_path, cot_examples=EXAMPLES, cot_method=cot_method )
-    res = programmatic_client.start_batch_processor( workflow_input_list=workflow_input_list, max_workers=15 )
+    res = programmatic_client.start_batch_processor( workflow_input_list=workflow_input_list, max_tasks=15 )
     programmatic_client.stop_processor()
 
     results = process_results( res, dataset_name=dataset_name, alg=alg )
