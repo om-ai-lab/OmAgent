@@ -1,3 +1,4 @@
+from itertools import combinations_with_replacement
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.registry import registry
@@ -27,13 +28,18 @@ class COTReasoning(BaseLLMBackend, BaseWorker):
     def _run(self, user_question:str,path_num:str,*args, **kwargs):
 
         reason_path = []
+        prompt_token = []
+        complete_token = []
         for i in range(int(path_num)):
             reasoning_result = self.simple_infer(question=user_question)
 
+            prompt_token.append(reasoning_result["usage"]["prompt_tokens"])
+            complete_token.append(reasoning_result["usage"]["completion_tokens"])
             reasoning_result = reasoning_result["choices"][0]["message"]["content"]
             reason_path.append(reasoning_result)
 
-
+        self.stm(self.workflow_instance_id)['prompt_token'] = prompt_token
+        self.stm(self.workflow_instance_id)['completion_token'] = complete_token
         self.stm(self.workflow_instance_id)['reasoning_result'] = reason_path
 
         self.callback.send_answer(self.workflow_instance_id, msg=",".join(reason_path))
