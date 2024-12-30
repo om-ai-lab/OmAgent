@@ -31,6 +31,6 @@ class CoTExample( BaseModel ):
             str: The updated demo string with appended examples.
         """
         if self.check_inpout( cot_examples ):
-            for example in cot_examples:
-                self.demo += f"Q: {example['q']}\nA: {example['r']} The answer is {example['a']}."
+            demos = [f"Q: {example['q']}\nA: {example['r']} The answer is {example['a']}." for example in cot_examples]
+            self.demo = '\n\n'.join( demos )
         return self.demo
