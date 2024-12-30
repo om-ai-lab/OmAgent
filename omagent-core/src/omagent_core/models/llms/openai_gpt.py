@@ -40,7 +40,7 @@ class OpenaiGPTLLM(BaseLLM):
     stream: bool = Field(default=False, description="Whether to stream the response")
     max_tokens: int = Field(default=2048, description="The max tokens of LLM")
     use_default_sys_prompt: bool = Field(
-        default=True, description="Whether to use the default system prompt"
+        default=False, description="Whether to use the default system prompt"
     )
     response_format: str = Field(
         default="text", description="The response format of openai"
