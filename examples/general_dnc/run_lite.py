@@ -39,5 +39,5 @@ workflow >> client_input_task >> dnc_workflow >> conclude_task
 workflow.register(overwrite=True)
 config_path = CURRENT_PATH.joinpath('configs')
 
-cli_client = LiteClient(config_path=config_path, workflow_json=workflow.name)
+cli_client = LiteClient(config_path=config_path, workflow=workflow)
 cli_client.start_interactor()
