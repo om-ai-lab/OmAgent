@@ -35,22 +35,22 @@ import redis
 
 
 class LiteClient:
-    def __init__(self, config_path, workflow_json):
+    def __init__(self, config_path, workflow):
         self._config_path = config_path
         self.tasks = {}
         self.workflow_data = {}
         self.current_task_index = 0
         self.workers = {}
         self.worker_output_queue = queue.Queue() 
-        self.initialize_workflow(workflow_json)
+        self.initialize_workflow(workflow)
         container.get_connector('redis_stream_client')._client.flushdb()
 
 
     def register_worker(self, worker_name: str, worker_class: Any):
         self.tasks[worker_name] = worker_class
         
-    def initialize_workflow(self, workflow_json: Dict):
-        self.workflow_data = json.load(open(workflow_json+".json"))
+    def initialize_workflow(self, workflow):
+        self.workflow_data = json.load(open(workflow.name+".json"))
         self.task_outputs = {}
         self.workflow_variables = {}
         
