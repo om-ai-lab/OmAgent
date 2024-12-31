@@ -65,7 +65,7 @@ The container.yaml file is a configuration file that manages dependencies and se
 
 ## Running the Example
 
-3. Run the CoT example:
+1. Run the CoT example:
 
    For terminal/CLI usage:
    ```bash
@@ -82,7 +82,7 @@ The container.yaml file is a configuration file that manages dependencies and se
    python run_webpage.py
    ```
 
-4. Run the evaluation example:
+2. Run the evaluation example:
    - you need to set the parameters such as `model_id`, `dataset_name`, `dataset_path`, `output_path`, `output_name`, and `cot_method`, which are defined as follows:
       - `model_id`: The ID of the LLM model you are using.
       - `dataset_name`: The name of the dataset.
