@@ -43,7 +43,7 @@ class LiteClient:
         self.workers = {}
         self.worker_output_queue = queue.Queue() 
         self.initialize_workflow(workflow_json)
-        #container.get_connector('redis_stream_client')._client.flushdb()
+        container.get_connector('redis_stream_client')._client.flushdb()
 
 
     def register_worker(self, worker_name: str, worker_class: Any):
