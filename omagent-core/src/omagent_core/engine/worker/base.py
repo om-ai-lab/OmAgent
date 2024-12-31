@@ -70,7 +70,9 @@ class BaseWorker(BotBase, ABC):
                 
     @property 
     def workflow_instance_id(self) -> str:
-        return self._workflow_instance_id
+        _id = self._workflow_instance_id        
+        if not _id:
+            return "omagent_lite_ver"
         
     @workflow_instance_id.setter
     def workflow_instance_id(self, value: str):
@@ -79,6 +81,10 @@ class BaseWorker(BotBase, ABC):
     @abstractmethod
     def _run(self, *args, **kwargs) -> Any:
         """Run the Node."""
+
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        print ("__call__")
+        return self._run(*args, **kwds)
 
     def execute(self, task: Task) -> TaskResult:
         task_input = {}

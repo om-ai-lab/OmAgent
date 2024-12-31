@@ -18,16 +18,18 @@ from omagent_core.engine.workflow.task.timeout_policy import TimeoutPolicy
 import itertools
 from omagent_core.utils.container import container
 from omagent_core.utils.logger import logging
+import json
 
 
 class ConductorWorkflow:
     SCHEMA_VERSION = 2
 
-    def __init__(self, name: str, version: int = None, description: str = None) -> Self:
+    def __init__(self, name: str, version: int = None, description: str = None, lite_version: bool = False) -> Self:
         self._executor = WorkflowExecutor()
         self.name = name
         self.version = version
         self.description = description
+        self.lite_version = lite_version
         self._tasks = []
         self._owner_email = "default@omagent.ai"
         self._timeout_policy = None
@@ -185,10 +187,15 @@ class ConductorWorkflow:
     # overwritten. When not set, the call fails if there is any change in the workflow definition between the server
     # and what is being registered.
     def register(self, overwrite: bool):
-        return self._executor.register_workflow(
-            overwrite=overwrite,
-            workflow=self.to_workflow_def(),
-        )
+        if self.lite_version:            
+            _workflow = self.to_workflow_def()        
+            with open(f'{_workflow.to_dict()["name"]}.json', 'w') as file:
+                json.dump(_workflow.toJSON(), file, indent=4)
+        else:
+            return self._executor.register_workflow(
+                overwrite=overwrite,
+                workflow=self.to_workflow_def(),
+            )
 
     def start_workflow(self, start_workflow_request: StartWorkflowRequest) -> str:
         """
