@@ -1,11 +1,10 @@
 import contextvars
 from abc import ABC
-from typing import Optional, Union, Any, List
+from typing import Any, List, Optional, Union
 
+from omagent_core.utils.container import container
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
-from omagent_core.utils.container import container
-
 
 REQUEST_ID = contextvars.ContextVar("request_id")
 
@@ -23,7 +22,6 @@ class BotBase(BaseSettings, ABC):
         extra = "allow"
         arbitrary_types_allowed = True
 
-
     @field_validator("name", mode="before")
     @classmethod
     def get_type(cls, name) -> str:
@@ -31,40 +29,41 @@ class BotBase(BaseSettings, ABC):
             return cls.__name__
         else:
             return name
-        
+
     @property
     def stm(self) -> str:
         if self.component_stm is None:
             return container.stm
         else:
             return container.get_component(self.component_stm)
-    
+
     @property
     def ltm(self) -> str:
         if self.component_ltm is None:
             return container.ltm
         else:
             return container.get_component(self.component_ltm)
-    
+
     @property
     def callback(self) -> str:
         if self.component_callback is None:
             return container.callback
         else:
             return container.get_component(self.component_callback)
-    
+
     @property
     def input(self) -> str:
         if self.component_input is None:
             return container.input
         else:
             return container.get_component(self.component_input)
-        
-
 
     @classmethod
     def get_config_template(
-        cls, description: bool = True, env_var: bool = True, exclude_fields: List[str] = []
+        cls,
+        description: bool = True,
+        env_var: bool = True,
+        exclude_fields: List[str] = [],
     ) -> dict:
         template = {}
         simple_types = (str, int, float, bool, type(None))
@@ -93,13 +92,21 @@ class BotBase(BaseSettings, ABC):
                 if any(is_botbase_subclass(t) for t in types):
                     for t in types:
                         if is_botbase_subclass(t):
-                            template[field_name] = t.get_config_template(description=description, env_var=env_var, exclude_fields=exclude_fields)
+                            template[field_name] = t.get_config_template(
+                                description=description,
+                                env_var=env_var,
+                                exclude_fields=exclude_fields,
+                            )
                             break
                     continue
                 elif not all(is_simple_type(t) for t in types):
                     continue
             elif is_botbase_subclass(field_type):
-                template[field_name] = field_type.get_config_template(description=description, env_var=env_var, exclude_fields=exclude_fields)
+                template[field_name] = field_type.get_config_template(
+                    description=description,
+                    env_var=env_var,
+                    exclude_fields=exclude_fields,
+                )
                 continue
             elif not is_simple_type(field_type):
                 continue
@@ -123,7 +130,6 @@ class BotBase(BaseSettings, ABC):
             template["name"] = cls.__name__
         return template
 
-    
     @classmethod
     def from_config(cls, config_data: dict) -> "BotBase":
         def clean_config_dict(config_dict: dict) -> dict:
@@ -131,14 +137,14 @@ class BotBase(BaseSettings, ABC):
             cleaned = {}
             for key, value in config_dict.items():
                 if isinstance(value, dict):
-                    if 'value' in value:
-                        cleaned[key] = value['value']
+                    if "value" in value:
+                        cleaned[key] = value["value"]
                     else:
                         cleaned[key] = clean_config_dict(value)
                 else:
                     cleaned[key] = value
             return cleaned
-        
+
         class_config = config_data.get(cls.__name__, {})
         clean_class_config = clean_config_dict(class_config)
 

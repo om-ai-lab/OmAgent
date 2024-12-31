@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
+
 from omagent_core.engine.orkes.models.metadata_tag import MetadataTag
 
 
@@ -37,5 +38,7 @@ class SecretClient(ABC):
         pass
 
     @abstractmethod
-    def delete_secret_tags(self, tags: List[MetadataTag], key: str) -> List[MetadataTag]:
+    def delete_secret_tags(
+        self, tags: List[MetadataTag], key: str
+    ) -> List[MetadataTag]:
         pass

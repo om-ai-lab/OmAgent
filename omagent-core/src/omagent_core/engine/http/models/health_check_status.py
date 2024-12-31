@@ -9,6 +9,7 @@ class HealthCheckStatus(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,18 +18,20 @@ class HealthCheckStatus(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'health_results': 'list[Health]',
-        'suppressed_health_results': 'list[Health]',
-        'healthy': 'bool'
+        "health_results": "list[Health]",
+        "suppressed_health_results": "list[Health]",
+        "healthy": "bool",
     }
 
     attribute_map = {
-        'health_results': 'healthResults',
-        'suppressed_health_results': 'suppressedHealthResults',
-        'healthy': 'healthy'
+        "health_results": "healthResults",
+        "suppressed_health_results": "suppressedHealthResults",
+        "healthy": "healthy",
     }
 
-    def __init__(self, health_results=None, suppressed_health_results=None, healthy=None):  # noqa: E501
+    def __init__(
+        self, health_results=None, suppressed_health_results=None, healthy=None
+    ):  # noqa: E501
         """HealthCheckStatus - a model defined in Swagger"""  # noqa: E501
         self._health_results = None
         self._suppressed_health_results = None
@@ -111,18 +114,22 @@ class HealthCheckStatus(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(HealthCheckStatus, dict):

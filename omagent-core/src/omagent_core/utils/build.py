@@ -1,14 +1,13 @@
 import json
+import os
 import re
 from copy import deepcopy
 from distutils.util import strtobool
 from pathlib import Path
-import os
+
 import yaml
-import os
+
 from .env import EnvVar
-
-
 
 
 def build_from_file(file_path: str):
@@ -27,7 +26,7 @@ def build_from_file(file_path: str):
             continue
 
         key = file.name.split(".", 1)[0]
-        
+
         if key in file_names:
             raise Exception(
                 f"Duplicate file name [{key}] found:\n"
@@ -44,7 +43,7 @@ def build_from_file(file_path: str):
                     content = yaml.load(f, Loader=yaml.FullLoader)
         except Exception as e:
             raise Exception(f"Error loading file {file}: {str(e)}")
-        
+
         if workers_path in file.parents:
             worker_configs[key] = content
         else:
@@ -52,7 +51,7 @@ def build_from_file(file_path: str):
 
     for conf in worker_configs.values():
         prep_config(conf, other_configs, [])
-    
+
     worker_configs_list = []
     for worker_config in worker_configs.values():
         if isinstance(worker_config, list):
@@ -62,11 +61,12 @@ def build_from_file(file_path: str):
 
     return worker_configs_list
 
-def prep_config(sub_config: dict|list, config: dict, forbid_keys: list):
+
+def prep_config(sub_config: dict | list, config: dict, forbid_keys: list):
     if isinstance(sub_config, dict):
         for key, conf in sub_config.items():
             if isinstance(conf, str):
-                if match := re.search(r'\$\{sub\|([^}]+)\}', conf):
+                if match := re.search(r"\$\{sub\|([^}]+)\}", conf):
                     module_key = match.group(1).strip()
                     if module_key not in config:
                         raise Exception(
@@ -82,19 +82,20 @@ def prep_config(sub_config: dict|list, config: dict, forbid_keys: list):
                         )
                     sub_config[key] = deepcopy(config[module_key])
                     prep_config(sub_config[key], config, forbid_keys + [module_key])
-                elif match := re.search(r'\$\{env\|([^,}]+)(?:,([^}]+))?\}', conf):
+                elif match := re.search(r"\$\{env\|([^,}]+)(?:,([^}]+))?\}", conf):
                     env_key = match.group(1).strip()
                     default_value = match.group(2)
                     env_value = os.getenv(env_key)
                     if env_value:
                         sub_config[key] = env_value
                     elif not env_value and default_value:
-                        sub_config[key] =default_value.strip()
+                        sub_config[key] = default_value.strip()
                         if sub_config[key] == "null" or sub_config[key] == "~":
                             sub_config[key] = None
                     else:
-                        raise ValueError(f'Environmental variable {env_key} need to be set.')
-                    
+                        raise ValueError(
+                            f"Environmental variable {env_key} need to be set."
+                        )
 
             elif isinstance(conf, dict):
                 prep_config(sub_config[key], config, forbid_keys)

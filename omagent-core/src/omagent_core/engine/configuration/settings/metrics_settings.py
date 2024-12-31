@@ -4,23 +4,20 @@ from pathlib import Path
 
 from omagent_core.engine.configuration.configuration import Configuration
 
-logger = logging.getLogger(
-    Configuration.get_logging_formatted_name(
-        __name__
-    )
-)
+logger = logging.getLogger(Configuration.get_logging_formatted_name(__name__))
 
 
 def get_default_temporary_folder() -> str:
-    return f'{str(Path.home())}/tmp/'
+    return f"{str(Path.home())}/tmp/"
 
 
 class MetricsSettings:
     def __init__(
-            self,
-            directory: str = None,
-            file_name: str = 'metrics.log',
-            update_interval: float = 0.1):
+        self,
+        directory: str = None,
+        file_name: str = "metrics.log",
+        update_interval: float = 0.1,
+    ):
         if directory is None:
             directory = get_default_temporary_folder()
         self.__set_dir(directory)
@@ -32,6 +29,5 @@ class MetricsSettings:
             try:
                 os.mkdir(dir)
             except Exception as e:
-                logger.warning(
-                    'Failed to create metrics temporary folder, reason: ', e)
+                logger.warning("Failed to create metrics temporary folder, reason: ", e)
         self.directory = dir

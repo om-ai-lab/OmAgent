@@ -1,22 +1,22 @@
 import hashlib
 import pickle
+import time
 from pathlib import Path
 from typing import List, Optional, Union
 
-from omagent_core.models.llms.base import BaseLLMBackend
+import json_repair
 from omagent_core.engine.worker.base import BaseWorker
-
+from omagent_core.models.asr.stt import STT
+from omagent_core.models.encoders.openai_encoder import OpenaiTextEmbeddingV3
+from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.models.llms.prompt import PromptTemplate
 from omagent_core.utils.registry import registry
-from omagent_core.models.asr.stt import STT
 from pydantic import Field, field_validator
 from pydub import AudioSegment
 from pydub.effects import normalize
 from scenedetect import open_video
-import json_repair
+
 from ..misc.scene import VideoScenes
-from omagent_core.models.encoders.openai_encoder import OpenaiTextEmbeddingV3
-import time
 
 CURRENT_PATH = root_path = Path(__file__).parents[0]
 
@@ -43,7 +43,7 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
     show_progress: bool = True
 
     use_cache: bool = False
-    cache_dir: str = "./running_logs/video_cache"
+    cache_dir: str = "./video_cache"
 
     @field_validator("stt", mode="before")
     @classmethod
@@ -73,16 +73,19 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
            - Extracting frames at specified intervals
            - Generating scene summaries using LLM
            - Caching results for future use
-        
+
         Args:
             video_path (str): Path to input video file
             *args: Variable length argument list
             **kwargs: Arbitrary keyword arguments
-            
+
         Returns:
             dict: Dictionary containing video_md5 and video_path
         """
-        video_path = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt="Please input the video path:")['messages'][0]['content'][0]['data']
+        video_path = self.input.read_input(
+            workflow_instance_id=self.workflow_instance_id,
+            input_prompt="Please input the video path:",
+        )["messages"][0]["content"][0]["data"]
         video_md5 = self.calculate_md5(video_path)
         kwargs["video_md5"] = video_md5
 
@@ -106,13 +109,15 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
                     scenes=loaded_scene,
                     frame_extraction_interval=self.frame_extraction_interval,
                 )
-                self.callback.send_block(agent_id=self.workflow_instance_id,
-                    msg="Loaded video scenes from cache.\nResume the interrupted transfer for results with scene.summary of None."
+                self.callback.send_block(
+                    agent_id=self.workflow_instance_id,
+                    msg="Loaded video scenes from cache.\nResume the interrupted transfer for results with scene.summary of None.",
                 )
                 for index, scene in enumerate(video.scenes):
                     if scene.summary is None:
-                        self.callback.send_block(agent_id=self.workflow_instance_id,
-                            msg=f"Resume the interrupted transfer for scene {index}."
+                        self.callback.send_block(
+                            agent_id=self.workflow_instance_id,
+                            msg=f"Resume the interrupted transfer for scene {index}.",
                         )
                         video_frames, time_stamps = video.get_video_frames(scene)
                         try:
@@ -130,7 +135,9 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
                                 ],
                                 images=video_frames,
                             )
-                            scene.summary = chat_complete_res[0]["choices"][0]["message"]["content"]
+                            scene.summary = chat_complete_res[0]["choices"][0][
+                                "message"
+                            ]["content"]
                             scene_info = scene.summary.get("scene", [])
                             events = scene.summary.get("events", [])
                             start_time = scene.start.get_seconds()
@@ -145,13 +152,13 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
                             )
                             content_vector = self.text_encoder.infer([content])[0]
                             self.ltm[index] = {
-                                'value': {
+                                "value": {
                                     "video_md5": video_md5,
                                     "content": content,
                                     "start_time": start_time,
-                                    "end_time": end_time
+                                    "end_time": end_time,
                                 },
-                                'embedding': content_vector
+                                "embedding": content_vector,
                             }
                         except Exception as e:
                             self.callback.error(
@@ -165,7 +172,7 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
                                 "scene": [],
                                 "summary": "",
                             }
-                self.stm(self.workflow_instance_id)['video'] = video.to_serializable()
+                self.stm(self.workflow_instance_id)["video"] = video.to_serializable()
             # Cache the processed video scenes
             with open(cache_path, "wb") as f:
                 pickle.dump(video.scenes, f)
@@ -180,7 +187,7 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
                 show_progress=self.show_progress,
                 kernel_size=self.kernel_size,
             )
-            self.stm(self.workflow_instance_id)['video'] = video.to_serializable()
+            self.stm(self.workflow_instance_id)["video"] = video.to_serializable()
 
             for index, scene in enumerate(video.scenes):
                 print(f"Processing scene {index} / {len(video.scenes)}...")
@@ -209,7 +216,9 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
                         ],
                         images=video_frames,
                     )
-                    scene.summary = chat_complete_res[0]["choices"][0]["message"]["content"]
+                    scene.summary = chat_complete_res[0]["choices"][0]["message"][
+                        "content"
+                    ]
                     scene_info = scene.summary.get("scene", [])
                     events = scene.summary.get("events", [])
                     start_time = scene.start.get_seconds()
@@ -224,13 +233,13 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
                     )
                     content_vector = self.text_encoder.infer([content])[0]
                     self.ltm[index] = {
-                        'value': {
+                        "value": {
                             "video_md5": video_md5,
                             "content": content,
                             "start_time": start_time,
-                            "end_time": end_time
+                            "end_time": end_time,
                         },
-                        'embedding': content_vector
+                        "embedding": content_vector,
                     }
                 except Exception as e:
                     self.callback.error(f"Failed to process scene {index}: {e}")
@@ -240,4 +249,8 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
             cache_path.parent.mkdir(parents=True, exist_ok=True)
             with open(cache_path, "wb") as f:
                 pickle.dump(video.scenes, f)
-        return {"video_md5": video_md5, "video_path": video_path, "instance_id": self.workflow_instance_id}
+        return {
+            "video_md5": video_md5,
+            "video_path": video_path,
+            "instance_id": self.workflow_instance_id,
+        }

@@ -34,5 +34,7 @@ class OrkesSecretClient(OrkesBaseClient, SecretClient):
     def get_secret_tags(self, key: str) -> List[MetadataTag]:
         return self.secretResourceApi.get_tags(key)
 
-    def delete_secret_tags(self, tags: List[MetadataTag], key: str) -> List[MetadataTag]:
+    def delete_secret_tags(
+        self, tags: List[MetadataTag], key: str
+    ) -> List[MetadataTag]:
         self.secretResourceApi.delete_tag_for_secret(tags, key)

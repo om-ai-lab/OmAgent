@@ -1,6 +1,8 @@
 import logging
-from omagent_core.engine.task_client import TaskClient
+
 import requests
+from omagent_core.engine.task_client import TaskClient
+
 
 class ConductorLogHandler(logging.Handler):
     def __init__(self, task_client):

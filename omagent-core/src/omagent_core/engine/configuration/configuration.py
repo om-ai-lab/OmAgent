@@ -1,15 +1,12 @@
 import logging
 import os
 import time
-from typing import Optional, Any
+from typing import Any, Optional
 
+from omagent_core.engine.configuration.settings.authentication_settings import \
+    AuthenticationSettings
 from pydantic import Field
 from pydantic_settings import BaseSettings
-
-
-from omagent_core.engine.configuration.settings.authentication_settings import (
-    AuthenticationSettings,
-)
 
 TEMPLATE_CONFIG = {
     "name": "Configuration",
@@ -44,8 +41,7 @@ class Configuration(BaseSettings):
         extra = "allow"
 
     base_url: str = Field(
-        default="http://localhost:8080",
-        description="The Conductor Server API endpoint"
+        default="http://localhost:8080", description="The Conductor Server API endpoint"
     )
     auth_key: Optional[str] = Field(default=None, description="The authorization key")
     auth_secret: Optional[str] = Field(

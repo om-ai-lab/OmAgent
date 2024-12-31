@@ -1,11 +1,14 @@
 from __future__ import absolute_import
+
 from abc import ABC, abstractmethod
 from typing import List
 
 from omagent_core.engine.http.models.integration import Integration
 from omagent_core.engine.http.models.integration_api import IntegrationApi
-from omagent_core.engine.http.models.integration_api_update import IntegrationApiUpdate
-from omagent_core.engine.http.models.integration_update import IntegrationUpdate
+from omagent_core.engine.http.models.integration_api_update import \
+    IntegrationApiUpdate
+from omagent_core.engine.http.models.integration_update import \
+    IntegrationUpdate
 from omagent_core.engine.http.models.prompt_template import PromptTemplate
 
 
@@ -33,33 +36,39 @@ class IntegrationClient(ABC):
     """
 
     @abstractmethod
-    def associate_prompt_with_integration(self, ai_integration:str, model_name:str, prompt_name:str):
+    def associate_prompt_with_integration(
+        self, ai_integration: str, model_name: str, prompt_name: str
+    ):
         """Associate a prompt with an AI integration and model"""
         pass
 
     @abstractmethod
-    def delete_integration_api(self, api_name:str, integration_name:str):
+    def delete_integration_api(self, api_name: str, integration_name: str):
         """Delete a specific integration api for a given integration"""
         pass
 
-    def delete_integration(self, integration_name:str):
+    def delete_integration(self, integration_name: str):
         """Delete an integration"""
         pass
 
-    def get_integration_api(self, api_name:str, integration_name:str) -> IntegrationApi:
+    def get_integration_api(
+        self, api_name: str, integration_name: str
+    ) -> IntegrationApi:
         pass
 
-    def get_integration_apis(self, integration_name:str) -> List[IntegrationApi]:
+    def get_integration_apis(self, integration_name: str) -> List[IntegrationApi]:
         pass
 
-    def get_integration(self, integration_name:str) -> Integration:
+    def get_integration(self, integration_name: str) -> Integration:
         pass
 
     def get_integrations(self) -> List[Integration]:
         """Returns the list of all the available integrations"""
         pass
 
-    def get_prompts_with_integration(self, ai_integration:str, model_name:str) -> List[PromptTemplate]:
+    def get_prompts_with_integration(
+        self, ai_integration: str, model_name: str
+    ) -> List[PromptTemplate]:
         pass
 
     def get_token_usage_for_integration(self, name, integration_name) -> int:
@@ -71,10 +80,14 @@ class IntegrationClient(ABC):
     def register_token_usage(self, body, name, integration_name):
         pass
 
-    def save_integration_api(self, integration_name, api_name, api_details: IntegrationApiUpdate):
+    def save_integration_api(
+        self, integration_name, api_name, api_details: IntegrationApiUpdate
+    ):
         pass
 
-    def save_integration(self, integration_name, integration_details: IntegrationUpdate):
+    def save_integration(
+        self, integration_name, integration_details: IntegrationUpdate
+    ):
         pass
 
     # Tags

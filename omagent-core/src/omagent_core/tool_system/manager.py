@@ -1,17 +1,17 @@
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
-from pydantic import Field, field_validator
-
-from omagent_core.utils.logger import logging
-from omagent_core.models.llms.schemas import Message
-from omagent_core.utils.registry import registry
+from omagent_core.base import BotBase
 from omagent_core.models.llms.base import BaseLLM, BaseLLMBackend
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
+from omagent_core.models.llms.schemas import Message
+from omagent_core.utils.logger import logging
+from omagent_core.utils.registry import registry
+from pydantic import Field, field_validator
+
 from .base import BaseTool
-from omagent_core.base import BotBase
 
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -82,23 +82,23 @@ class ToolManager(BaseLLMBackend):
                     type(tools)
                 )
             )
-    
+
     def model_post_init(self, __context: Any) -> None:
         for _, attr_value in self.__dict__.items():
             if isinstance(attr_value, BotBase):
                 attr_value._parent = self
         for tool in self.tools.values():
             tool._parent = self
-                
-    @property 
+
+    @property
     def workflow_instance_id(self) -> str:
-        if hasattr(self, '_parent'):
+        if hasattr(self, "_parent"):
             return self._parent.workflow_instance_id
         return None
-        
+
     @workflow_instance_id.setter
     def workflow_instance_id(self, value: str):
-        if hasattr(self, '_parent'):
+        if hasattr(self, "_parent"):
             self._parent.workflow_instance_id = value
 
     def add_tool(self, tool: BaseTool):
@@ -238,7 +238,7 @@ class ToolManager(BaseLLMBackend):
 
         return cls(**config)
 
-    def execute_task(self, task, related_info='', function=None):
+    def execute_task(self, task, related_info="", function=None):
         if self.llm == None:
             raise ValueError(
                 "The execute_task method requires the llm field to be initialized."
@@ -261,12 +261,16 @@ class ToolManager(BaseLLMBackend):
                 "name": tool_calls[0]["function"]["name"],
                 "arguments": json.loads(tool_calls[0]["function"]["arguments"]),
             }
-            self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Tool {toolcall_structure["name"]} executing.')
+            self.callback.info(
+                agent_id=self.workflow_instance_id,
+                progress=f"Conqueror",
+                message=f'Tool {toolcall_structure["name"]} executing.',
+            )
             tool_execution_res = []
             try:
                 for each_tool_call in tool_calls:
                     result = self.execute(
-                            each_tool_call["function"]["name"],
+                        each_tool_call["function"]["name"],
                         each_tool_call["function"]["arguments"],
                     )
                     tool_execution_res.append(result)

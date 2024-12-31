@@ -2,5 +2,5 @@ from enum import Enum
 
 
 class AccessKeyStatus(str, Enum):
-    ACTIVE = "ACTIVE",
+    ACTIVE = ("ACTIVE",)
     INACTIVE = "INACTIVE"

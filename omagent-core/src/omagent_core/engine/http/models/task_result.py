@@ -2,7 +2,6 @@ import pprint
 import re  # noqa: F401
 
 import six
-
 from omagent_core.engine.http.models.task_result_status import TaskResultStatus
 
 
@@ -11,6 +10,7 @@ class TaskResult(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -19,34 +19,44 @@ class TaskResult(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'workflow_instance_id': 'str',
-        'task_id': 'str',
-        'reason_for_incompletion': 'str',
-        'callback_after_seconds': 'int',
-        'worker_id': 'str',
-        'status': 'str',
-        'output_data': 'dict(str, object)',
-        'logs': 'list[TaskExecLog]',
-        'external_output_payload_storage_path': 'str',
-        'sub_workflow_id': 'str'
+        "workflow_instance_id": "str",
+        "task_id": "str",
+        "reason_for_incompletion": "str",
+        "callback_after_seconds": "int",
+        "worker_id": "str",
+        "status": "str",
+        "output_data": "dict(str, object)",
+        "logs": "list[TaskExecLog]",
+        "external_output_payload_storage_path": "str",
+        "sub_workflow_id": "str",
     }
 
     attribute_map = {
-        'workflow_instance_id': 'workflowInstanceId',
-        'task_id': 'taskId',
-        'reason_for_incompletion': 'reasonForIncompletion',
-        'callback_after_seconds': 'callbackAfterSeconds',
-        'worker_id': 'workerId',
-        'status': 'status',
-        'output_data': 'outputData',
-        'logs': 'logs',
-        'external_output_payload_storage_path': 'externalOutputPayloadStoragePath',
-        'sub_workflow_id': 'subWorkflowId'
+        "workflow_instance_id": "workflowInstanceId",
+        "task_id": "taskId",
+        "reason_for_incompletion": "reasonForIncompletion",
+        "callback_after_seconds": "callbackAfterSeconds",
+        "worker_id": "workerId",
+        "status": "status",
+        "output_data": "outputData",
+        "logs": "logs",
+        "external_output_payload_storage_path": "externalOutputPayloadStoragePath",
+        "sub_workflow_id": "subWorkflowId",
     }
 
-    def __init__(self, workflow_instance_id=None, task_id=None, reason_for_incompletion=None,
-                 callback_after_seconds=None, worker_id=None, status=None, output_data=None, logs=None,
-                 external_output_payload_storage_path=None, sub_workflow_id=None):  # noqa: E501
+    def __init__(
+        self,
+        workflow_instance_id=None,
+        task_id=None,
+        reason_for_incompletion=None,
+        callback_after_seconds=None,
+        worker_id=None,
+        status=None,
+        output_data=None,
+        logs=None,
+        external_output_payload_storage_path=None,
+        sub_workflow_id=None,
+    ):  # noqa: E501
         """TaskResult - a model defined in Swagger"""  # noqa: E501
         self._workflow_instance_id = None
         self._task_id = None
@@ -74,7 +84,9 @@ class TaskResult(object):
         if logs is not None:
             self.logs = logs
         if external_output_payload_storage_path is not None:
-            self.external_output_payload_storage_path = external_output_payload_storage_path
+            self.external_output_payload_storage_path = (
+                external_output_payload_storage_path
+            )
         if sub_workflow_id is not None:
             self.sub_workflow_id = sub_workflow_id
 
@@ -204,8 +216,9 @@ class TaskResult(object):
         ]
         if status not in allowed_values:
             raise ValueError(
-                "Invalid value for `status` ({0}), must be one of {1}"  # noqa: E501
-                .format(status, allowed_values)
+                "Invalid value for `status` ({0}), must be one of {1}".format(  # noqa: E501
+                    status, allowed_values
+                )
             )
 
         self._status = TaskResultStatus[status]
@@ -263,7 +276,9 @@ class TaskResult(object):
         return self._external_output_payload_storage_path
 
     @external_output_payload_storage_path.setter
-    def external_output_payload_storage_path(self, external_output_payload_storage_path):
+    def external_output_payload_storage_path(
+        self, external_output_payload_storage_path
+    ):
         """Sets the external_output_payload_storage_path of this TaskResult.
 
 
@@ -271,7 +286,9 @@ class TaskResult(object):
         :type: str
         """
 
-        self._external_output_payload_storage_path = external_output_payload_storage_path
+        self._external_output_payload_storage_path = (
+            external_output_payload_storage_path
+        )
 
     @property
     def sub_workflow_id(self):
@@ -301,18 +318,22 @@ class TaskResult(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(TaskResult, dict):

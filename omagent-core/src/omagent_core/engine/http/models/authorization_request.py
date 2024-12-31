@@ -9,6 +9,7 @@ class AuthorizationRequest(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,16 +18,12 @@ class AuthorizationRequest(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'subject': 'SubjectRef',
-        'target': 'TargetRef',
-        'access': 'list[str]'
+        "subject": "SubjectRef",
+        "target": "TargetRef",
+        "access": "list[str]",
     }
 
-    attribute_map = {
-        'subject': 'subject',
-        'target': 'target',
-        'access': 'access'
-    }
+    attribute_map = {"subject": "subject", "target": "target", "access": "access"}
 
     def __init__(self, subject=None, target=None, access=None):  # noqa: E501
         """AuthorizationRequest - a model defined in Swagger"""  # noqa: E501
@@ -101,9 +98,12 @@ class AuthorizationRequest(object):
         allowed_values = ["CREATE", "READ", "UPDATE", "DELETE", "EXECUTE"]  # noqa: E501
         if not set(access).issubset(set(allowed_values)):
             raise ValueError(
-                "Invalid values for `access` [{0}], must be a subset of [{1}]"  # noqa: E501
-                .format(", ".join(map(str, set(access) - set(allowed_values))),  # noqa: E501
-                        ", ".join(map(str, allowed_values)))
+                "Invalid values for `access` [{0}], must be a subset of [{1}]".format(  # noqa: E501
+                    ", ".join(
+                        map(str, set(access) - set(allowed_values))
+                    ),  # noqa: E501
+                    ", ".join(map(str, allowed_values)),
+                )
             )
 
         self._access = access
@@ -115,18 +115,22 @@ class AuthorizationRequest(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(AuthorizationRequest, dict):

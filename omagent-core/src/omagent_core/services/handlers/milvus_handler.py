@@ -2,12 +2,11 @@ from typing import Any
 from uuid import uuid4
 
 import numpy as np
+from omagent_core.utils.error import VQLError
+from omagent_core.utils.registry import registry
 from pydantic import BaseModel
 from pymilvus import Collection, DataType, MilvusClient, connections, utility
 from pymilvus.client import types
-
-from omagent_core.utils.registry import registry
-from omagent_core.utils.error import VQLError
 
 
 @registry.register_component()

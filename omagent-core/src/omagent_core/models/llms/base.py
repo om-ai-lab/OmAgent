@@ -1,24 +1,24 @@
 from __future__ import annotations
 
+import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from collections.abc import Hashable
 from pathlib import Path
 from typing import Any, ClassVar, Dict, List, Optional, TypeVar, Union
 
+from PIL import Image
 from pydantic import Field, field_validator
 from tenacity import retry, stop_after_attempt, stop_after_delay
 
-from .schemas import Message
+from ...base import BotBase
 from ...utils.env import EnvVar
 from ...utils.general import LRUCache
 from ...utils.registry import registry
-from ...base import BotBase
 from .prompt.base import _OUTPUT_PARSER, StrParser
 from .prompt.parser import BaseOutputParser
 from .prompt.prompt import PromptTemplate
-from collections.abc import Hashable
-from PIL import Image
-import re
+from .schemas import Message
 
 T = TypeVar("T", str, dict, list)
 
@@ -26,16 +26,16 @@ T = TypeVar("T", str, dict, list)
 class BaseLLM(BotBase, ABC):
     cache: bool = False
     lru_cache: LRUCache = Field(default=LRUCache(EnvVar.LLM_CACHE_NUM))
-    
-    @property 
+
+    @property
     def workflow_instance_id(self) -> str:
-        if hasattr(self, '_parent'):
+        if hasattr(self, "_parent"):
             return self._parent.workflow_instance_id
         return None
-        
+
     @workflow_instance_id.setter
     def workflow_instance_id(self, value: str):
-        if hasattr(self, '_parent'):
+        if hasattr(self, "_parent"):
             self._parent.workflow_instance_id = value
 
     @abstractmethod
@@ -45,7 +45,6 @@ class BaseLLM(BotBase, ABC):
     async def _acall(self, records: List[Message], **kwargs) -> str:
         """Run the LLM on the given prompt and input."""
         raise NotImplementedError("Async generation not implemented for this LLM.")
-
 
     def generate(self, records: List[Message], **kwargs) -> str:
         """Run the LLM on the given prompt and input."""
@@ -158,13 +157,13 @@ class BaseLLMBackend(BotBase, ABC):
         if prompts is None:
             prompts = self.prompts
         images = []
-        if len(kwargs_images:=kwargs.get("images", [])):
+        if len(kwargs_images := kwargs.get("images", [])):
             images = kwargs_images
         processed_prompts = []
         for inputs in input_list:
             records = []
             for prompt in prompts:
-                selected_inputs = {k: inputs.get(k, '') for k in prompt.input_variables}
+                selected_inputs = {k: inputs.get(k, "") for k in prompt.input_variables}
                 prompt_str = prompt.template
                 parts = re.split(r"(\{\{.*?\}\})", prompt_str)
                 formatted_parts = []
@@ -173,12 +172,16 @@ class BaseLLMBackend(BotBase, ABC):
                         part = part[2:-2].strip()
                         value = selected_inputs[part]
                         if isinstance(value, (Image.Image, list)):
-                            formatted_parts.extend([value] if isinstance(value, Image.Image) else value)
+                            formatted_parts.extend(
+                                [value] if isinstance(value, Image.Image) else value
+                            )
                         else:
                             formatted_parts.append(str(value))
                     else:
                         formatted_parts.append(str(part))
-                formatted_parts = formatted_parts[0] if len(formatted_parts) == 1 else formatted_parts
+                formatted_parts = (
+                    formatted_parts[0] if len(formatted_parts) == 1 else formatted_parts
+                )
                 if prompt.role == "system":
                     records.append(Message.system(formatted_parts))
                 elif prompt.role == "user":

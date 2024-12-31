@@ -2,9 +2,10 @@ import pprint
 import re  # noqa: F401
 
 import six
-
 from omagent_core.engine.http.models import Task
-from omagent_core.engine.http.models.workflow_run import terminal_status, successful_status, running_status
+from omagent_core.engine.http.models.workflow_run import (running_status,
+                                                          successful_status,
+                                                          terminal_status)
 
 
 class Workflow(object):
@@ -12,6 +13,7 @@ class Workflow(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -20,74 +22,98 @@ class Workflow(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'owner_app': 'str',
-        'create_time': 'int',
-        'update_time': 'int',
-        'created_by': 'str',
-        'updated_by': 'str',
-        'status': 'str',
-        'end_time': 'int',
-        'workflow_id': 'str',
-        'parent_workflow_id': 'str',
-        'parent_workflow_task_id': 'str',
-        'tasks': 'list[Task]',
-        'input': 'dict(str, object)',
-        'output': 'dict(str, object)',
-        'correlation_id': 'str',
-        're_run_from_workflow_id': 'str',
-        'reason_for_incompletion': 'str',
-        'event': 'str',
-        'task_to_domain': 'dict(str, str)',
-        'failed_reference_task_names': 'list[str]',
-        'workflow_definition': 'WorkflowDef',
-        'external_input_payload_storage_path': 'str',
-        'external_output_payload_storage_path': 'str',
-        'priority': 'int',
-        'variables': 'dict(str, object)',
-        'last_retried_time': 'int',
-        'start_time': 'int',
-        'workflow_name': 'str',
-        'workflow_version': 'int'
+        "owner_app": "str",
+        "create_time": "int",
+        "update_time": "int",
+        "created_by": "str",
+        "updated_by": "str",
+        "status": "str",
+        "end_time": "int",
+        "workflow_id": "str",
+        "parent_workflow_id": "str",
+        "parent_workflow_task_id": "str",
+        "tasks": "list[Task]",
+        "input": "dict(str, object)",
+        "output": "dict(str, object)",
+        "correlation_id": "str",
+        "re_run_from_workflow_id": "str",
+        "reason_for_incompletion": "str",
+        "event": "str",
+        "task_to_domain": "dict(str, str)",
+        "failed_reference_task_names": "list[str]",
+        "workflow_definition": "WorkflowDef",
+        "external_input_payload_storage_path": "str",
+        "external_output_payload_storage_path": "str",
+        "priority": "int",
+        "variables": "dict(str, object)",
+        "last_retried_time": "int",
+        "start_time": "int",
+        "workflow_name": "str",
+        "workflow_version": "int",
     }
 
     attribute_map = {
-        'owner_app': 'ownerApp',
-        'create_time': 'createTime',
-        'update_time': 'updateTime',
-        'created_by': 'createdBy',
-        'updated_by': 'updatedBy',
-        'status': 'status',
-        'end_time': 'endTime',
-        'workflow_id': 'workflowId',
-        'parent_workflow_id': 'parentWorkflowId',
-        'parent_workflow_task_id': 'parentWorkflowTaskId',
-        'tasks': 'tasks',
-        'input': 'input',
-        'output': 'output',
-        'correlation_id': 'correlationId',
-        're_run_from_workflow_id': 'reRunFromWorkflowId',
-        'reason_for_incompletion': 'reasonForIncompletion',
-        'event': 'event',
-        'task_to_domain': 'taskToDomain',
-        'failed_reference_task_names': 'failedReferenceTaskNames',
-        'workflow_definition': 'workflowDefinition',
-        'external_input_payload_storage_path': 'externalInputPayloadStoragePath',
-        'external_output_payload_storage_path': 'externalOutputPayloadStoragePath',
-        'priority': 'priority',
-        'variables': 'variables',
-        'last_retried_time': 'lastRetriedTime',
-        'start_time': 'startTime',
-        'workflow_name': 'workflowName',
-        'workflow_version': 'workflowVersion'
+        "owner_app": "ownerApp",
+        "create_time": "createTime",
+        "update_time": "updateTime",
+        "created_by": "createdBy",
+        "updated_by": "updatedBy",
+        "status": "status",
+        "end_time": "endTime",
+        "workflow_id": "workflowId",
+        "parent_workflow_id": "parentWorkflowId",
+        "parent_workflow_task_id": "parentWorkflowTaskId",
+        "tasks": "tasks",
+        "input": "input",
+        "output": "output",
+        "correlation_id": "correlationId",
+        "re_run_from_workflow_id": "reRunFromWorkflowId",
+        "reason_for_incompletion": "reasonForIncompletion",
+        "event": "event",
+        "task_to_domain": "taskToDomain",
+        "failed_reference_task_names": "failedReferenceTaskNames",
+        "workflow_definition": "workflowDefinition",
+        "external_input_payload_storage_path": "externalInputPayloadStoragePath",
+        "external_output_payload_storage_path": "externalOutputPayloadStoragePath",
+        "priority": "priority",
+        "variables": "variables",
+        "last_retried_time": "lastRetriedTime",
+        "start_time": "startTime",
+        "workflow_name": "workflowName",
+        "workflow_version": "workflowVersion",
     }
 
-    def __init__(self, owner_app=None, create_time=None, update_time=None, created_by=None, updated_by=None,
-                 status=None, end_time=None, workflow_id=None, parent_workflow_id=None, parent_workflow_task_id=None,
-                 tasks=None, input=None, output=None, correlation_id=None, re_run_from_workflow_id=None,
-                 reason_for_incompletion=None, event=None, task_to_domain=None, failed_reference_task_names=None,
-                 workflow_definition=None, external_input_payload_storage_path=None,
-                 external_output_payload_storage_path=None, priority=None, variables=None, last_retried_time=None,
-                 start_time=None, workflow_name=None, workflow_version=None):  # noqa: E501
+    def __init__(
+        self,
+        owner_app=None,
+        create_time=None,
+        update_time=None,
+        created_by=None,
+        updated_by=None,
+        status=None,
+        end_time=None,
+        workflow_id=None,
+        parent_workflow_id=None,
+        parent_workflow_task_id=None,
+        tasks=None,
+        input=None,
+        output=None,
+        correlation_id=None,
+        re_run_from_workflow_id=None,
+        reason_for_incompletion=None,
+        event=None,
+        task_to_domain=None,
+        failed_reference_task_names=None,
+        workflow_definition=None,
+        external_input_payload_storage_path=None,
+        external_output_payload_storage_path=None,
+        priority=None,
+        variables=None,
+        last_retried_time=None,
+        start_time=None,
+        workflow_name=None,
+        workflow_version=None,
+    ):  # noqa: E501
         """Workflow - a model defined in Swagger"""  # noqa: E501
         self._owner_app = None
         self._create_time = None
@@ -159,9 +185,13 @@ class Workflow(object):
         if workflow_definition is not None:
             self.workflow_definition = workflow_definition
         if external_input_payload_storage_path is not None:
-            self.external_input_payload_storage_path = external_input_payload_storage_path
+            self.external_input_payload_storage_path = (
+                external_input_payload_storage_path
+            )
         if external_output_payload_storage_path is not None:
-            self.external_output_payload_storage_path = external_output_payload_storage_path
+            self.external_output_payload_storage_path = (
+                external_output_payload_storage_path
+            )
         if priority is not None:
             self.priority = priority
         if variables is not None:
@@ -312,11 +342,19 @@ class Workflow(object):
         :param status: The status of this Workflow.  # noqa: E501
         :type: str
         """
-        allowed_values = ["RUNNING", "COMPLETED", "FAILED", "TIMED_OUT", "TERMINATED", "PAUSED"]  # noqa: E501
+        allowed_values = [
+            "RUNNING",
+            "COMPLETED",
+            "FAILED",
+            "TIMED_OUT",
+            "TERMINATED",
+            "PAUSED",
+        ]  # noqa: E501
         if status not in allowed_values:
             raise ValueError(
-                "Invalid value for `status` ({0}), must be one of {1}"  # noqa: E501
-                .format(status, allowed_values)
+                "Invalid value for `status` ({0}), must be one of {1}".format(  # noqa: E501
+                    status, allowed_values
+                )
             )
 
         self._status = status
@@ -647,7 +685,9 @@ class Workflow(object):
         return self._external_output_payload_storage_path
 
     @external_output_payload_storage_path.setter
-    def external_output_payload_storage_path(self, external_output_payload_storage_path):
+    def external_output_payload_storage_path(
+        self, external_output_payload_storage_path
+    ):
         """Sets the external_output_payload_storage_path of this Workflow.
 
 
@@ -655,7 +695,9 @@ class Workflow(object):
         :type: str
         """
 
-        self._external_output_payload_storage_path = external_output_payload_storage_path
+        self._external_output_payload_storage_path = (
+            external_output_payload_storage_path
+        )
 
     @property
     def priority(self):
@@ -790,18 +832,22 @@ class Workflow(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(Workflow, dict):
@@ -833,18 +879,25 @@ class Workflow(object):
     def current_task(self) -> Task:
         current = None
         for task in self.tasks:
-            if task.status == 'SCHEDULED' or task.status == 'IN_PROGRESS':
+            if task.status == "SCHEDULED" or task.status == "IN_PROGRESS":
                 current = task
         return current
 
     def get_task(self, name: str = None, task_reference_name: str = None) -> Task:
         if name is None and task_reference_name is None:
-            raise Exception('ONLY one of name or task_reference_name MUST be provided.  None were provided')
+            raise Exception(
+                "ONLY one of name or task_reference_name MUST be provided.  None were provided"
+            )
         if name is not None and not task_reference_name is None:
-            raise Exception('ONLY one of name or task_reference_name MUST be provided.  both were provided')
+            raise Exception(
+                "ONLY one of name or task_reference_name MUST be provided.  both were provided"
+            )
 
         current = None
         for task in self.tasks:
-            if task.task_def_name == name or task.workflow_task.task_reference_name == task_reference_name:
+            if (
+                task.task_def_name == name
+                or task.workflow_task.task_reference_name == task_reference_name
+            ):
                 current = task
         return current

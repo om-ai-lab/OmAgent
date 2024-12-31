@@ -1,10 +1,10 @@
 from typing import Optional
 
-from typing_extensions import Self
-
-from omagent_core.engine.workflow.task.llm_tasks.utils.embedding_model import EmbeddingModel
+from omagent_core.engine.workflow.task.llm_tasks.utils.embedding_model import \
+    EmbeddingModel
 from omagent_core.engine.workflow.task.task import TaskInterface
 from omagent_core.engine.workflow.task.task_type import TaskType
+from typing_extensions import Self
 
 
 class LlmIndexDocument(TaskInterface):
@@ -25,11 +25,21 @@ class LlmIndexDocument(TaskInterface):
     metadata: a dictionary of optional metadata to be added to thd indexed doc
     """
 
-    def __init__(self, task_ref_name: str, vector_db: str, namespace: str,
-                 embedding_model: EmbeddingModel, index: str, url: str, media_type: str,
-                 chunk_size: Optional[int] = None, chunk_overlap: Optional[int] = None, doc_id: str = None,
-                 task_name: str = None,
-                 metadata: dict = {}) -> Self:
+    def __init__(
+        self,
+        task_ref_name: str,
+        vector_db: str,
+        namespace: str,
+        embedding_model: EmbeddingModel,
+        index: str,
+        url: str,
+        media_type: str,
+        chunk_size: Optional[int] = None,
+        chunk_overlap: Optional[int] = None,
+        doc_id: str = None,
+        task_name: str = None,
+        metadata: dict = {},
+    ) -> Self:
         input_params = {
             "vectorDB": vector_db,
             "namespace": namespace,
@@ -38,7 +48,7 @@ class LlmIndexDocument(TaskInterface):
             "embeddingModel": embedding_model.model,
             "url": url,
             "mediaType": media_type,
-            "metadata": metadata
+            "metadata": metadata,
         }
 
         optional_input_params = {}
@@ -54,11 +64,11 @@ class LlmIndexDocument(TaskInterface):
 
         input_params.update(optional_input_params)
         if task_name is None:
-            task_name = 'llm_index_document'
+            task_name = "llm_index_document"
 
         super().__init__(
             task_name=task_name,
             task_reference_name=task_ref_name,
             task_type=TaskType.LLM_INDEX_DOCUMENT,
-            input_parameters=input_params
+            input_parameters=input_params,
         )

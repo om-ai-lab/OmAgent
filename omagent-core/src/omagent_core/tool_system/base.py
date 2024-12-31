@@ -5,15 +5,14 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import yaml
-from PIL import Image
-from pydantic import BaseModel, model_validator
-
+from omagent_core.base import BotBase
+from omagent_core.models.od.schemas import Target
 from omagent_core.services.handlers.sql_data_handler import SQLDataHandler
 from omagent_core.utils.error import VQLError
 from omagent_core.utils.logger import logging
-from omagent_core.models.od.schemas import Target
 from omagent_core.utils.plot import Annotator
-from omagent_core.base import BotBase
+from PIL import Image
+from pydantic import BaseModel, model_validator
 
 
 class ArgSchema(BaseModel):
@@ -164,21 +163,21 @@ class BaseTool(BotBase, ABC):
     func: Optional[Callable] = None
     args_schema: Optional[ArgSchema]
     special_params: Dict = {}
-    
+
     def model_post_init(self, __context: Any) -> None:
         for _, attr_value in self.__dict__.items():
             if isinstance(attr_value, BotBase):
                 attr_value._parent = self
-            
-    @property 
+
+    @property
     def workflow_instance_id(self) -> str:
-        if hasattr(self, '_parent'):
+        if hasattr(self, "_parent"):
             return self._parent.workflow_instance_id
         return None
-        
+
     @workflow_instance_id.setter
     def workflow_instance_id(self, value: str):
-        if hasattr(self, '_parent'):
+        if hasattr(self, "_parent"):
             self._parent.workflow_instance_id = value
 
     def _run(self, **input) -> str:
