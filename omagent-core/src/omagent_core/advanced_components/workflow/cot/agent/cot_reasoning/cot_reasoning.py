@@ -63,5 +63,5 @@ class CoTReasoning( BaseLLMBackend, BaseWorker ):
         last_output = res[ "choices" ][ 0 ][ "message" ][ "content" ]
         question = body.get( 'messages' )[ 0 ][ 'content' ][ 0 ][ 'text' ]
 
-        # self.callback.send_answer(self.workflow_instance_id, msg=last_output)
+        self.callback.send_answer(self.workflow_instance_id, msg=last_output)
         return { 'id': id, 'question': question, 'last_output': last_output, 'prompt_tokens': prompt_tokens, "completion_tokens": completion_tokens}

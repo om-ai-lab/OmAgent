@@ -5,7 +5,7 @@ from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
 from pathlib import Path
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.cli.client import DefaultClient
+from omagent_core.clients.devices.webpage.client import WebpageClient
 from omagent_core.utils.logger import logging
 from agent.input_interface.input_interface import InputInterface
 from omagent_core.advanced_components.workflow.cot.workflow import CoTWorkflow
@@ -38,5 +38,5 @@ workflow.register(overwrite=True)
 
 # Initialize and start app client with workflow configuration
 config_path = CURRENT_PATH.joinpath('configs')
-cli_client = DefaultClient(interactor=workflow, config_path=config_path, workers=[InputInterface()])
-cli_client.start_interactor()
+webpage_client = WebpageClient(interactor=workflow, config_path=config_path, workers=[InputInterface()])
+webpage_client.start_interactor()

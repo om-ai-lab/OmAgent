@@ -1,5 +1,6 @@
 import os
 import json
+import argparse
 
 from pathlib import Path
 
@@ -134,19 +135,30 @@ def evaluator( model_id, dataset_name, dataset_path, output_path, output_name, c
     print( f"{dataset_name} evaluation results saved in {file}" )
 
 
+def arguments():
+    parser = argparse.ArgumentParser( description='COT Evaluation' )
+
+    parser.add_argument( '--cot_method', type=str, default='zero_shot', help='COT Method' )
+    parser.add_argument( '--model_id', type=str, default='gpt-3.5-turbo', help='Model ID' )
+
+    parser.add_argument( '--dataset_name', type=str, default='gsm8k', help='Dataset Name' )
+    parser.add_argument( '--dataset_path', type=str, default='gsm8k.jsonl', help='Dataset Path' )
+
+    parser.add_argument( '--output_path', type=str, default='Output', help='Output Path' )
+    parser.add_argument( '--output_name', type=str, default='gsm8k_results', help='Output Name' )
+
+    print( f"Arguments: {parser.parse_args()}" )
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
-    model_id = 'gpt-3.5-turbo'
-    dataset_name = 'aqua'
-    dataset_path = 'aqua.jsonl'
-    output_path = 'Output'
-    output_name = 'aqua_results'
-    cot_method = 'zero_shot'
+    args = arguments()
 
     evaluator(
-        model_id=model_id,
-        dataset_name=dataset_name,
-        dataset_path=dataset_path,
-        output_path=output_path,
-        output_name=output_name,
-        cot_method=cot_method
+        model_id=args.model_id,
+        dataset_name=args.dataset_name,
+        dataset_path=args.dataset_path,
+        output_path=args.output_path,
+        output_name=args.output_name,
+        cot_method=args.cot_method
     )
