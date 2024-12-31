@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Type
 
+from omagent_core.engine.configuration.aaas_config import AaasConfig
 import yaml
 from omagent_core.engine.configuration.configuration import (TEMPLATE_CONFIG,
                                                              Configuration)
@@ -17,6 +18,7 @@ class Container:
         self._callback_name: Optional[str] = None
         self._input_name: Optional[str] = None
         self.conductor_config = Configuration()
+        self.aaas_config = AaasConfig()
 
     def register_connector(
         self,
@@ -236,6 +238,8 @@ class Container:
 
         if "conductor_config" in config_data:
             self.conductor_config = Configuration(**config_data["conductor_config"])
+        if "aaas_config" in config_data:
+            self.aaas_config = AaasConfig(**config_data["aaas_config"])
 
         # connectors
         if "connectors" in config_data:

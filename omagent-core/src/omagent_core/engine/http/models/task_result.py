@@ -29,6 +29,8 @@ class TaskResult(object):
         "logs": "list[TaskExecLog]",
         "external_output_payload_storage_path": "str",
         "sub_workflow_id": "str",
+        "biz_meta": "str",
+        "callback_url": "str",
     }
 
     attribute_map = {
@@ -42,6 +44,8 @@ class TaskResult(object):
         "logs": "logs",
         "external_output_payload_storage_path": "externalOutputPayloadStoragePath",
         "sub_workflow_id": "subWorkflowId",
+        "biz_meta": "bizMeta",
+        "callback_url": "callbackUrl",
     }
 
     def __init__(
@@ -56,6 +60,8 @@ class TaskResult(object):
         logs=None,
         external_output_payload_storage_path=None,
         sub_workflow_id=None,
+        biz_meta=None,
+        callback_url=None,
     ):  # noqa: E501
         """TaskResult - a model defined in Swagger"""  # noqa: E501
         self._workflow_instance_id = None
@@ -71,6 +77,8 @@ class TaskResult(object):
         self.discriminator = None
         self.workflow_instance_id = workflow_instance_id
         self.task_id = task_id
+        self.biz_meta = biz_meta
+        self.callback_url = callback_url
         if reason_for_incompletion is not None:
             self.reason_for_incompletion = reason_for_incompletion
         if callback_after_seconds is not None:
@@ -310,6 +318,22 @@ class TaskResult(object):
         """
 
         self._sub_workflow_id = sub_workflow_id
+
+    @property
+    def biz_meta(self):
+        return self._biz_meta
+
+    @biz_meta.setter
+    def biz_meta(self, biz_meta):
+        self._biz_meta = biz_meta
+
+    @property
+    def callback_url(self):
+        return self._callback_url
+
+    @callback_url.setter
+    def callback_url(self, callback_url):
+        self._callback_url = callback_url
 
     def to_dict(self):
         """Returns the model properties as a dict"""

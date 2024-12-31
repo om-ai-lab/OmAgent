@@ -316,12 +316,10 @@ class ConductorWorkflow:
         updated_task_list = []
         for i in range(len(workflow_task_list)):
             wft: WorkflowTask = workflow_task_list[i]
+            if wft.task_definition is None:
+                wft.task_definition = TaskDef()
             if container.conductor_config.debug:
-                if wft.task_definition is None:
-                    wft.task_definition = TaskDef()
-                    wft.task_definition.retry_count = 0
-                else:
-                    wft.task_definition.retry_count = 0
+                wft.task_definition.retry_count = 0
             updated_task_list.append(wft)
             if (
                 wft.type == "FORK_JOIN"
