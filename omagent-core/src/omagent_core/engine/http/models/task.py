@@ -62,6 +62,8 @@ class Task(object):
         "loop_over_task": "bool",
         "task_definition": "TaskDef",
         "queue_wait_time": "int",
+        "biz_meta": "str",
+        "callback_url": "str",
     }
 
     attribute_map = {
@@ -106,6 +108,8 @@ class Task(object):
         "loop_over_task": "loopOverTask",
         "task_definition": "taskDefinition",
         "queue_wait_time": "queueWaitTime",
+        "biz_meta": "bizMeta",
+        "callback_url": "callbackUrl",
     }
 
     def __init__(
@@ -151,6 +155,8 @@ class Task(object):
         loop_over_task=None,
         task_definition=None,
         queue_wait_time=None,
+        biz_meta=None,
+        callback_url=None,
     ):  # noqa: E501
         """Task - a model defined in Swagger"""  # noqa: E501
         self._task_type = None
@@ -195,6 +201,8 @@ class Task(object):
         self._task_definition = None
         self._queue_wait_time = None
         self.discriminator = None
+        self.biz_meta = None
+        self.callback_url = None
         if task_type is not None:
             self.task_type = task_type
         if status is not None:
@@ -281,6 +289,10 @@ class Task(object):
             self.task_definition = task_definition
         if queue_wait_time is not None:
             self.queue_wait_time = queue_wait_time
+        if biz_meta is not None:
+            self.biz_meta = biz_meta
+        if callback_url is not None:
+            self.callback_url = callback_url
 
     @property
     def task_type(self):
@@ -1163,6 +1175,22 @@ class Task(object):
         """
 
         self._queue_wait_time = queue_wait_time
+
+    @property
+    def biz_meta(self):
+        return self._biz_meta
+
+    @biz_meta.setter
+    def biz_meta(self, biz_meta):
+        self._biz_meta = biz_meta
+
+    @property
+    def callback_url(self):
+        return self._callback_url
+
+    @callback_url.setter
+    def callback_url(self, callback_url):
+        self._callback_url = callback_url
 
     def to_dict(self):
         """Returns the model properties as a dict"""
