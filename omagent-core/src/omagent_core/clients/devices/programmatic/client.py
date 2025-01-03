@@ -44,7 +44,7 @@ class ProgrammaticClient:
             logging.error(f"Error in start_processor_with_input: {e}")
 
     def start_batch_processor(self, workflow_input_list: list[dict], max_tasks: int = 10):
-        results = []
+        results = [None] * len(workflow_input_list)
         worker_config = build_from_file(self._config_path)
         self._task_handler_processor = TaskHandler(worker_config=worker_config, workers=self._workers)
         self._task_handler_processor.start_processes()
@@ -52,19 +52,20 @@ class ProgrammaticClient:
         result_queue = multiprocessing.Queue()
         active_processes = []
         
-        for workflow_input in workflow_input_list:
+        for idx, workflow_input in enumerate(workflow_input_list):
             while len(active_processes) >= max_tasks:
                 for p in active_processes[:]:
                     if not p.is_alive():
                         p.join()
                         active_processes.remove(p)
                         if not result_queue.empty():
-                            results.append(result_queue.get())
+                            task_idx, result = result_queue.get()
+                            results[task_idx] = result
                 sleep(0.1)
             
             p = multiprocessing.Process(
                 target=self._process_workflow_with_queue, 
-                args=(self._processor, workflow_input, result_queue,)
+                args=(self._processor, workflow_input, result_queue, idx)
             )
             p.start()
             active_processes.append(p)
@@ -73,7 +74,8 @@ class ProgrammaticClient:
             p.join()
         
         while not result_queue.empty():
-            results.append(result_queue.get())
+            task_idx, result = result_queue.get()
+            results[task_idx] = result
             
         return results
 
@@ -99,10 +101,11 @@ class ProgrammaticClient:
                 workflow._executor.terminate(workflow_id=workflow_instance_id)
             raise  # Rethrow the exception to allow the program to exit normally
 
-    def _process_workflow_with_queue(self, workflow: ConductorWorkflow, workflow_input: dict, queue: multiprocessing.Queue):
+    def _process_workflow_with_queue(self, workflow: ConductorWorkflow, workflow_input: dict, 
+                                   queue: multiprocessing.Queue, task_idx: int):
         try:
             result = self._process_workflow(workflow, workflow_input)
-            queue.put(result)
+            queue.put((task_idx, result))
         except Exception as e:
             logging.error(f"Error in process workflow: {e}")
-            queue.put(None)
+            queue.put((task_idx, None))
