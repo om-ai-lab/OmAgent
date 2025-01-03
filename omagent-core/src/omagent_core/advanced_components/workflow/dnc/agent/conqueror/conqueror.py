@@ -14,7 +14,6 @@ from omagent_core.models.llms.base import BaseLLMBackend, StrParser
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
 from omagent_core.tool_system.manager import ToolManager
-from omagent_core.utils.env import EnvVar
 from omagent_core.utils.registry import registry
 from pydantic import Field
 from tenacity import (retry, retry_if_exception_message, stop_after_attempt,
