@@ -7,7 +7,6 @@ from pathlib import Path
 
 import yaml
 
-from .env import EnvVar
 
 
 def build_from_file(file_path: str):
@@ -16,7 +15,7 @@ def build_from_file(file_path: str):
     if not workers_path.exists():
         return []
 
-    # 初始化配置字典
+    # init config dict
     worker_configs = {}
     other_configs = {}
     file_names = {}

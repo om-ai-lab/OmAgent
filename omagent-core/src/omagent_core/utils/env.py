@@ -15,8 +15,6 @@ class EnvVar(object):
 
     MAX_NODE_RETRY = int(os.environ.get("MAX_NODE_RETRY", 3))
 
-    MAX_TASK_DEPTH = int(os.environ.get("max_task_depth", 5))
-
     @classmethod
     def update(cls, key, value):
         setattr(cls, key, value)

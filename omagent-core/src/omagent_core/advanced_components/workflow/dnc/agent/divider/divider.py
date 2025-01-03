@@ -10,7 +10,6 @@ from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
 from omagent_core.tool_system.manager import ToolManager
-from omagent_core.utils.env import EnvVar
 from omagent_core.utils.registry import registry
 from pydantic import Field
 from tenacity import (retry, retry_if_exception_message, stop_after_attempt,
@@ -32,6 +31,7 @@ class TaskDivider(BaseLLMBackend, BaseWorker):
         ]
     )
     tool_manager: ToolManager
+    max_task_depth: int = 5
 
     def _run(self, dnc_structure: dict, last_output: str, *args, **kwargs):
         """Task divider that breaks down complex tasks into multiple subtasks.
@@ -58,7 +58,7 @@ class TaskDivider(BaseLLMBackend, BaseWorker):
         task = TaskTree(**dnc_structure)
         current_node = task.get_current_node()
         # Check if task depth exceeds maximum limit
-        if task.get_depth(current_node.id) >= EnvVar.MAX_TASK_DEPTH:
+        if task.get_depth(current_node.id) >= self.max_task_depth:
             last_output = "failed: Max subtask depth reached"
             self.callback.info(
                 agent_id=self.workflow_instance_id,
