@@ -1,14 +1,12 @@
 # Client
 
-Currently, there are three clients: `DefaultClient`, `LiteClient`, `AppClient`, and `WebpageClient`.
+Currently, there are three clients: `DefaultClient`, `AppClient`, and `WebpageClient`.
 
 `DefaultClient` is the default client used for interacting with users via the command line. 
 - The parameters of `DefaultClient` include `interactor`, `processor`, `config_path`, `workers`, and `input_prompt`.
 - Among them, either `interactor` or `processor` must be chosen to be passed in. `interactor` is the workflow used for interaction, and `processor` is the workflow used for image processing.
 - At least one of `config_path` and `workers` must be passed in, or both can be passed. `config_path` is the path to the worker configuration file, and `workers` is a list of `Worker` instances.
 - `input_prompt` is the prompt message for user input, which defaults to None. If you need to provide a prompt message after startup, you need to pass it in. Alternatively, you can set `input_prompt` in the `self.input.read_input()` method of your first worker node.
-
-`LiteClient` operates identically to `DefaultClient` but is designed for local execution without a conductor.
 
 `AppClient` is used for interacting with users within an app.
 - The parameters of `AppClient` include `interactor`, `processor`, `config_path`, and `workers`.
