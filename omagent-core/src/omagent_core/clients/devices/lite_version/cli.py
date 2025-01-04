@@ -1,22 +1,16 @@
-from pathlib import Path
-from omagent_core.services.connectors.redis import RedisConnector
+
 from omagent_core.utils.container import container
-container.register_connector(name='redis_stream_client', connector=RedisConnector)
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.utils.build import build_from_file
-from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.app.input import AppInput
 from omagent_core.clients.devices.cli.callback import DefaultCallback
-from colorama import Fore, Style
+from colorama import Fore
 from omagent_core.utils.container import container
 from omagent_core.utils.logger import logging
 
 registry.import_module()
 
-# container.register_stm(stm='RedisSTM')
 container.register_callback(callback=DefaultCallback)
-container.register_input(input=AppInput)
 
 class DefaultClient:
     def __init__(
@@ -75,62 +69,3 @@ class DefaultClient:
                 print(f"An error occurred: {e}")
     
         
-    def is_file(self, path: str) -> bool:
-        """
-        Determine if the given string is a file
-
-        :param path: File path string
-        :return: Returns True if it is a file, otherwise returns False
-        """
-        import os
-        try:
-            return os.path.isfile(path)
-        except Exception as e:
-            logging.error(f"Error checking if path is a file: {e}")
-            return False
-        
-    def is_url(self, url: str) -> bool:
-        """
-        Determine if the given string is a URL
-        """
-        import re
-        return bool(re.match(r'^https?://', url))
-    
-    def first_input(self, workflow_instance_id: str, input_prompt = ""):
-        contents = []
-        while True:
-            print(f"{Fore.GREEN}{input_prompt}(Waiting for input. Your input can only be text or image path each time, you can press Enter once to input multiple times. Press Enter twice to finish the entire input.):{Style.RESET_ALL}")
-            user_input_lines = []
-            while True:
-                line = input(f"{Fore.GREEN}>>>{Style.RESET_ALL}")
-                if line == "":
-                    break
-                user_input_lines.append(line)
-            logging.info(f"User input lines: {user_input_lines}")
-            
-        
-            for user_input in user_input_lines:
-                if self.is_url(user_input) or self.is_file(user_input):
-                    contents.append({
-                        "type": "image_url",
-                        "data": user_input
-                    })
-                else:
-                    contents.append({
-                        "type": "text",
-                        "data": user_input
-                    })
-            if len(contents) > 0:
-                break
-        result = {
-            "agent_id": workflow_instance_id,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": contents
-                }
-            ],
-            "kwargs": {}    
-        }
-        return result
-
