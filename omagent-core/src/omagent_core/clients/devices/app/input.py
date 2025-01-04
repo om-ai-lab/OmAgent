@@ -48,11 +48,11 @@ class AppInput(InputBase):
         while True:
             try:
                 # logging.info(f"Checking workflow status: {workflow_instance_id}")
-                if not workflow_instance_id == "omagent_lite_ver":                
-                    workflow_status = workflow_client.get_workflow_status(workflow_instance_id)
-                    if workflow_status.status not in running_status:
-                        logging.info(f"Workflow {workflow_instance_id} is not running, exiting...")
-                        break                
+                workflow_status = workflow_client.get_workflow_status(workflow_instance_id)
+                if workflow_status.status not in running_status:
+                    logging.info(f"Workflow {workflow_instance_id} is not running, exiting...")
+                    break
+
                 # read new messages from redis stream
                 messages = self.redis_stream_client._client.xrevrange(stream_name, max='+', min=start_id, count=1)
                 # Convert byte data to string

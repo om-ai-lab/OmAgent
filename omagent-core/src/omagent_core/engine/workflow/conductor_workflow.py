@@ -8,6 +8,7 @@ from typing_extensions import Self
 from omagent_core.engine.http.models import *
 from omagent_core.engine.http.models.start_workflow_request import IdempotencyStrategy
 from omagent_core.engine.workflow.executor.workflow_executor import WorkflowExecutor
+from omagent_core.engine.workflow.executor.local_workflow_executor import WorkflowExecutor as LiteWorkflowExecutor
 from omagent_core.engine.workflow.task.fork_task import ForkTask
 from omagent_core.engine.workflow.task.join_task import JoinTask
 from omagent_core.engine.workflow.task.switch_task import SwitchTask
@@ -18,14 +19,18 @@ from omagent_core.engine.workflow.task.timeout_policy import TimeoutPolicy
 import itertools
 from omagent_core.utils.container import container
 from omagent_core.utils.logger import logging
-import json
+from omagent_core.utils.registry import registry
 
+import json
 
 class ConductorWorkflow:
     SCHEMA_VERSION = 2
 
     def __init__(self, name: str, version: int = None, description: str = None, lite_version: bool = False) -> Self:
-        self._executor = WorkflowExecutor()
+        if lite_version:
+            self._executor = LiteWorkflowExecutor()
+        else:
+            self._executor = WorkflowExecutor()
         self.name = name
         self.version = version
         self.description = description
@@ -44,6 +49,12 @@ class ConductorWorkflow:
         self._workflow_status_listener_sink = None
         if container.conductor_config.debug:
             self.stop_all_running_workflows()
+
+    def initialization(self, worker_config):
+        for config in worker_config:
+            worker_cls = registry.get_worker(config['name'])
+            self.workers[config['name']] = worker_cls(**config)
+        return self.workers
 
     @property
     def name(self) -> str:
@@ -187,15 +198,10 @@ class ConductorWorkflow:
     # overwritten. When not set, the call fails if there is any change in the workflow definition between the server
     # and what is being registered.
     def register(self, overwrite: bool):
-        if self.lite_version:            
-            _workflow = self.to_workflow_def()        
-            with open(f'{_workflow.to_dict()["name"]}.json', 'w') as file:
-                json.dump(_workflow.toJSON(), file, indent=4)
-        else:
-            return self._executor.register_workflow(
-                overwrite=overwrite,
-                workflow=self.to_workflow_def(),
-            )
+        return self._executor.register_workflow(
+            overwrite=overwrite,
+            workflow=self.to_workflow_def(),
+        )
 
     def start_workflow(self, start_workflow_request: StartWorkflowRequest) -> str:
         """
@@ -220,7 +226,7 @@ class ConductorWorkflow:
         task_to_domain=None,
         priority=None,
         idempotency_key: str = None,
-        idempotency_strategy: IdempotencyStrategy = IdempotencyStrategy.FAIL,
+        idempotency_strategy: IdempotencyStrategy = IdempotencyStrategy.FAIL, workers=None
     ) -> str:
         """
         Starts the workflow with given inputs and parameters and returns the id of the started workflow
@@ -237,7 +243,7 @@ class ConductorWorkflow:
         start_workflow_request.priority = priority
         start_workflow_request.task_to_domain = task_to_domain
 
-        return self._executor.start_workflow(start_workflow_request)
+        return self._executor.start_workflow(start_workflow_request, workers)
     
     def get_workflow(self, workflow_id: str, include_tasks: bool = None) -> Workflow:
         return self._executor.get_workflow(workflow_id, include_tasks)
