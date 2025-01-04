@@ -51,7 +51,8 @@ dependencies = [
   "pydub >= 0.25.1",
   "face_recognition >= 1.3.0",
   "gradio >= 5.7.1",
-  "tavily-python >= 0.5.0"
+  "tavily-python >= 0.5.0",
+  "qwen_vl_utils >= 3.4.0"
 ]
 
 [project.urls]
