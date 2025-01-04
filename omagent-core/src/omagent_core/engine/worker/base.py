@@ -71,10 +71,8 @@ class BaseWorker(BotBase, ABC):
     @property 
     def workflow_instance_id(self) -> str:
         _id = self._workflow_instance_id        
-        if not _id:
-            return "omagent_lite_ver"
-        else:
-            return _id
+        return _id
+
         
     @workflow_instance_id.setter
     def workflow_instance_id(self, value: str):

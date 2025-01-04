@@ -27,7 +27,7 @@ class WorkflowExecutor:
             body=[workflow], **kwargs
         )
 
-    def start_workflow(self, start_workflow_request: StartWorkflowRequest) -> str:
+    def start_workflow(self, start_workflow_request: StartWorkflowRequest, workers=None) -> str:
         """Start a new workflow with StartWorkflowRequest, which allows task to be executed in a domain """
         return self.workflow_client.start_workflow(
             start_workflow_request=start_workflow_request,
