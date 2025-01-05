@@ -22,7 +22,7 @@ Operating System: {}"""
 
 
 @registry.register_llm()
-class HuggingFaceLLM(BaseLLM):
+class Qwen2LLM(BaseLLM):
     model_name: str = Field(default=os.getenv("MODEL_NAME", "Qwen/Qwen2.5-1.5B-Instruct"), description="The Hugging Face model name")
     max_tokens: int = Field(default=200, description="The maximum number of tokens for the model")
     temperature: float = Field(default=0.1, description="The sampling temperature for generation")
