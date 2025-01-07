@@ -4,14 +4,12 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 import geocoder
-from omagent_core.utils.container import container
 from openai import AsyncOpenAI, OpenAI
 from pydantic import Field
 
-from ...utils.general import encode_image
-from ...utils.registry import registry
-from .base import BaseLLM
-from .schemas import Content, Message
+from omagent_core.utils.registry import registry
+from omagent_core.models.llms.base import BaseLLM
+from omagent_core.models.llms.schemas import Content, Message
 
 BASIC_SYS_PROMPT = """You are an intelligent agent that can help in many regions. 
 Flowing are some basic information about your working environment, please try your best to answer the questions based on them if needed. 
@@ -40,7 +38,7 @@ class OpenaiGPTLLM(BaseLLM):
     stream: bool = Field(default=False, description="Whether to stream the response")
     max_tokens: int = Field(default=2048, description="The max tokens of LLM")
     use_default_sys_prompt: bool = Field(
-        default=True, description="Whether to use the default system prompt"
+        default=False, description="Whether to use the default system prompt"
     )
     response_format: str = Field(
         default="text", description="The response format of openai"

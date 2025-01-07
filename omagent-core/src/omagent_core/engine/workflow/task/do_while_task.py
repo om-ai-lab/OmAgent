@@ -22,11 +22,12 @@ def get_dnc_loop_condition(task_ref_name: str) -> str:
 class DoWhileTask(TaskInterface):
     # termination_condition is a Javascript expression that evaluates to True or False
     def __init__(
-        self, task_ref_name: str, termination_condition: str, tasks: List[TaskInterface]
+        self, task_ref_name: str, termination_condition: str, tasks: List[TaskInterface], inputs: Dict[str, Any] = None
     ) -> Self:
         super().__init__(
             task_reference_name=task_ref_name,
             task_type=TaskType.DO_WHILE,
+            input_parameters=inputs,
         )
         self._loop_condition = deepcopy(termination_condition)
         if isinstance(tasks, List):

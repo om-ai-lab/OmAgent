@@ -26,7 +26,7 @@ The APP home page includes Mobile, Glasses, and Connection Settings as shown bel
 </p>
 
 #### 1.1 Connection Settings
-The app automatically searches for and connects to the environment IP running on the local network. If the connection is successful, a toast message will display: "Connection Successful". If the connection fails, a toast message will display: "Service connection failure".
+The app automatically searches for and connects to the environment IP running on the local network. If the connection is successful, a toast message will display: "Connection Successful". If the connection fails, a toast message will display: "Service connection failure".If the IP is not automatically detected, you need to manually enter the IP and port in the IP input field. (The IP address is the internal network IP of the machine where the app's backend service is deployed, and the default port is 8082.)
 - Click the "Connection Settings" button at the bottom of the homepage to enter the app configuration page, as shown in the figure below;
 <p align="center">
   <img src="../../images/app_connection_settings.png" width="300"/>

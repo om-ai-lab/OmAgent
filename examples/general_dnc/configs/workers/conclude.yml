@@ -1,4 +1,9 @@
 name: Conclude
 llm: ${sub|text_res_stream}
+prompts:
+  - role: system
+    template: examples/general_dnc/agent/conclude/sys_prompt.prompt
+  - role: user
+    template: examples/general_dnc/agent/conclude/user_prompt.prompt
 output_parser: 
   name: StrParser

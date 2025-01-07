@@ -19,6 +19,7 @@ from .prompt.base import _OUTPUT_PARSER, StrParser
 from .prompt.parser import BaseOutputParser
 from .prompt.prompt import PromptTemplate
 from .schemas import Message
+import copy
 
 T = TypeVar("T", str, dict, list)
 
@@ -46,7 +47,7 @@ class BaseLLM(BotBase, ABC):
         """Run the LLM on the given prompt and input."""
         raise NotImplementedError("Async generation not implemented for this LLM.")
 
-    def generate(self, records: List[Message], **kwargs) -> str:
+    def generate(self, records: List[Message], **kwargs) -> str: # TODO: use python native lru cache
         """Run the LLM on the given prompt and input."""
         if self.cache:
             key = self._cache_key(records)
@@ -123,6 +124,7 @@ class BaseLLMBackend(BotBase, ABC):
     ) -> List[PromptTemplate]:
         init_prompts = []
         for prompt in prompts:
+            prompt = copy.deepcopy(prompt)
             if isinstance(prompt, Path):
                 if prompt.suffix == ".prompt":
                     init_prompts.append(PromptTemplate.from_file(prompt))
@@ -152,7 +154,7 @@ class BaseLLMBackend(BotBase, ABC):
 
     def prep_prompt(
         self, input_list: List[Dict[str, Any]], prompts=None, **kwargs
-    ) -> List[Message]:
+    ) -> List[List[Message]]:
         """Prepare prompts from inputs."""
         if prompts is None:
             prompts = self.prompts
@@ -195,6 +197,7 @@ class BaseLLMBackend(BotBase, ABC):
         prompts = self.prep_prompt(input_list, **kwargs)
         res = []
         for prompt in prompts:
+
             output = self.llm.generate(prompt, **kwargs)
             # for key, value in output["usage"].items():
             #     if value is not None:
