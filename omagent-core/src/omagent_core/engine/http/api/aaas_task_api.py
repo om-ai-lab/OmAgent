@@ -51,7 +51,8 @@ class AaasTaskApi(object):
 
         data = {
             "batchSize": kwargs.get('count', 1),
-            "domain": kwargs.get('domain', ''),
+            "domain": kwargs.get('domain', None),
+            "isProd": kwargs.get('is_prod', False),
             "taskDefName": tasktype,
             "workerId": kwargs.get('workerid', 'default_worker')
         }

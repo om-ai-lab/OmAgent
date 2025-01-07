@@ -24,6 +24,16 @@ AAAS_TEMPLATE_CONFIG = {
         "value": True,
         "description": "Whether to enable the aaas task server",
         "env_var": "AAAS_ENABLE",
+    },
+    "domain_token": {
+        "value": None,
+        "description": "The domain token",
+        "env_var": "DOMAIN_TOKEN",
+    },
+    "is_prod": {
+        "value": False,
+        "description": "Whether it is a production environment",
+        "env_var": "IS_PROD",
     }
 }
 
@@ -44,6 +54,14 @@ class AaasConfig(BaseSettings):
     enable: bool = Field(
         default=True,
         description="Whether to enable the aaas task server",
+    )
+    domain_token: Optional[str] = Field(
+        default=None,
+        description="The domain token",
+    )
+    is_prod: bool = Field(
+        default=False,
+        description="Whether it is a production environment",
     )
 
     def model_post_init(self, __context: Any) -> None:
