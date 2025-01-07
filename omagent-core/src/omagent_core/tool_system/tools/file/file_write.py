@@ -1,6 +1,5 @@
-from ...base import ArgSchema, BaseTool
-
 from ....utils.registry import registry
+from ...base import ArgSchema, BaseTool
 
 ARGSCHEMA = {
     "file_path": {"type": "string", "description": "The file path to write."},
@@ -16,9 +15,7 @@ ARGSCHEMA = {
 @registry.register_tool()
 class WriteFileContent(BaseTool):
     args_schema: ArgSchema = ArgSchema(**ARGSCHEMA)
-    description: str = (
-        "Write data to a file, replacing the file if it already exists."
-    )
+    description: str = "Write data to a file, replacing the file if it already exists."
 
     def _run(self, file_path: str, content: str, file_mode: str = "w") -> str:
         if not file_path:

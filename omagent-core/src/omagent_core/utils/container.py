@@ -1,9 +1,11 @@
-from typing import Dict, List, Type, Optional
-from pydantic import BaseModel
-import yaml
 from pathlib import Path
+from typing import Dict, List, Optional, Type
+
+import yaml
+from omagent_core.engine.configuration.configuration import (TEMPLATE_CONFIG,
+                                                             Configuration)
 from omagent_core.utils.registry import registry
-from omagent_core.engine.configuration.configuration import Configuration, TEMPLATE_CONFIG
+from pydantic import BaseModel
 
 
 class Container:
@@ -15,7 +17,7 @@ class Container:
         self._callback_name: Optional[str] = None
         self._input_name: Optional[str] = None
         self.conductor_config = Configuration()
-        
+
     def register_connector(
         self,
         connector: Type[BaseModel],
@@ -61,7 +63,9 @@ class Container:
         else:
             raise ValueError(f"Invalid component type: {type(component)}")
 
-        if (name in self._components or component_name in self._components) and not overwrite:
+        if (
+            name in self._components or component_name in self._components
+        ) and not overwrite:
             return name or component_name
 
         required_connectors = self._get_required_connectors(component_cls)
@@ -94,68 +98,117 @@ class Container:
     @property
     def components(self) -> Dict[str, BaseModel]:
         return self._components
-    
-    def register_stm(self, stm: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
+
+    def register_stm(
+        self,
+        stm: str | Type[BaseModel],
+        name: str = None,
+        config: dict = {},
+        overwrite: bool = False,
+    ):
         name = self.register_component(stm, name, config, overwrite)
         self._stm_name = name
 
     @property
     def stm(self) -> BaseModel:
         if self._stm_name is None:
-            raise ValueError("STM component is not registered. Please use register_stm to register.")
+            raise ValueError(
+                "STM component is not registered. Please use register_stm to register."
+            )
         return self.get_component(self._stm_name)
 
-        
-    def register_ltm(self, ltm: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
+    def register_ltm(
+        self,
+        ltm: str | Type[BaseModel],
+        name: str = None,
+        config: dict = {},
+        overwrite: bool = False,
+    ):
         name = self.register_component(ltm, name, config, overwrite)
         self._ltm_name = name
-        
+
     @property
     def ltm(self) -> BaseModel:
         if self._ltm_name is None:
-            raise ValueError("LTM component is not registered. Please use register_ltm to register.")
+            raise ValueError(
+                "LTM component is not registered. Please use register_ltm to register."
+            )
         return self.get_component(self._ltm_name)
-    
-    def register_callback(self, callback: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
+
+    def register_callback(
+        self,
+        callback: str | Type[BaseModel],
+        name: str = None,
+        config: dict = {},
+        overwrite: bool = False,
+    ):
         name = self.register_component(callback, name, config, overwrite)
         self._callback_name = name
-        
+
     @property
     def callback(self) -> BaseModel:
         if self._callback_name is None:
-            raise ValueError("Callback component is not registered. Please use register_callback to register.")
+            raise ValueError(
+                "Callback component is not registered. Please use register_callback to register."
+            )
         return self.get_component(self._callback_name)
-    
-    def register_input(self, input: str|Type[BaseModel], name: str = None, config: dict = {}, overwrite: bool = False):
+
+    def register_input(
+        self,
+        input: str | Type[BaseModel],
+        name: str = None,
+        config: dict = {},
+        overwrite: bool = False,
+    ):
         name = self.register_component(input, name, config, overwrite)
         self._input_name = name
-        
+
     @property
     def input(self) -> BaseModel:
         if self._input_name is None:
-            raise ValueError("Input component is not registered. Please use register_input to register.")
+            raise ValueError(
+                "Input component is not registered. Please use register_input to register."
+            )
         return self.get_component(self._input_name)
 
-    def compile_config(self, output_path: Path, description: bool = True, env_var: bool = True) -> None:
+    def compile_config(
+        self, output_path: Path, description: bool = True, env_var: bool = True
+    ) -> None:
         if (output_path / "container.yaml").exists():
             print("container.yaml already exists, skip compiling")
-            config = yaml.load(open(output_path / "container.yaml", "r"), Loader=yaml.FullLoader)
+            config = yaml.load(
+                open(output_path / "container.yaml", "r"), Loader=yaml.FullLoader
+            )
             return config
-        
-        config = {"conductor_config": TEMPLATE_CONFIG, "connectors": {}, "components": {}}
-        exclude_fields = ["_parent", "component_stm", "component_ltm", "component_callback", "component_input"]
+
+        config = {
+            "conductor_config": TEMPLATE_CONFIG,
+            "connectors": {},
+            "components": {},
+        }
+        exclude_fields = [
+            "_parent",
+            "component_stm",
+            "component_ltm",
+            "component_callback",
+            "component_input",
+        ]
         for name, connector in self._connectors.items():
-            config["connectors"][name] = connector.__class__.get_config_template(description=description, env_var=env_var, exclude_fields=exclude_fields)
+            config["connectors"][name] = connector.__class__.get_config_template(
+                description=description, env_var=env_var, exclude_fields=exclude_fields
+            )
         exclude_fields.extend(self._connectors.keys())
         for name, component in self._components.items():
-            config["components"][name] = component.__class__.get_config_template(description=description, env_var=env_var, exclude_fields=exclude_fields)
-            
+            config["components"][name] = component.__class__.get_config_template(
+                description=description, env_var=env_var, exclude_fields=exclude_fields
+            )
+
         with open(output_path / "container.yaml", "w") as f:
             f.write(yaml.dump(config, sort_keys=False, allow_unicode=True))
 
         return config
 
-    def from_config(self, config_data: dict|str|Path) -> None:
+    def from_config(self, config_data: dict | str | Path) -> None:
         """Update container from configuration
 
         Args:
@@ -174,13 +227,13 @@ class Container:
                 else:
                     cleaned[key] = value
             return cleaned
-        
-        if isinstance(config_data, str|Path):
+
+        if isinstance(config_data, str | Path):
             if not Path(config_data).exists():
                 raise FileNotFoundError(f"Config file not found: {config_data}")
-            config_data = yaml.load(open(config_data, 'r'), Loader=yaml.FullLoader)
+            config_data = yaml.load(open(config_data, "r"), Loader=yaml.FullLoader)
         config_data = clean_config_dict(config_data)
-        
+
         if "conductor_config" in config_data:
             self.conductor_config = Configuration(**config_data["conductor_config"])
 
@@ -210,17 +263,24 @@ class Container:
             try:
                 connector.check_connection()
             except Exception as e:
-                raise ConnectionError(f"Connection to {name} failed. Please check your connector config in container.yaml. \n Error Message: {e}")
+                raise ConnectionError(
+                    f"Connection to {name} failed. Please check your connector config in container.yaml. \n Error Message: {e}"
+                )
 
         try:
-            from omagent_core.engine.orkes.orkes_workflow_client import OrkesWorkflowClient
+            from omagent_core.engine.orkes.orkes_workflow_client import \
+                OrkesWorkflowClient
+
             conductor_client = OrkesWorkflowClient(self.conductor_config)
             conductor_client.check_connection()
         except Exception as e:
-            raise ConnectionError(f"Connection to Conductor failed. Please check your conductor config in container.yaml. \n Error Message: {e}")
-        
+            raise ConnectionError(
+                f"Connection to Conductor failed. Please check your conductor config in container.yaml. \n Error Message: {e}"
+            )
+
         print("--------------------------------")
         print("All connections passed the connection check")
         print("--------------------------------")
-    
+
+
 container = Container()

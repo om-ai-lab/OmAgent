@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.http.models.tag_string import TagString
@@ -14,10 +14,14 @@ class OrkesMetadataClient(OrkesBaseClient, MetadataClient):
     def __init__(self, configuration: Configuration):
         super(OrkesMetadataClient, self).__init__(configuration)
 
-    def register_workflow_def(self, workflow_def: WorkflowDef, overwrite: Optional[bool] = True):
+    def register_workflow_def(
+        self, workflow_def: WorkflowDef, overwrite: Optional[bool] = True
+    ):
         self.metadataResourceApi.create(workflow_def, overwrite=overwrite)
 
-    def update_workflow_def(self, workflow_def: WorkflowDef, overwrite: Optional[bool] = True):
+    def update_workflow_def(
+        self, workflow_def: WorkflowDef, overwrite: Optional[bool] = True
+    ):
         self.metadataResourceApi.update1([workflow_def], overwrite=overwrite)
 
     def unregister_workflow_def(self, name: str, version: int):

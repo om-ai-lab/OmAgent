@@ -1,11 +1,11 @@
 from typing import Any, Optional
 
+from omagent_core.models.encoders.base import EncoderBase
+from omagent_core.utils.error import VQLError
+from omagent_core.utils.registry import registry
 from pydantic import field_validator
 from pymilvus import CollectionSchema, DataType, FieldSchema
 
-from omagent_core.models.encoders.base import EncoderBase
-from omagent_core.utils.registry import registry
-from omagent_core.utils.error import VQLError
 from .milvus_handler import MilvusHandler
 
 

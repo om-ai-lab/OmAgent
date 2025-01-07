@@ -9,6 +9,7 @@ class RerunWorkflowRequest(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,23 +18,29 @@ class RerunWorkflowRequest(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        're_run_from_workflow_id': 'str',
-        'workflow_input': 'dict(str, object)',
-        're_run_from_task_id': 'str',
-        'task_input': 'dict(str, object)',
-        'correlation_id': 'str'
+        "re_run_from_workflow_id": "str",
+        "workflow_input": "dict(str, object)",
+        "re_run_from_task_id": "str",
+        "task_input": "dict(str, object)",
+        "correlation_id": "str",
     }
 
     attribute_map = {
-        're_run_from_workflow_id': 'reRunFromWorkflowId',
-        'workflow_input': 'workflowInput',
-        're_run_from_task_id': 'reRunFromTaskId',
-        'task_input': 'taskInput',
-        'correlation_id': 'correlationId'
+        "re_run_from_workflow_id": "reRunFromWorkflowId",
+        "workflow_input": "workflowInput",
+        "re_run_from_task_id": "reRunFromTaskId",
+        "task_input": "taskInput",
+        "correlation_id": "correlationId",
     }
 
-    def __init__(self, re_run_from_workflow_id=None, workflow_input=None, re_run_from_task_id=None, task_input=None,
-                 correlation_id=None):  # noqa: E501
+    def __init__(
+        self,
+        re_run_from_workflow_id=None,
+        workflow_input=None,
+        re_run_from_task_id=None,
+        task_input=None,
+        correlation_id=None,
+    ):  # noqa: E501
         """RerunWorkflowRequest - a model defined in Swagger"""  # noqa: E501
         self._re_run_from_workflow_id = None
         self._workflow_input = None
@@ -164,18 +171,22 @@ class RerunWorkflowRequest(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(RerunWorkflowRequest, dict):

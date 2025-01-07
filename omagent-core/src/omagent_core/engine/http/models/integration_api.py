@@ -12,34 +12,46 @@ class IntegrationApi(object):
       attribute_map (dict): The key is attribute name
                             and the value is json key in definition.
     """
+
     swagger_types = {
-        'api': 'str',
-        'configuration': 'dict(str, object)',
-        'created_by': 'str',
-        'created_on': 'int',
-        'description': 'str',
-        'enabled': 'bool',
-        'integration_name': 'str',
-        'tags': 'list[TagObject]',
-        'updated_by': 'str',
-        'updated_on': 'int'
+        "api": "str",
+        "configuration": "dict(str, object)",
+        "created_by": "str",
+        "created_on": "int",
+        "description": "str",
+        "enabled": "bool",
+        "integration_name": "str",
+        "tags": "list[TagObject]",
+        "updated_by": "str",
+        "updated_on": "int",
     }
 
     attribute_map = {
-        'api': 'api',
-        'configuration': 'configuration',
-        'created_by': 'createdBy',
-        'created_on': 'createdOn',
-        'description': 'description',
-        'enabled': 'enabled',
-        'integration_name': 'integrationName',
-        'tags': 'tags',
-        'updated_by': 'updatedBy',
-        'updated_on': 'updatedOn'
+        "api": "api",
+        "configuration": "configuration",
+        "created_by": "createdBy",
+        "created_on": "createdOn",
+        "description": "description",
+        "enabled": "enabled",
+        "integration_name": "integrationName",
+        "tags": "tags",
+        "updated_by": "updatedBy",
+        "updated_on": "updatedOn",
     }
 
-    def __init__(self, api=None, configuration=None, created_by=None, created_on=None, description=None, enabled=None,
-                 integration_name=None, tags=None, updated_by=None, updated_on=None):  # noqa: E501
+    def __init__(
+        self,
+        api=None,
+        configuration=None,
+        created_by=None,
+        created_on=None,
+        description=None,
+        enabled=None,
+        integration_name=None,
+        tags=None,
+        updated_by=None,
+        updated_on=None,
+    ):  # noqa: E501
         """IntegrationApi - a model defined in Swagger"""  # noqa: E501
         self._api = None
         self._configuration = None
@@ -290,18 +302,22 @@ class IntegrationApi(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(IntegrationApi, dict):

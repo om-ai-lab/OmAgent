@@ -1,6 +1,5 @@
-from typing_extensions import Self
-
 from omagent_core.engine.orkes.models.access_key_status import AccessKeyStatus
+from typing_extensions import Self
 
 
 class AccessKey:

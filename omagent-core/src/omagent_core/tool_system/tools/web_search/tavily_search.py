@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import Any, Optional, Union, Dict
-from tavily import TavilyClient
+from typing import Any, Dict, Optional, Union
+
 from pydantic import field_validator
+from tavily import TavilyClient
 
 from ....utils.logger import logging
 from ....utils.registry import registry
@@ -10,7 +11,10 @@ from ...base import ArgSchema, BaseTool
 CURRENT_PATH = Path(__file__).parents[0]
 
 ARGSCHEMA = {
-    "search_query": {"type": "string", "description": "The search query, the task need to be done."},
+    "search_query": {
+        "type": "string",
+        "description": "The search query, the task need to be done.",
+    },
     "topic": {
         "type": "string",
         "enum": ["general", "news"],
@@ -55,9 +59,7 @@ class TavilyWebSearch(BaseTool):
         arbitrary_types_allowed = True
 
     args_schema: ArgSchema = ArgSchema(**ARGSCHEMA)
-    description: str = (
-        "Searches the web for a query by tavily."
-    )
+    description: str = "Searches the web for a query by tavily."
     tavily_api_key: Optional[str]
 
     def __init__(self, **data: Any) -> None:
@@ -72,15 +74,34 @@ class TavilyWebSearch(BaseTool):
         return tavily_api_key
 
     def _run(
-        self, search_query: str, topic: str, include_answer: bool, include_images: bool, include_raw_content: bool=False, days: int=3, max_results=5,
+        self,
+        search_query: str,
+        topic: str,
+        include_answer: bool,
+        include_images: bool,
+        include_raw_content: bool = False,
+        days: int = 3,
+        max_results=5,
     ) -> Dict[str, Any]:
         """
         Search with search tools and browse the website returned by search. Note some websites may not be accessable due to network error.
         """
-        self.callback.info(agent_id=self.workflow_instance_id, progress=f'Conqueror', message=f'Detail of search structure: search_query: {search_query}, topic: {topic}, include_answer: {include_answer}, include_images: {include_images}, include_raw_content: {include_raw_content}, days: {days}, max_results: {max_results}.')
+        self.callback.info(
+            agent_id=self.workflow_instance_id,
+            progress=f"Conqueror",
+            message=f"Detail of search structure: search_query: {search_query}, topic: {topic}, include_answer: {include_answer}, include_images: {include_images}, include_raw_content: {include_raw_content}, days: {days}, max_results: {max_results}.",
+        )
 
         try:
-            search_results = self.tavily_client.search(query=search_query, topic=topic, days=days, max_results=max_results, include_answer=include_answer, include_raw_content=include_raw_content, include_images=include_images)
+            search_results = self.tavily_client.search(
+                query=search_query,
+                topic=topic,
+                days=days,
+                max_results=max_results,
+                include_answer=include_answer,
+                include_raw_content=include_raw_content,
+                include_images=include_images,
+            )
             if include_answer:
                 conclude_answer = search_results.get("answer", "")
             else:
@@ -91,9 +112,9 @@ class TavilyWebSearch(BaseTool):
                 search_images = []
             results = search_results.get("results", [])
             if len(results):
-                [each.pop('score') for each in results]
+                [each.pop("score") for each in results]
                 if include_raw_content:
-                    [each.pop('raw_content') for each in results]
+                    [each.pop("raw_content") for each in results]
             return {
                 "answer": conclude_answer,
                 "images": search_images,

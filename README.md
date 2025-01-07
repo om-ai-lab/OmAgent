@@ -1,5 +1,5 @@
 <div>
-    <h1> <img src="docs/images/logo.png" height=33 align="texttop">OmAgent</h1>
+    <h1> <img src="docs/images/logo.png" height=40 align="top"> OmAgent</h1>
 </div>
 
 <p align="center">
@@ -10,7 +10,7 @@
   <a href="https://twitter.com/intent/follow?screen_name=OmAI_lab" target="_blank">
     <img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/OmAI_lab">
   </a>
-  <a href="https://discord.gg/Mkqs8z5U" target="_blank">
+  <a href="https://discord.gg/G9n5tq4qfK" target="_blank">
     <img alt="Discord" src="https://img.shields.io/discord/1296666215548321822?style=flat&logo=discord">
   </a>
 </p>

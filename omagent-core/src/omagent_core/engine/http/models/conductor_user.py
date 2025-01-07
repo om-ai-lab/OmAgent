@@ -9,6 +9,7 @@ class ConductorUser(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,29 +18,38 @@ class ConductorUser(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'id': 'str',
-        'name': 'str',
-        'roles': 'list[Role]',
-        'groups': 'list[Group]',
-        'uuid': 'str',
-        'application_user': 'bool',
-        'encrypted_id': 'bool',
-        'encrypted_id_display_value': 'str'
+        "id": "str",
+        "name": "str",
+        "roles": "list[Role]",
+        "groups": "list[Group]",
+        "uuid": "str",
+        "application_user": "bool",
+        "encrypted_id": "bool",
+        "encrypted_id_display_value": "str",
     }
 
     attribute_map = {
-        'id': 'id',
-        'name': 'name',
-        'roles': 'roles',
-        'groups': 'groups',
-        'uuid': 'uuid',
-        'application_user': 'applicationUser',
-        'encrypted_id': 'encryptedId',
-        'encrypted_id_display_value': 'encryptedIdDisplayValue'
+        "id": "id",
+        "name": "name",
+        "roles": "roles",
+        "groups": "groups",
+        "uuid": "uuid",
+        "application_user": "applicationUser",
+        "encrypted_id": "encryptedId",
+        "encrypted_id_display_value": "encryptedIdDisplayValue",
     }
 
-    def __init__(self, id=None, name=None, roles=None, groups=None, uuid=None, application_user=None, encrypted_id=None,
-                 encrypted_id_display_value=None):  # noqa: E501
+    def __init__(
+        self,
+        id=None,
+        name=None,
+        roles=None,
+        groups=None,
+        uuid=None,
+        application_user=None,
+        encrypted_id=None,
+        encrypted_id_display_value=None,
+    ):  # noqa: E501
         """ConductorUser - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._name = None
@@ -242,18 +252,22 @@ class ConductorUser(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(ConductorUser, dict):

@@ -100,7 +100,7 @@ Please follow the ["fork and pull request"](https://docs.github.com/en/get-start
 
 1. **Navigate to Your Fork:** Go to your forked repository on GitHub.
 2. **Create a Pull Request:** Click the "New pull request" button.
-3. **Select Your Branch:** Select your feature branch as the head and the main branch of the original OmAgent repository as the base.
+3. **Select Your Branch:** Select your feature branch as the head and the latest develop branch of the original OmAgent repository as the base.
 4. **Add a Description:** Provide a clear description of your changes.
 5. **Submit Your Pull Request:** Click the "Create pull request" button.
 
@@ -117,6 +117,6 @@ Here are some useful commands:
 * **List branches:** `git branch`
 * **Switch to a branch:** `git checkout branch-name`
 * **Merge branches:** `git merge other-branch`
-* **Pull changes from upstream:** `git pull upstream main`
+* **Pull changes from upstream:** `git pull upstream branch-name`
 
 **Thank you for your contributions!**

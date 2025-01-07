@@ -3,20 +3,14 @@ import re  # noqa: F401
 from typing import List
 
 import six
-
-from omagent_core.engine.http.models.state_change_event import StateChangeConfig, StateChangeEventType, StateChangeEvent
+from omagent_core.engine.http.models.state_change_event import (
+    StateChangeConfig, StateChangeEvent, StateChangeEventType)
 
 
 class CacheConfig(object):
-    swagger_types = {
-        'key': 'str',
-        'ttl_in_second': 'int'
-    }
+    swagger_types = {"key": "str", "ttl_in_second": "int"}
 
-    attribute_map = {
-        'key': 'key',
-        'ttl_in_second': 'ttlInSecond'
-    }
+    attribute_map = {"key": "key", "ttl_in_second": "ttlInSecond"}
 
     def __init__(self, key: str, ttl_in_second: int):
         self._key = key
@@ -47,85 +41,112 @@ class WorkflowTask(object):
       attribute_map (dict): The key is attribute name
                             and the value is json key in definition.
     """
+
     swagger_types = {
-        'name': 'str',
-        'task_reference_name': 'str',
-        'description': 'str',
-        'input_parameters': 'dict(str, object)',
-        'type': 'str',
-        'dynamic_task_name_param': 'str',
-        'case_value_param': 'str',
-        'case_expression': 'str',
-        'script_expression': 'str',
-        'decision_cases': 'dict(str, list[WorkflowTask])',
-        'dynamic_fork_join_tasks_param': 'str',
-        'dynamic_fork_tasks_param': 'str',
-        'dynamic_fork_tasks_input_param_name': 'str',
-        'default_case': 'list[WorkflowTask]',
-        'fork_tasks': 'list[list[WorkflowTask]]',
-        'start_delay': 'int',
-        'sub_workflow_param': 'SubWorkflowParams',
-        'join_on': 'list[str]',
-        'sink': 'str',
-        'optional': 'bool',
-        'task_definition': 'TaskDef',
-        'rate_limited': 'bool',
-        'default_exclusive_join_task': 'list[str]',
-        'async_complete': 'bool',
-        'loop_condition': 'str',
-        'loop_over': 'list[WorkflowTask]',
-        'retry_count': 'int',
-        'evaluator_type': 'str',
-        'expression': 'str',
-        'workflow_task_type': 'str',
-        'on_state_change': 'dict(str, StateChangeConfig)',
-        'cache_config': 'CacheConfig'
+        "name": "str",
+        "task_reference_name": "str",
+        "description": "str",
+        "input_parameters": "dict(str, object)",
+        "type": "str",
+        "dynamic_task_name_param": "str",
+        "case_value_param": "str",
+        "case_expression": "str",
+        "script_expression": "str",
+        "decision_cases": "dict(str, list[WorkflowTask])",
+        "dynamic_fork_join_tasks_param": "str",
+        "dynamic_fork_tasks_param": "str",
+        "dynamic_fork_tasks_input_param_name": "str",
+        "default_case": "list[WorkflowTask]",
+        "fork_tasks": "list[list[WorkflowTask]]",
+        "start_delay": "int",
+        "sub_workflow_param": "SubWorkflowParams",
+        "join_on": "list[str]",
+        "sink": "str",
+        "optional": "bool",
+        "task_definition": "TaskDef",
+        "rate_limited": "bool",
+        "default_exclusive_join_task": "list[str]",
+        "async_complete": "bool",
+        "loop_condition": "str",
+        "loop_over": "list[WorkflowTask]",
+        "retry_count": "int",
+        "evaluator_type": "str",
+        "expression": "str",
+        "workflow_task_type": "str",
+        "on_state_change": "dict(str, StateChangeConfig)",
+        "cache_config": "CacheConfig",
     }
 
     attribute_map = {
-        'name': 'name',
-        'task_reference_name': 'taskReferenceName',
-        'description': 'description',
-        'input_parameters': 'inputParameters',
-        'type': 'type',
-        'dynamic_task_name_param': 'dynamicTaskNameParam',
-        'case_value_param': 'caseValueParam',
-        'case_expression': 'caseExpression',
-        'script_expression': 'scriptExpression',
-        'decision_cases': 'decisionCases',
-        'dynamic_fork_join_tasks_param': 'dynamicForkTasksParam',
-        'dynamic_fork_tasks_param': 'dynamicForkTasksParam',
-        'dynamic_fork_tasks_input_param_name': 'dynamicForkTasksInputParamName',
-        'default_case': 'defaultCase',
-        'fork_tasks': 'forkTasks',
-        'start_delay': 'startDelay',
-        'sub_workflow_param': 'subWorkflowParam',
-        'join_on': 'joinOn',
-        'sink': 'sink',
-        'optional': 'optional',
-        'task_definition': 'taskDefinition',
-        'rate_limited': 'rateLimited',
-        'default_exclusive_join_task': 'defaultExclusiveJoinTask',
-        'async_complete': 'asyncComplete',
-        'loop_condition': 'loopCondition',
-        'loop_over': 'loopOver',
-        'retry_count': 'retryCount',
-        'evaluator_type': 'evaluatorType',
-        'expression': 'expression',
-        'workflow_task_type': 'workflowTaskType',
-        'on_state_change': 'onStateChange',
-        'cache_config': 'cacheConfig'
+        "name": "name",
+        "task_reference_name": "taskReferenceName",
+        "description": "description",
+        "input_parameters": "inputParameters",
+        "type": "type",
+        "dynamic_task_name_param": "dynamicTaskNameParam",
+        "case_value_param": "caseValueParam",
+        "case_expression": "caseExpression",
+        "script_expression": "scriptExpression",
+        "decision_cases": "decisionCases",
+        "dynamic_fork_join_tasks_param": "dynamicForkTasksParam",
+        "dynamic_fork_tasks_param": "dynamicForkTasksParam",
+        "dynamic_fork_tasks_input_param_name": "dynamicForkTasksInputParamName",
+        "default_case": "defaultCase",
+        "fork_tasks": "forkTasks",
+        "start_delay": "startDelay",
+        "sub_workflow_param": "subWorkflowParam",
+        "join_on": "joinOn",
+        "sink": "sink",
+        "optional": "optional",
+        "task_definition": "taskDefinition",
+        "rate_limited": "rateLimited",
+        "default_exclusive_join_task": "defaultExclusiveJoinTask",
+        "async_complete": "asyncComplete",
+        "loop_condition": "loopCondition",
+        "loop_over": "loopOver",
+        "retry_count": "retryCount",
+        "evaluator_type": "evaluatorType",
+        "expression": "expression",
+        "workflow_task_type": "workflowTaskType",
+        "on_state_change": "onStateChange",
+        "cache_config": "cacheConfig",
     }
 
-    def __init__(self, name=None, task_reference_name=None, description=None, input_parameters=None, type=None,
-                 dynamic_task_name_param=None, case_value_param=None, case_expression=None, script_expression=None,
-                 decision_cases=None, dynamic_fork_join_tasks_param=None, dynamic_fork_tasks_param=None,
-                 dynamic_fork_tasks_input_param_name=None, default_case=None, fork_tasks=None, start_delay=None,
-                 sub_workflow_param=None, join_on=None, sink=None, optional=None, task_definition=None,
-                 rate_limited=None, default_exclusive_join_task=None, async_complete=None, loop_condition=None,
-                 loop_over=None, retry_count=None, evaluator_type=None, expression=None,
-                 workflow_task_type=None, on_state_change: dict[str, StateChangeConfig] = None,
-                 cache_config: CacheConfig = None):  # noqa: E501
+    def __init__(
+        self,
+        name=None,
+        task_reference_name=None,
+        description=None,
+        input_parameters=None,
+        type=None,
+        dynamic_task_name_param=None,
+        case_value_param=None,
+        case_expression=None,
+        script_expression=None,
+        decision_cases=None,
+        dynamic_fork_join_tasks_param=None,
+        dynamic_fork_tasks_param=None,
+        dynamic_fork_tasks_input_param_name=None,
+        default_case=None,
+        fork_tasks=None,
+        start_delay=None,
+        sub_workflow_param=None,
+        join_on=None,
+        sink=None,
+        optional=None,
+        task_definition=None,
+        rate_limited=None,
+        default_exclusive_join_task=None,
+        async_complete=None,
+        loop_condition=None,
+        loop_over=None,
+        retry_count=None,
+        evaluator_type=None,
+        expression=None,
+        workflow_task_type=None,
+        on_state_change: dict[str, StateChangeConfig] = None,
+        cache_config: CacheConfig = None,
+    ):  # noqa: E501
         """WorkflowTask - a model defined in Swagger"""  # noqa: E501
         self._name = None
         self._task_reference_name = None
@@ -183,7 +204,9 @@ class WorkflowTask(object):
         if dynamic_fork_tasks_param is not None:
             self.dynamic_fork_tasks_param = dynamic_fork_tasks_param
         if dynamic_fork_tasks_input_param_name is not None:
-            self.dynamic_fork_tasks_input_param_name = dynamic_fork_tasks_input_param_name
+            self.dynamic_fork_tasks_input_param_name = (
+                dynamic_fork_tasks_input_param_name
+            )
         if default_case is not None:
             self.default_case = default_case
         if fork_tasks is not None:
@@ -855,9 +878,7 @@ class WorkflowTask(object):
 
     @on_state_change.setter
     def on_state_change(self, state_change: StateChangeConfig):
-        self._on_state_change = {
-            state_change.type: state_change.events
-        }
+        self._on_state_change = {state_change.type: state_change.events}
 
     @property
     def cache_config(self) -> CacheConfig:
@@ -874,18 +895,22 @@ class WorkflowTask(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(WorkflowTask, dict):
