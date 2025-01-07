@@ -11,6 +11,7 @@ REQUEST_ID = contextvars.ContextVar("request_id")
 
 class BotBase(BaseSettings, ABC):
     name: Optional[str] = Field(default=None, validate_default=True)
+    id: Optional[str] = Field(default=None, validate_default=True)
     component_stm: Optional[str] = None
     component_ltm: Optional[str] = None
     component_callback: Optional[str] = None
