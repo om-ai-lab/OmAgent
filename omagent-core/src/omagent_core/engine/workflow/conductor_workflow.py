@@ -3,6 +3,7 @@ from copy import deepcopy
 from typing import Any, Dict, List, Union
 
 from omagent_core.engine.http.models import *
+from omagent_core.engine.workflow.executor.local_workflow_executor import WorkflowExecutor as LiteWorkflowExecutor
 from omagent_core.engine.http.models.start_workflow_request import \
     IdempotencyStrategy
 from omagent_core.engine.orkes.orkes_workflow_client import workflow_client
@@ -17,18 +18,24 @@ from omagent_core.engine.workflow.task.task_type import TaskType
 from omagent_core.engine.workflow.task.timeout_policy import TimeoutPolicy
 from omagent_core.utils.container import container
 from omagent_core.utils.logger import logging
+from omagent_core.utils.registry import registry
 from shortuuid import uuid
 from typing_extensions import Self
 
+import json
 
 class ConductorWorkflow:
     SCHEMA_VERSION = 2
 
-    def __init__(self, name: str, version: int = None, description: str = None) -> Self:
-        self._executor = WorkflowExecutor()
+    def __init__(self, name: str, version: int = None, description: str = None, lite_version: bool = False) -> Self:
+        if lite_version:
+            self._executor = LiteWorkflowExecutor()
+        else:
+            self._executor = WorkflowExecutor()
         self.name = name
         self.version = version
         self.description = description
+        self.lite_version = lite_version
         self._tasks = []
         self._owner_email = "default@omagent.ai"
         self._timeout_policy = None
@@ -43,6 +50,12 @@ class ConductorWorkflow:
         self._workflow_status_listener_sink = None
         if container.conductor_config.debug:
             self.stop_all_running_workflows()
+
+    def initialization(self, worker_config):
+        for config in worker_config:
+            worker_cls = registry.get_worker(config['name'])
+            self.workers[config['name']] = worker_cls(**config)
+        return self.workers
 
     @property
     def name(self) -> str:
@@ -214,7 +227,7 @@ class ConductorWorkflow:
         task_to_domain=None,
         priority=None,
         idempotency_key: str = None,
-        idempotency_strategy: IdempotencyStrategy = IdempotencyStrategy.FAIL,
+        idempotency_strategy: IdempotencyStrategy = IdempotencyStrategy.FAIL, workers=None
     ) -> str:
         """
         Starts the workflow with given inputs and parameters and returns the id of the started workflow
@@ -230,8 +243,9 @@ class ConductorWorkflow:
         start_workflow_request.idempotency_strategy = idempotency_strategy
         start_workflow_request.priority = priority
         start_workflow_request.task_to_domain = task_to_domain
-
-        return self._executor.start_workflow(start_workflow_request)
+        
+        return self._executor.start_workflow(start_workflow_request, workers)
+    
 
     def get_workflow(self, workflow_id: str, include_tasks: bool = None) -> Workflow:
         return self._executor.get_workflow(workflow_id, include_tasks)
