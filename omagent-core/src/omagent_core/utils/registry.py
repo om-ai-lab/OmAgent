@@ -45,6 +45,10 @@ class Registry:
         def wrap(module):
             nonlocal name
             name = name or module.__name__
+            if name in self.mapping[category]:
+                raise ValueError(
+                    f"Module {name} [{self.mapping[category].get(name)}] already registered in category {category}. Please use a different class name."
+                )
             self.mapping.setdefault(category, {})[name] = module
             return module
 
