@@ -13,15 +13,16 @@ class SelfConsistentWorkflow(ConductorWorkflow):
         super().__init__(
                 name='self_consistent_workflow')
     
-    def set_input(self,  user_question: str, path_num: int):
+    def set_input(self,  user_question: str, num_path: int,examples: str = None):
         self.user_question = user_question
-        self.path_num = path_num
+        self.num_path = num_path
+        self.examples = examples
         self._configure_tasks()
         self._configure_workflow()
 
     def _configure_tasks(self):
 
-        self.reasoning_task = simple_task(task_def_name='COTReasoning', task_reference_name='cot_reasoning', inputs={'user_question': self.user_question,'path_num':self.path_num})
+        self.reasoning_task = simple_task(task_def_name='COTReasoning', task_reference_name='cot_reasoning', inputs={'user_question': self.user_question,'num_path':self.num_path,'examples':self.examples})
 
         self.extract_task = simple_task(task_def_name='COTExtract', task_reference_name='cot_extract', inputs={'reasoning_result': self.reasoning_task.output('reasoning_result')})
 

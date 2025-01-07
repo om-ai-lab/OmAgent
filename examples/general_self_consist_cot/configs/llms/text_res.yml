@@ -1,6 +1,7 @@
 name: OpenaiGPTLLM
-model_id: gpt-3.5-turbo
+model_id: ep-20250102150313-jp4cc
 api_key: ${env| custom_openai_key, openai_api_key}
 endpoint: ${env| custom_openai_endpoint, https://api.openai.com/v1}
-temperature: 0
-response_format: text
+temperature: 1
+response_format: "text"
+use_default_sys_prompt: false

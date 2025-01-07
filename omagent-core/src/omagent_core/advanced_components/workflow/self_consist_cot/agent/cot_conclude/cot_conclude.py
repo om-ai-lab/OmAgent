@@ -31,4 +31,5 @@ class COTConclusion(BaseLLMBackend, BaseWorker):
         reasoning_result = reasoning_result["choices"][0]["message"]["content"]
         self.stm(self.workflow_instance_id)['final_answer'] = reasoning_result
         self.callback.send_answer(self.workflow_instance_id, msg={'final_answer': reasoning_result,'question': question,"prompt_tokens":prompt_tokens, "completion_tokens": completion_tokens})
-        return {'final_answer': reasoning_result,'question': question,'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens}
+        body = self.stm(self.workflow_instance_id)["body"] 
+        return {'final_answer': reasoning_result,'question': question,'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens,"body":body}

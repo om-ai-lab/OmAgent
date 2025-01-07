@@ -25,18 +25,22 @@ class COTReasoning(BaseLLMBackend, BaseWorker):
         ]
     )
 
-    def _run(self, user_question:str,path_num:str,*args, **kwargs):
-
+    def _run(self, user_question: str, num_path: int, examples: str = None, *args, **kwargs):
         reason_path = []
         prompt_token = []
         complete_token = []
-        for i in range(int(path_num)):
-            reasoning_result = self.simple_infer(question=user_question)
-
+        for i in range(num_path):
+            reasoning_result = self.simple_infer(question=user_question,examples=examples)
             prompt_token.append(reasoning_result["usage"]["prompt_tokens"])
             complete_token.append(reasoning_result["usage"]["completion_tokens"])
             reasoning_result = reasoning_result["choices"][0]["message"]["content"]
             reason_path.append(reasoning_result)
+            if i==1:
+                message = self.prep_prompt([{"question":user_question}])
+                body = self.llm._msg2req(message[0])
+                self.stm(self.workflow_instance_id)["body"] = body
+
+
 
         self.stm(self.workflow_instance_id)['prompt_token'] = prompt_token
         self.stm(self.workflow_instance_id)['completion_token'] = complete_token
