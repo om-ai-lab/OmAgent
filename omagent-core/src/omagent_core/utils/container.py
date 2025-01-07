@@ -5,6 +5,7 @@ from omagent_core.engine.configuration.aaas_config import AaasConfig
 import yaml
 from omagent_core.engine.configuration.configuration import (TEMPLATE_CONFIG,
                                                              Configuration)
+from omagent_core.engine.configuration.aaas_config import AAAS_TEMPLATE_CONFIG
 from omagent_core.utils.registry import registry
 from pydantic import BaseModel
 
@@ -185,6 +186,7 @@ class Container:
 
         config = {
             "conductor_config": TEMPLATE_CONFIG,
+            "aaas_config": AAAS_TEMPLATE_CONFIG,
             "connectors": {},
             "components": {},
         }

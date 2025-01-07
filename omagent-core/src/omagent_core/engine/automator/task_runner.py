@@ -79,10 +79,13 @@ class TaskRunner:
             start_time = time.time()
             domain = self.worker.get_domain()
             params = {"workerid": self.worker.get_identity()}
-            if domain is not None:
-                params["domain"] = domain
+            # if domain is not None:
+            #     params["domain"] = domain
             # task = self.task_client.poll(tasktype=task_definition_name, **params)
             if self.worker.task_type and self.worker.task_type == TaskType.CUSTOM:
+                params["is_prod"] = self.aaas_config.is_prod
+                if not self.aaas_config.is_prod:
+                    params["domain"] = self.aaas_config.domain_token
                 tasks = self.aaas_task_client.batch_poll_from_aaas(task_definition_name, **params)
                 if len(tasks) > 0:
                     task = tasks[0]
