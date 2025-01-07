@@ -1,0 +1,2 @@
+name: OutputInterface
+llm: ${sub|gpt}

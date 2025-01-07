@@ -1,0 +1,8 @@
+- name: ThoughtDecomposition
+- name: ThoughtGenerator
+  llm: ${sub|json_res}
+- name: StateEvaluator
+  llm: ${sub|json_res}
+- name: SearchAlgorithm
+  llm: ${sub|gpt}
+  

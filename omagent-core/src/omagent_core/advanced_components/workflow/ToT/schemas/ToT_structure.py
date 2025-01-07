@@ -6,8 +6,9 @@ class ThoughtNode(BaseModel):
     id: int
     parent_id: Optional[int] = None
     content: Any
-    bfs_value: float = 0.0
-    dfs_value: Any = None
+    infer_input: Any
+    generation_value: float = 0.0
+    evaluation_value: float = 0.0
     depth: int
     children: List[int] = Field(default_factory=list)
 
@@ -15,7 +16,7 @@ class ThoughtTree(BaseModel):
     nodes: Dict[int, ThoughtNode] = Field(default_factory=dict)
     next_id: int = 0
 
-    def add_node(self, content: str, parent_id: Optional[int] = None, bfs_value: float = 0.0, dfs_value: Any = None) -> ThoughtNode:
+    def add_node(self, content: Any, infer_input: Any, parent_id: Optional[int] = None, evaluation_value: float = 0.0, generation_value: float = 0.0) -> ThoughtNode:
         """添加思维节点到树中"""
         # 计算深度：如果有父节点，则深度为父节点深度+1；否则为0
         depth = 0
@@ -28,9 +29,10 @@ class ThoughtTree(BaseModel):
             id=self.next_id,
             parent_id=parent_id,
             content=content,
+            infer_input=infer_input,
             depth=depth,
-            bfs_value=bfs_value,
-            dfs_value=dfs_value
+            evaluation_value=evaluation_value,
+            generation_value=generation_value
         )
         self.nodes[node.id] = node
         if parent_id is not None:
@@ -43,14 +45,7 @@ class ThoughtTree(BaseModel):
         if return_ids:
             return [node.id for node in self.nodes.values() if node.depth == depth]
         return [node for node in self.nodes.values() if node.depth == depth]
-    
-    def update_node_value(self, node_id: int, bfs_value: float, dfs_value: Any):
-        """更新指定节点的值"""
-        if node_id in self.nodes:
-            if bfs_value is not None:
-                self.nodes[node_id].bfs_value = bfs_value 
-            if dfs_value is not None:
-                self.nodes[node_id].dfs_value = dfs_value
+                
     def get_childrens(self, node_id: int, return_ids: bool = False):
         """获取指定节点的所有子节点"""
         if node_id in self.nodes:
@@ -80,49 +75,38 @@ class ThoughtTree(BaseModel):
                 self.prune(child_id)
             # 删除当前节点
             del self.nodes[node_id]
-    
-    def tot_bfs(self, depth: int, b: int):
-        """基于广度遍历获取指定深度的所有节点"""
-        root_id = self.get_root_id()
-        if root_id is None:
-            return []
-        nodes_at_depth = self.get_nodes_at_depth(depth)
-        sorted_nodes_at_depth_top_b = sorted(nodes_at_depth, key=lambda node: node.bfs_value, reverse=True)[:b]
-        
-        top_b_ids = [node.id for node in sorted_nodes_at_depth_top_b]
-        
-        for node in nodes_at_depth:
-            if node.id not in top_b_ids:
-                self.prune(node.id)
                 
-    def get_highest_bfs_score_node_at_depth(self, depth: int, return_ids: bool = False):
-        """返回指定深度的最高分节点或其ID"""
-        nodes_at_depth = self.get_nodes_at_depth(depth)
-        highest_score_nodes = sorted(nodes_at_depth, key=lambda node: node.bfs_value, reverse=True)
-        highest_score_node = highest_score_nodes[0] if highest_score_nodes else None
+    def get_top_n_score_nodes(self, node_id: int = None, depth: int = None, sort_region: str = 'children', score_type: str = 'evaluation', n: int = 1, return_ids: bool = False):
+        """
+        返回指定深度或节点的子节点中最高分数的前n个节点或其ID。
+        sort_region: 'children' or 'depth'
+        score_type: 'evaluation' or 'generation'
+        """
+        if sort_region == 'children':
+            nodes = self.get_childrens(node_id)
+        elif sort_region == 'depth':
+            nodes = self.get_nodes_at_depth(depth)
+        else:
+            raise ValueError("Invalid sort_region. It must be 'children' or 'depth'.")
         
-        if highest_score_node:
-            if return_ids:
-                return highest_score_node.id
-            return highest_score_node
-        return None
-    
-    def get_highest_bfs_score_node_in_childerens(self, node_id: int, return_ids: bool = False):
-        children_nodes = self.get_childrens(node_id)
-        highest_score_nodes = sorted(children_nodes, key=lambda node: node.bfs_value, reverse=True)
-        highest_score_node = highest_score_nodes[0] if highest_score_nodes else None
+        if score_type == 'evaluation':
+            key = lambda node: node.evaluation_value
+        elif score_type == 'generation':
+            key = lambda node: node.generation_value
+        else:
+            raise ValueError("Invalid score_type. It must be 'evaluation' or 'generation'.")
         
-        if highest_score_node:
-            if return_ids:
-                return highest_score_node.id
-            return highest_score_node
-        return None
+        top_n_score_nodes = sorted(nodes, key=key, reverse=True)[:n]
+        
+        if return_ids:
+            return [node.id for node in top_n_score_nodes]
+        return top_n_score_nodes
                 
     def get_current_path(self, node_id: int, return_ids: bool = False):
         result = []
         
 
-        node = self.nodes.get(node_id)
+        node = self.nodes[node_id]
         while node:
             result.append(node)
             node = self.get_parent(node.id)
@@ -156,16 +140,16 @@ if __name__ == "__main__":
     tree = ThoughtTree()
 
     # 添加根思维节点（深度 0）
-    root = tree.add_node("Root Thought")
+    root = tree.add_node("Root Thought", infer_input="Root Thought", parent_id=None, evaluation_value=0.0)
 
     # 添加子思维节点（深度 1）
-    child1 = tree.add_node("Child Thought 1", parent_id=root.id, bfs_value=0.1)
-    child2 = tree.add_node("Child Thought 2", parent_id=root.id, bfs_value=0.2)
+    child1 = tree.add_node("Child Thought 1", infer_input="Child Thought 1", parent_id=root.id, evaluation_value=0.1)
+    child2 = tree.add_node("Child Thought 2", infer_input="Child Thought 2", parent_id=root.id, evaluation_value=0.2)
 
     # 添加孙子思维节点（深度 2）
-    grandchild1 = tree.add_node("Grandchild Thought 1", parent_id=child1.id, bfs_value=0.11)
-    grandchild2 = tree.add_node("Grandchild Thought 2", parent_id=child1.id, bfs_value=1.12)
-    grandchild3 = tree.add_node("Grandchild Thought 3", parent_id=child1.id, bfs_value=2.13)
+    grandchild1 = tree.add_node("Grandchild Thought 1", infer_input="Grandchild Thought 1", parent_id=child1.id, evaluation_value=0.11)
+    grandchild2 = tree.add_node("Grandchild Thought 2", infer_input="Grandchild Thought 2", parent_id=child1.id, evaluation_value=1.12)
+    grandchild3 = tree.add_node("Grandchild Thought 3", infer_input="Grandchild Thought 3", parent_id=child1.id, evaluation_value=2.13)
 
     
     # # tree.prune(grandchild1.id)
@@ -174,6 +158,12 @@ if __name__ == "__main__":
     # print(tree.nodes)
     
     print(tree.nodes[1].children)
+    best_node_id = tree.get_top_n_score_nodes(depth=2, sort_region='depth', score_type='evaluation', n=1, return_ids=True)
+    print('-'*100)
+    print(best_node_id)
+    print('-'*100)
+    current_path = tree.get_current_path(node_id=best_node_id[0], return_ids=True)
+    print(current_path)
     # # 获取深度为 1 的所有节点
     # depth_1_nodes = tree.get_nodes_at_depth(1)
     # print("Nodes at depth 1:")
