@@ -7,12 +7,8 @@ from typing import Any, Dict, List, Union
 from pydantic import model_validator
 
 from ....utils.registry import registry
-from .base import (
-    DEFAULT_FORMATTER_MAPPING,
-    BasePromptTemplate,
-    _get_jinja2_variables_from_template,
-    check_valid_template,
-)
+from .base import (DEFAULT_FORMATTER_MAPPING, BasePromptTemplate,
+                   _get_jinja2_variables_from_template, check_valid_template)
 
 
 @registry.register_prompt()

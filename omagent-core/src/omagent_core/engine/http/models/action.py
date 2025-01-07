@@ -9,6 +9,7 @@ class Action(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,23 +18,29 @@ class Action(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'action': 'str',
-        'start_workflow': 'StartWorkflow',
-        'complete_task': 'TaskDetails',
-        'fail_task': 'TaskDetails',
-        'expand_inline_json': 'bool'
+        "action": "str",
+        "start_workflow": "StartWorkflow",
+        "complete_task": "TaskDetails",
+        "fail_task": "TaskDetails",
+        "expand_inline_json": "bool",
     }
 
     attribute_map = {
-        'action': 'action',
-        'start_workflow': 'start_workflow',
-        'complete_task': 'complete_task',
-        'fail_task': 'fail_task',
-        'expand_inline_json': 'expandInlineJSON'
+        "action": "action",
+        "start_workflow": "start_workflow",
+        "complete_task": "complete_task",
+        "fail_task": "fail_task",
+        "expand_inline_json": "expandInlineJSON",
     }
 
-    def __init__(self, action=None, start_workflow=None, complete_task=None, fail_task=None,
-                 expand_inline_json=None):  # noqa: E501
+    def __init__(
+        self,
+        action=None,
+        start_workflow=None,
+        complete_task=None,
+        fail_task=None,
+        expand_inline_json=None,
+    ):  # noqa: E501
         """Action - a model defined in Swagger"""  # noqa: E501
         self._action = None
         self._start_workflow = None
@@ -73,8 +80,9 @@ class Action(object):
         allowed_values = ["start_workflow", "complete_task", "fail_task"]  # noqa: E501
         if action not in allowed_values:
             raise ValueError(
-                "Invalid value for `action` ({0}), must be one of {1}"  # noqa: E501
-                .format(action, allowed_values)
+                "Invalid value for `action` ({0}), must be one of {1}".format(  # noqa: E501
+                    action, allowed_values
+                )
             )
 
         self._action = action
@@ -170,18 +178,22 @@ class Action(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(Action, dict):

@@ -6,7 +6,7 @@ import six
 
 
 class IdempotencyStrategy(str, Enum):
-    FAIL = "FAIL",
+    FAIL = ("FAIL",)
     RETURN_EXISTING = "RETURN_EXISTING"
 
     def __str__(self) -> str:
@@ -18,6 +18,7 @@ class StartWorkflowRequest(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -26,36 +27,47 @@ class StartWorkflowRequest(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'name': 'str',
-        'version': 'int',
-        'correlation_id': 'str',
-        'input': 'dict(str, object)',
-        'task_to_domain': 'dict(str, str)',
-        'workflow_def': 'WorkflowDef',
-        'external_input_payload_storage_path': 'str',
-        'priority': 'int',
-        'created_by': 'str',
-        'idempotency_key': 'str',
-        'idempotency_strategy':'str'
+        "name": "str",
+        "version": "int",
+        "correlation_id": "str",
+        "input": "dict(str, object)",
+        "task_to_domain": "dict(str, str)",
+        "workflow_def": "WorkflowDef",
+        "external_input_payload_storage_path": "str",
+        "priority": "int",
+        "created_by": "str",
+        "idempotency_key": "str",
+        "idempotency_strategy": "str",
     }
 
     attribute_map = {
-        'name': 'name',
-        'version': 'version',
-        'correlation_id': 'correlationId',
-        'input': 'input',
-        'task_to_domain': 'taskToDomain',
-        'workflow_def': 'workflowDef',
-        'external_input_payload_storage_path': 'externalInputPayloadStoragePath',
-        'priority': 'priority',
-        'created_by': 'createdBy',
-        'idempotency_key': 'idempotencyKey',
-        'idempotency_strategy': 'idempotencyStrategy'
+        "name": "name",
+        "version": "version",
+        "correlation_id": "correlationId",
+        "input": "input",
+        "task_to_domain": "taskToDomain",
+        "workflow_def": "workflowDef",
+        "external_input_payload_storage_path": "externalInputPayloadStoragePath",
+        "priority": "priority",
+        "created_by": "createdBy",
+        "idempotency_key": "idempotencyKey",
+        "idempotency_strategy": "idempotencyStrategy",
     }
 
-    def __init__(self, name=None, version=None, correlation_id=None, input=None, task_to_domain=None, workflow_def=None,
-                 external_input_payload_storage_path=None, priority=None, created_by=None,
-                 idempotency_key: str = None, idempotency_strategy: IdempotencyStrategy = IdempotencyStrategy.FAIL):  # noqa: E501
+    def __init__(
+        self,
+        name=None,
+        version=None,
+        correlation_id=None,
+        input=None,
+        task_to_domain=None,
+        workflow_def=None,
+        external_input_payload_storage_path=None,
+        priority=None,
+        created_by=None,
+        idempotency_key: str = None,
+        idempotency_strategy: IdempotencyStrategy = IdempotencyStrategy.FAIL,
+    ):  # noqa: E501
         """StartWorkflowRequest - a model defined in Swagger"""  # noqa: E501
         self._name = None
         self._version = None
@@ -79,7 +91,9 @@ class StartWorkflowRequest(object):
         if workflow_def is not None:
             self.workflow_def = workflow_def
         if external_input_payload_storage_path is not None:
-            self.external_input_payload_storage_path = external_input_payload_storage_path
+            self.external_input_payload_storage_path = (
+                external_input_payload_storage_path
+            )
         if priority is not None:
             self.priority = priority
         if created_by is not None:
@@ -292,7 +306,7 @@ class StartWorkflowRequest(object):
         return self._idempotency_strategy
 
     @idempotency_strategy.setter
-    def idempotency_strategy(self, idempotency_strategy : IdempotencyStrategy):
+    def idempotency_strategy(self, idempotency_strategy: IdempotencyStrategy):
         self._idempotency_strategy = idempotency_strategy
 
     def to_dict(self):
@@ -302,18 +316,22 @@ class StartWorkflowRequest(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(StartWorkflowRequest, dict):

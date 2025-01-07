@@ -9,6 +9,7 @@ class PollData(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,20 +18,22 @@ class PollData(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'queue_name': 'str',
-        'domain': 'str',
-        'worker_id': 'str',
-        'last_poll_time': 'int'
+        "queue_name": "str",
+        "domain": "str",
+        "worker_id": "str",
+        "last_poll_time": "int",
     }
 
     attribute_map = {
-        'queue_name': 'queueName',
-        'domain': 'domain',
-        'worker_id': 'workerId',
-        'last_poll_time': 'lastPollTime'
+        "queue_name": "queueName",
+        "domain": "domain",
+        "worker_id": "workerId",
+        "last_poll_time": "lastPollTime",
     }
 
-    def __init__(self, queue_name=None, domain=None, worker_id=None, last_poll_time=None):  # noqa: E501
+    def __init__(
+        self, queue_name=None, domain=None, worker_id=None, last_poll_time=None
+    ):  # noqa: E501
         """PollData - a model defined in Swagger"""  # noqa: E501
         self._queue_name = None
         self._domain = None
@@ -137,18 +140,22 @@ class PollData(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(PollData, dict):

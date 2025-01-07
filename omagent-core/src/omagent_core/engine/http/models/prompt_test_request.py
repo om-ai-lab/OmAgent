@@ -9,6 +9,7 @@ class PromptTemplateTestRequest(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,27 +18,35 @@ class PromptTemplateTestRequest(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'llm_provider': 'str',
-        'model': 'str',
-        'prompt': 'str',
-        'prompt_variables': 'dict(str, object)',
-        'stop_words': 'list[str]',
-        'temperature': 'float',
-        'top_p': 'float'
+        "llm_provider": "str",
+        "model": "str",
+        "prompt": "str",
+        "prompt_variables": "dict(str, object)",
+        "stop_words": "list[str]",
+        "temperature": "float",
+        "top_p": "float",
     }
 
     attribute_map = {
-        'llm_provider': 'llmProvider',
-        'model': 'model',
-        'prompt': 'prompt',
-        'prompt_variables': 'promptVariables',
-        'stop_words': 'stopWords',
-        'temperature': 'temperature',
-        'top_p': 'topP'
+        "llm_provider": "llmProvider",
+        "model": "model",
+        "prompt": "prompt",
+        "prompt_variables": "promptVariables",
+        "stop_words": "stopWords",
+        "temperature": "temperature",
+        "top_p": "topP",
     }
 
-    def __init__(self, llm_provider=None, model=None, prompt=None, prompt_variables=None, stop_words=None,
-                 temperature=None, top_p=None):  # noqa: E501
+    def __init__(
+        self,
+        llm_provider=None,
+        model=None,
+        prompt=None,
+        prompt_variables=None,
+        stop_words=None,
+        temperature=None,
+        top_p=None,
+    ):  # noqa: E501
         """PromptTemplateTestRequest - a model defined in Swagger"""  # noqa: E501
         self._llm_provider = None
         self._model = None
@@ -216,18 +225,22 @@ class PromptTemplateTestRequest(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(PromptTemplateTestRequest, dict):

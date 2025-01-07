@@ -4,7 +4,6 @@ import re  # noqa: F401
 
 # python 2 and python 3 compatibility library
 import six
-
 from omagent_core.engine.http.api_client import ApiClient
 
 
@@ -34,8 +33,8 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.delete_schedule_with_http_info(name, **kwargs)  # noqa: E501
         else:
             (data) = self.delete_schedule_with_http_info(name, **kwargs)  # noqa: E501
@@ -56,31 +55,32 @@ class SchedulerResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['name']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["name"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method delete_schedule" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'name' is set
-        if ('name' not in params or
-                params['name'] is None):
-            raise ValueError("Missing the required parameter `name` when calling `delete_schedule`")  # noqa: E501
+        if "name" not in params or params["name"] is None:
+            raise ValueError(
+                "Missing the required parameter `name` when calling `delete_schedule`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'name' in params:
-            path_params['name'] = params['name']  # noqa: E501
+        if "name" in params:
+            path_params["name"] = params["name"]  # noqa: E501
 
         query_params = []
 
@@ -91,27 +91,30 @@ class SchedulerResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
         auth_settings = []  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/schedules/{name}', 'DELETE',
+            "/scheduler/schedules/{name}",
+            "DELETE",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='object',  # noqa: E501
+            response_type="object",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def get_all_schedules(self, **kwargs):  # noqa: E501
         """Get all existing workflow schedules and optionally filter by workflow name  # noqa: E501
@@ -127,8 +130,8 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.get_all_schedules_with_http_info(**kwargs)  # noqa: E501
         else:
             (data) = self.get_all_schedules_with_http_info(**kwargs)  # noqa: E501
@@ -149,29 +152,29 @@ class SchedulerResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['workflow_name']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["workflow_name"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method get_all_schedules" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
 
         collection_formats = {}
 
         path_params = {}
 
         query_params = []
-        if 'workflow_name' in params:
-            query_params.append(('workflowName', params['workflow_name']))  # noqa: E501
+        if "workflow_name" in params:
+            query_params.append(("workflowName", params["workflow_name"]))  # noqa: E501
 
         header_params = {}
 
@@ -180,27 +183,30 @@ class SchedulerResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
         auth_settings = []  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/schedules', 'GET',
+            "/scheduler/schedules",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='list[WorkflowSchedule]',  # noqa: E501
+            response_type="list[WorkflowSchedule]",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def get_next_few_schedules(self, cron_expression, **kwargs):  # noqa: E501
         """Get list of the next x (default 3, max 5) execution times for a scheduler  # noqa: E501
@@ -219,14 +225,20 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.get_next_few_schedules_with_http_info(cron_expression, **kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.get_next_few_schedules_with_http_info(
+                cron_expression, **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.get_next_few_schedules_with_http_info(cron_expression, **kwargs)  # noqa: E501
+            (data) = self.get_next_few_schedules_with_http_info(
+                cron_expression, **kwargs
+            )  # noqa: E501
             return data
 
-    def get_next_few_schedules_with_http_info(self, cron_expression, **kwargs):  # noqa: E501
+    def get_next_few_schedules_with_http_info(
+        self, cron_expression, **kwargs
+    ):  # noqa: E501
         """Get list of the next x (default 3, max 5) execution times for a scheduler  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -244,40 +256,51 @@ class SchedulerResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['cron_expression', 'schedule_start_time', 'schedule_end_time', 'limit']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = [
+            "cron_expression",
+            "schedule_start_time",
+            "schedule_end_time",
+            "limit",
+        ]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method get_next_few_schedules" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'cron_expression' is set
-        if ('cron_expression' not in params or
-                params['cron_expression'] is None):
+        if "cron_expression" not in params or params["cron_expression"] is None:
             raise ValueError(
-                "Missing the required parameter `cron_expression` when calling `get_next_few_schedules`")  # noqa: E501
+                "Missing the required parameter `cron_expression` when calling `get_next_few_schedules`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
 
         query_params = []
-        if 'cron_expression' in params:
-            query_params.append(('cronExpression', params['cron_expression']))  # noqa: E501
-        if 'schedule_start_time' in params:
-            query_params.append(('scheduleStartTime', params['schedule_start_time']))  # noqa: E501
-        if 'schedule_end_time' in params:
-            query_params.append(('scheduleEndTime', params['schedule_end_time']))  # noqa: E501
-        if 'limit' in params:
-            query_params.append(('limit', params['limit']))  # noqa: E501
+        if "cron_expression" in params:
+            query_params.append(
+                ("cronExpression", params["cron_expression"])
+            )  # noqa: E501
+        if "schedule_start_time" in params:
+            query_params.append(
+                ("scheduleStartTime", params["schedule_start_time"])
+            )  # noqa: E501
+        if "schedule_end_time" in params:
+            query_params.append(
+                ("scheduleEndTime", params["schedule_end_time"])
+            )  # noqa: E501
+        if "limit" in params:
+            query_params.append(("limit", params["limit"]))  # noqa: E501
 
         header_params = {}
 
@@ -286,27 +309,30 @@ class SchedulerResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
         auth_settings = []  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/nextFewSchedules', 'GET',
+            "/scheduler/nextFewSchedules",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='list[int]',  # noqa: E501
+            response_type="list[int]",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def get_schedule(self, name, **kwargs):  # noqa: E501
         """Get an existing workflow schedule by name  # noqa: E501
@@ -322,8 +348,8 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.get_schedule_with_http_info(name, **kwargs)  # noqa: E501
         else:
             (data) = self.get_schedule_with_http_info(name, **kwargs)  # noqa: E501
@@ -344,31 +370,32 @@ class SchedulerResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['name']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["name"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method get_schedule" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'name' is set
-        if ('name' not in params or
-                params['name'] is None):
-            raise ValueError("Missing the required parameter `name` when calling `get_schedule`")  # noqa: E501
+        if "name" not in params or params["name"] is None:
+            raise ValueError(
+                "Missing the required parameter `name` when calling `get_schedule`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'name' in params:
-            path_params['name'] = params['name']  # noqa: E501
+        if "name" in params:
+            path_params["name"] = params["name"]  # noqa: E501
 
         query_params = []
 
@@ -379,27 +406,30 @@ class SchedulerResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
         auth_settings = []  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/schedules/{name}', 'GET',
+            "/scheduler/schedules/{name}",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='object',  # noqa: E501
+            response_type="object",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def pause_all_schedules(self, **kwargs):  # noqa: E501
         """Pause all scheduling in a single conductor server instance (for debugging only)  # noqa: E501
@@ -414,8 +444,8 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.pause_all_schedules_with_http_info(**kwargs)  # noqa: E501
         else:
             (data) = self.pause_all_schedules_with_http_info(**kwargs)  # noqa: E501
@@ -436,20 +466,20 @@ class SchedulerResourceApi(object):
         """
 
         all_params = []  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method pause_all_schedules" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
 
         collection_formats = {}
 
@@ -464,27 +494,30 @@ class SchedulerResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
         auth_settings = []  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/admin/pause', 'GET',
+            "/scheduler/admin/pause",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='dict(str, object)',  # noqa: E501
+            response_type="dict(str, object)",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def pause_schedule(self, name, **kwargs):  # noqa: E501
         """Pauses an existing schedule by name  # noqa: E501
@@ -500,8 +533,8 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.pause_schedule_with_http_info(name, **kwargs)  # noqa: E501
         else:
             (data) = self.pause_schedule_with_http_info(name, **kwargs)  # noqa: E501
@@ -522,31 +555,32 @@ class SchedulerResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['name']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["name"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method pause_schedule" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'name' is set
-        if ('name' not in params or
-                params['name'] is None):
-            raise ValueError("Missing the required parameter `name` when calling `pause_schedule`")  # noqa: E501
+        if "name" not in params or params["name"] is None:
+            raise ValueError(
+                "Missing the required parameter `name` when calling `pause_schedule`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'name' in params:
-            path_params['name'] = params['name']  # noqa: E501
+        if "name" in params:
+            path_params["name"] = params["name"]  # noqa: E501
 
         query_params = []
 
@@ -557,27 +591,30 @@ class SchedulerResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
         auth_settings = []  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/schedules/{name}/pause', 'GET',
+            "/scheduler/schedules/{name}/pause",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='object',  # noqa: E501
+            response_type="object",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def requeue_all_execution_records(self, **kwargs):  # noqa: E501
         """Requeue all execution records  # noqa: E501
@@ -592,11 +629,15 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.requeue_all_execution_records_with_http_info(**kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.requeue_all_execution_records_with_http_info(
+                **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.requeue_all_execution_records_with_http_info(**kwargs)  # noqa: E501
+            (data) = self.requeue_all_execution_records_with_http_info(
+                **kwargs
+            )  # noqa: E501
             return data
 
     def requeue_all_execution_records_with_http_info(self, **kwargs):  # noqa: E501
@@ -614,20 +655,20 @@ class SchedulerResourceApi(object):
         """
 
         all_params = []  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method requeue_all_execution_records" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
 
         collection_formats = {}
 
@@ -642,27 +683,30 @@ class SchedulerResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
         auth_settings = []  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/admin/requeue', 'GET',
+            "/scheduler/admin/requeue",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='dict(str, object)',  # noqa: E501
+            response_type="dict(str, object)",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def resume_all_schedules(self, **kwargs):  # noqa: E501
         """Resume all scheduling  # noqa: E501
@@ -677,8 +721,8 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.resume_all_schedules_with_http_info(**kwargs)  # noqa: E501
         else:
             (data) = self.resume_all_schedules_with_http_info(**kwargs)  # noqa: E501
@@ -699,20 +743,20 @@ class SchedulerResourceApi(object):
         """
 
         all_params = []  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method resume_all_schedules" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
 
         collection_formats = {}
 
@@ -727,27 +771,30 @@ class SchedulerResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
         auth_settings = []  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/admin/resume', 'GET',
+            "/scheduler/admin/resume",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='dict(str, object)',  # noqa: E501
+            response_type="dict(str, object)",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def resume_schedule(self, name, **kwargs):  # noqa: E501
         """Resume a paused schedule by name  # noqa: E501
@@ -763,8 +810,8 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.resume_schedule_with_http_info(name, **kwargs)  # noqa: E501
         else:
             (data) = self.resume_schedule_with_http_info(name, **kwargs)  # noqa: E501
@@ -785,31 +832,32 @@ class SchedulerResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['name']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["name"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method resume_schedule" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'name' is set
-        if ('name' not in params or
-                params['name'] is None):
-            raise ValueError("Missing the required parameter `name` when calling `resume_schedule`")  # noqa: E501
+        if "name" not in params or params["name"] is None:
+            raise ValueError(
+                "Missing the required parameter `name` when calling `resume_schedule`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'name' in params:
-            path_params['name'] = params['name']  # noqa: E501
+        if "name" in params:
+            path_params["name"] = params["name"]  # noqa: E501
 
         query_params = []
 
@@ -820,27 +868,30 @@ class SchedulerResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
         auth_settings = []  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/schedules/{name}/resume', 'GET',
+            "/scheduler/schedules/{name}/resume",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='object',  # noqa: E501
+            response_type="object",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def save_schedule(self, body, **kwargs):  # noqa: E501
         """Create or update a schedule for a specified workflow with a corresponding start workflow request  # noqa: E501
@@ -856,8 +907,8 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.save_schedule_with_http_info(body, **kwargs)  # noqa: E501
         else:
             (data) = self.save_schedule_with_http_info(body, **kwargs)  # noqa: E501
@@ -878,25 +929,26 @@ class SchedulerResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['body']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["body"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method save_schedule" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'body' is set
-        if ('body' not in params or
-                params['body'] is None):
-            raise ValueError("Missing the required parameter `body` when calling `save_schedule`")  # noqa: E501
+        if "body" not in params or params["body"] is None:
+            raise ValueError(
+                "Missing the required parameter `body` when calling `save_schedule`"
+            )  # noqa: E501
 
         collection_formats = {}
 
@@ -910,34 +962,40 @@ class SchedulerResourceApi(object):
         local_var_files = {}
 
         body_params = None
-        if 'body' in params:
-            body_params = params['body']
+        if "body" in params:
+            body_params = params["body"]
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
-            ['application/json'])  # noqa: E501
+        header_params["Content-Type"] = (
+            self.api_client.select_header_content_type(  # noqa: E501
+                ["application/json"]
+            )
+        )  # noqa: E501
 
         # Authentication setting
         auth_settings = []  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/schedules', 'POST',
+            "/scheduler/schedules",
+            "POST",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='object',  # noqa: E501
+            response_type="object",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def search_v21(self, **kwargs):  # noqa: E501
         """Search for workflows based on payload and other parameters  # noqa: E501
@@ -958,8 +1016,8 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.search_v21_with_http_info(**kwargs)  # noqa: E501
         else:
             (data) = self.search_v21_with_http_info(**kwargs)  # noqa: E501
@@ -985,37 +1043,37 @@ class SchedulerResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['start', 'size', 'sort', 'free_text', 'query']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["start", "size", "sort", "free_text", "query"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method search_v21" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
 
         collection_formats = {}
 
         path_params = {}
 
         query_params = []
-        if 'start' in params:
-            query_params.append(('start', params['start']))  # noqa: E501
-        if 'size' in params:
-            query_params.append(('size', params['size']))  # noqa: E501
-        if 'sort' in params:
-            query_params.append(('sort', params['sort']))  # noqa: E501
-        if 'free_text' in params:
-            query_params.append(('freeText', params['free_text']))  # noqa: E501
-        if 'query' in params:
-            query_params.append(('query', params['query']))  # noqa: E501
+        if "start" in params:
+            query_params.append(("start", params["start"]))  # noqa: E501
+        if "size" in params:
+            query_params.append(("size", params["size"]))  # noqa: E501
+        if "sort" in params:
+            query_params.append(("sort", params["sort"]))  # noqa: E501
+        if "free_text" in params:
+            query_params.append(("freeText", params["free_text"]))  # noqa: E501
+        if "query" in params:
+            query_params.append(("query", params["query"]))  # noqa: E501
 
         header_params = {}
 
@@ -1024,27 +1082,30 @@ class SchedulerResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
         auth_settings = []  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/search/executions', 'GET',
+            "/scheduler/search/executions",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='SearchResultWorkflowScheduleExecutionModel',  # noqa: E501
+            response_type="SearchResultWorkflowScheduleExecutionModel",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def test_timeout(self, **kwargs):  # noqa: E501
         """Test timeout - do not use in production  # noqa: E501
@@ -1059,8 +1120,8 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
             return self.test_timeout_with_http_info(**kwargs)  # noqa: E501
         else:
             (data) = self.test_timeout_with_http_info(**kwargs)  # noqa: E501
@@ -1081,20 +1142,20 @@ class SchedulerResourceApi(object):
         """
 
         all_params = []  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method test_timeout" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
 
         collection_formats = {}
 
@@ -1112,7 +1173,8 @@ class SchedulerResourceApi(object):
         auth_settings = []  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/test/timeout', 'GET',
+            "/scheduler/test/timeout",
+            "GET",
             path_params,
             query_params,
             header_params,
@@ -1121,11 +1183,12 @@ class SchedulerResourceApi(object):
             files=local_var_files,
             response_type=None,  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def put_tag_for_schedule(self, body, name, **kwargs):  # noqa: E501
         """Put a tag to schedule  # noqa: E501
@@ -1142,11 +1205,15 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.put_tag_for_schedule_with_http_info(body, name, **kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.put_tag_for_schedule_with_http_info(
+                body, name, **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.put_tag_for_schedule_with_http_info(body, name, **kwargs)  # noqa: E501
+            (data) = self.put_tag_for_schedule_with_http_info(
+                body, name, **kwargs
+            )  # noqa: E501
             return data
 
     def put_tag_for_schedule_with_http_info(self, body, name, **kwargs):  # noqa: E501
@@ -1165,35 +1232,37 @@ class SchedulerResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['body', 'name']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["body", "name"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method put_tag_for_schedule" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'body' is set
-        if ('body' not in params or
-                params['body'] is None):
-            raise ValueError("Missing the required parameter `body` when calling `put_tag_for_schedule`")  # noqa: E501
+        if "body" not in params or params["body"] is None:
+            raise ValueError(
+                "Missing the required parameter `body` when calling `put_tag_for_schedule`"
+            )  # noqa: E501
         # verify the required parameter 'name' is set
-        if ('name' not in params or
-                params['name'] is None):
-            raise ValueError("Missing the required parameter `name` when calling `put_tag_for_schedule`")  # noqa: E501
+        if "name" not in params or params["name"] is None:
+            raise ValueError(
+                "Missing the required parameter `name` when calling `put_tag_for_schedule`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'name' in params:
-            path_params['name'] = params['name']  # noqa: E501
+        if "name" in params:
+            path_params["name"] = params["name"]  # noqa: E501
 
         query_params = []
 
@@ -1203,17 +1272,21 @@ class SchedulerResourceApi(object):
         local_var_files = {}
 
         body_params = None
-        if 'body' in params:
-            body_params = params['body']
+        if "body" in params:
+            body_params = params["body"]
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
-            ['application/json'])  # noqa: E501
+        header_params["Content-Type"] = (
+            self.api_client.select_header_content_type(  # noqa: E501
+                ["application/json"]
+            )
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/schedules/{name}/tags', 'PUT',
+            "/scheduler/schedules/{name}/tags",
+            "PUT",
             path_params,
             query_params,
             header_params,
@@ -1222,11 +1295,12 @@ class SchedulerResourceApi(object):
             files=local_var_files,
             response_type=None,  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def get_tags_for_schedule(self, name, **kwargs):  # noqa: E501
         """Get tags by schedule  # noqa: E501
@@ -1242,11 +1316,15 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.get_tags_for_schedule_with_http_info(name, **kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.get_tags_for_schedule_with_http_info(
+                name, **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.get_tags_for_schedule_with_http_info(name, **kwargs)  # noqa: E501
+            (data) = self.get_tags_for_schedule_with_http_info(
+                name, **kwargs
+            )  # noqa: E501
             return data
 
     def get_tags_for_schedule_with_http_info(self, name, **kwargs):  # noqa: E501
@@ -1264,31 +1342,32 @@ class SchedulerResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['name']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["name"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method get_tags_for_schedule" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'name' is set
-        if ('name' not in params or
-                params['name'] is None):
-            raise ValueError("Missing the required parameter `name` when calling `get_tags_for_schedule`")  # noqa: E501
+        if "name" not in params or params["name"] is None:
+            raise ValueError(
+                "Missing the required parameter `name` when calling `get_tags_for_schedule`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'name' in params:
-            path_params['name'] = params['name']  # noqa: E501
+        if "name" in params:
+            path_params["name"] = params["name"]  # noqa: E501
 
         query_params = []
 
@@ -1299,27 +1378,30 @@ class SchedulerResourceApi(object):
 
         body_params = None
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/schedules/{name}/tags', 'GET',
+            "/scheduler/schedules/{name}/tags",
+            "GET",
             path_params,
             query_params,
             header_params,
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='list[TagObject]',  # noqa: E501
+            response_type="list[TagObject]",  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )
 
     def delete_tag_for_schedule(self, body, name, **kwargs):  # noqa: E501
         """Delete a tag for schedule  # noqa: E501
@@ -1336,14 +1418,20 @@ class SchedulerResourceApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.delete_tag_for_schedule_with_http_info(body, name, **kwargs)  # noqa: E501
+        kwargs["_return_http_data_only"] = True
+        if kwargs.get("async_req"):
+            return self.delete_tag_for_schedule_with_http_info(
+                body, name, **kwargs
+            )  # noqa: E501
         else:
-            (data) = self.delete_tag_for_schedule_with_http_info(body, name, **kwargs)  # noqa: E501
+            (data) = self.delete_tag_for_schedule_with_http_info(
+                body, name, **kwargs
+            )  # noqa: E501
             return data
 
-    def delete_tag_for_schedule_with_http_info(self, body, name, **kwargs):  # noqa: E501
+    def delete_tag_for_schedule_with_http_info(
+        self, body, name, **kwargs
+    ):  # noqa: E501
         """Delete a tag for schedule  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -1359,37 +1447,37 @@ class SchedulerResourceApi(object):
                  returns the request thread.
         """
 
-        all_params = ['body', 'name']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
+        all_params = ["body", "name"]  # noqa: E501
+        all_params.append("async_req")
+        all_params.append("_return_http_data_only")
+        all_params.append("_preload_content")
+        all_params.append("_request_timeout")
 
         params = locals()
-        for key, val in six.iteritems(params['kwargs']):
+        for key, val in six.iteritems(params["kwargs"]):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method delete_tag_for_schedule" % key
                 )
             params[key] = val
-        del params['kwargs']
+        del params["kwargs"]
         # verify the required parameter 'body' is set
-        if ('body' not in params or
-                params['body'] is None):
+        if "body" not in params or params["body"] is None:
             raise ValueError(
-                "Missing the required parameter `body` when calling `delete_tag_for_schedule`")  # noqa: E501
+                "Missing the required parameter `body` when calling `delete_tag_for_schedule`"
+            )  # noqa: E501
         # verify the required parameter 'name' is set
-        if ('name' not in params or
-                params['name'] is None):
+        if "name" not in params or params["name"] is None:
             raise ValueError(
-                "Missing the required parameter `name` when calling `delete_tag_for_schedule`")  # noqa: E501
+                "Missing the required parameter `name` when calling `delete_tag_for_schedule`"
+            )  # noqa: E501
 
         collection_formats = {}
 
         path_params = {}
-        if 'name' in params:
-            path_params['name'] = params['name']  # noqa: E501
+        if "name" in params:
+            path_params["name"] = params["name"]  # noqa: E501
 
         query_params = []
 
@@ -1399,17 +1487,21 @@ class SchedulerResourceApi(object):
         local_var_files = {}
 
         body_params = None
-        if 'body' in params:
-            body_params = params['body']
+        if "body" in params:
+            body_params = params["body"]
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
-            ['application/json'])  # noqa: E501
+        header_params["Content-Type"] = (
+            self.api_client.select_header_content_type(  # noqa: E501
+                ["application/json"]
+            )
+        )  # noqa: E501
 
         # Authentication setting
-        auth_settings = ['api_key']  # noqa: E501
+        auth_settings = ["api_key"]  # noqa: E501
 
         return self.api_client.call_api(
-            '/scheduler/schedules/{name}/tags', 'DELETE',
+            "/scheduler/schedules/{name}/tags",
+            "DELETE",
             path_params,
             query_params,
             header_params,
@@ -1418,8 +1510,9 @@ class SchedulerResourceApi(object):
             files=local_var_files,
             response_type=None,  # noqa: E501
             auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
+            async_req=params.get("async_req"),
+            _return_http_data_only=params.get("_return_http_data_only"),
+            _preload_content=params.get("_preload_content", True),
+            _request_timeout=params.get("_request_timeout"),
+            collection_formats=collection_formats,
+        )

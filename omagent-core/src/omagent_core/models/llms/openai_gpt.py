@@ -4,13 +4,14 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 import geocoder
+from omagent_core.utils.container import container
 from openai import AsyncOpenAI, OpenAI
 from pydantic import Field
-from .schemas import Content, Message
+
 from ...utils.general import encode_image
 from ...utils.registry import registry
 from .base import BaseLLM
-from omagent_core.utils.container import container
+from .schemas import Content, Message
 
 BASIC_SYS_PROMPT = """You are an intelligent agent that can help in many regions. 
 Flowing are some basic information about your working environment, please try your best to answer the questions based on them if needed. 
@@ -24,15 +25,26 @@ Operating System: {}"""
 
 @registry.register_llm()
 class OpenaiGPTLLM(BaseLLM):
-    model_id: str = Field(default=os.getenv("MODEL_ID", "gpt-4o"), description="The model id of openai")
+    model_id: str = Field(
+        default=os.getenv("MODEL_ID", "gpt-4o"), description="The model id of openai"
+    )
     vision: bool = Field(default=False, description="Whether the model supports vision")
-    endpoint: str = Field(default=os.getenv("ENDPOINT", "https://api.openai.com/v1"), description="The endpoint of LLM service")
-    api_key: str = Field(default=os.getenv("API_KEY"), description="The api key of openai")
+    endpoint: str = Field(
+        default=os.getenv("ENDPOINT", "https://api.openai.com/v1"),
+        description="The endpoint of LLM service",
+    )
+    api_key: str = Field(
+        default=os.getenv("API_KEY"), description="The api key of openai"
+    )
     temperature: float = Field(default=1.0, description="The temperature of LLM")
     stream: bool = Field(default=False, description="Whether to stream the response")
     max_tokens: int = Field(default=2048, description="The max tokens of LLM")
-    use_default_sys_prompt: bool = Field(default=True, description="Whether to use the default system prompt")
-    response_format: str = Field(default="text", description="The response format of openai")
+    use_default_sys_prompt: bool = Field(
+        default=True, description="Whether to use the default system prompt"
+    )
+    response_format: str = Field(
+        default="text", description="The response format of openai"
+    )
 
     class Config:
         """Configuration for this pydantic object."""
@@ -44,11 +56,10 @@ class OpenaiGPTLLM(BaseLLM):
         self.client = OpenAI(api_key=self.api_key, base_url=self.endpoint)
         # self.aclient = AsyncOpenAI(api_key=self.api_key, base_url=self.endpoint)
 
-
     def _call(self, records: List[Message], **kwargs) -> Dict:
         if self.api_key is None or self.api_key == "":
             raise ValueError("api_key is required")
-        
+
         body = self._msg2req(records)
         if kwargs.get("tool_choice"):
             body["tool_choice"] = kwargs["tool_choice"]

@@ -1,16 +1,17 @@
 import io
 from typing import Any, Optional
 
-from ...base import BotBase
 from openai import NOT_GIVEN, AsyncOpenAI, OpenAI
 from pydub import AudioSegment
+
+from ...base import BotBase
 
 
 class STT(BotBase):
     model_id: str = "whisper-1"
     endpoint: Optional[str] = None
     api_key: str
-    lang: Optional[str] = None
+    language: Optional[str] = None
     response_format: str = "verbose_json"
 
     class Config:
@@ -38,7 +39,7 @@ class STT(BotBase):
             model=self.model_id,
             file=audio_bytes,
             response_format=self.response_format,
-            language=NOT_GIVEN if self.lang is None else self.lang,
+            language=NOT_GIVEN if self.language is None else self.language,
         )
         return trans.to_dict()
 
@@ -49,6 +50,6 @@ class STT(BotBase):
             model=self.model_id,
             file=audio_bytes,
             response_format=self.response_format,
-            language=NOT_GIVEN if self.lang is None else self.lang,
+            language=NOT_GIVEN if self.language is None else self.language,
         )
         return trans.to_dict()

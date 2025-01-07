@@ -9,6 +9,7 @@ class WorkflowScheduleExecutionModel(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,34 +18,44 @@ class WorkflowScheduleExecutionModel(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'execution_id': 'str',
-        'schedule_name': 'str',
-        'scheduled_time': 'int',
-        'execution_time': 'int',
-        'workflow_name': 'str',
-        'workflow_id': 'str',
-        'reason': 'str',
-        'stack_trace': 'str',
-        'start_workflow_request': 'StartWorkflowRequest',
-        'state': 'str'
+        "execution_id": "str",
+        "schedule_name": "str",
+        "scheduled_time": "int",
+        "execution_time": "int",
+        "workflow_name": "str",
+        "workflow_id": "str",
+        "reason": "str",
+        "stack_trace": "str",
+        "start_workflow_request": "StartWorkflowRequest",
+        "state": "str",
     }
 
     attribute_map = {
-        'execution_id': 'executionId',
-        'schedule_name': 'scheduleName',
-        'scheduled_time': 'scheduledTime',
-        'execution_time': 'executionTime',
-        'workflow_name': 'workflowName',
-        'workflow_id': 'workflowId',
-        'reason': 'reason',
-        'stack_trace': 'stackTrace',
-        'start_workflow_request': 'startWorkflowRequest',
-        'state': 'state'
+        "execution_id": "executionId",
+        "schedule_name": "scheduleName",
+        "scheduled_time": "scheduledTime",
+        "execution_time": "executionTime",
+        "workflow_name": "workflowName",
+        "workflow_id": "workflowId",
+        "reason": "reason",
+        "stack_trace": "stackTrace",
+        "start_workflow_request": "startWorkflowRequest",
+        "state": "state",
     }
 
-    def __init__(self, execution_id=None, schedule_name=None, scheduled_time=None, execution_time=None,
-                 workflow_name=None, workflow_id=None, reason=None, stack_trace=None, start_workflow_request=None,
-                 state=None):  # noqa: E501
+    def __init__(
+        self,
+        execution_id=None,
+        schedule_name=None,
+        scheduled_time=None,
+        execution_time=None,
+        workflow_name=None,
+        workflow_id=None,
+        reason=None,
+        stack_trace=None,
+        start_workflow_request=None,
+        state=None,
+    ):  # noqa: E501
         """WorkflowScheduleExecutionModel - a model defined in Swagger"""  # noqa: E501
         self._execution_id = None
         self._schedule_name = None
@@ -288,8 +299,9 @@ class WorkflowScheduleExecutionModel(object):
         allowed_values = ["POLLED", "FAILED", "EXECUTED"]  # noqa: E501
         if state not in allowed_values:
             raise ValueError(
-                "Invalid value for `state` ({0}), must be one of {1}"  # noqa: E501
-                .format(state, allowed_values)
+                "Invalid value for `state` ({0}), must be one of {1}".format(  # noqa: E501
+                    state, allowed_values
+                )
             )
 
         self._state = state
@@ -301,18 +313,22 @@ class WorkflowScheduleExecutionModel(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(WorkflowScheduleExecutionModel, dict):

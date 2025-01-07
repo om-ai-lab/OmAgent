@@ -4,6 +4,7 @@ import requests
 from .error import VQLError
 from .logger import logging
 
+
 def request(
     json: dict,
     url: str,

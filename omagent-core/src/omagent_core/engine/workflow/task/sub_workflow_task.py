@@ -1,21 +1,25 @@
 from copy import deepcopy
 from typing import Dict
 
-from typing_extensions import Self
-
-from omagent_core.engine.http.models.sub_workflow_params import SubWorkflowParams
+from omagent_core.engine.http.models.sub_workflow_params import \
+    SubWorkflowParams
 from omagent_core.engine.http.models.workflow_task import WorkflowTask
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.task import TaskInterface
 from omagent_core.engine.workflow.task.task_type import TaskType
+from typing_extensions import Self
 
 
 class SubWorkflowTask(TaskInterface):
-    def __init__(self, task_ref_name: str, workflow_name: str, version: int = None,
-                 task_to_domain_map: Dict[str, str] = None) -> Self:
+    def __init__(
+        self,
+        task_ref_name: str,
+        workflow_name: str,
+        version: int = None,
+        task_to_domain_map: Dict[str, str] = None,
+    ) -> Self:
         super().__init__(
-            task_reference_name=task_ref_name,
-            task_type=TaskType.SUB_WORKFLOW
+            task_reference_name=task_ref_name, task_type=TaskType.SUB_WORKFLOW
         )
         self._workflow_name = deepcopy(workflow_name)
         self._version = deepcopy(version)

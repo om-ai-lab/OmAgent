@@ -1,14 +1,16 @@
-import re
-from typing import Dict, List, Optional, ClassVar
-from ..od.schemas import Target
-from itertools import groupby
-from pydantic import BaseModel, field_validator, model_validator
-from PIL import Image
 import datetime
+import re
 import time
-from ...utils.general import encode_image
-
 from enum import Enum
+from itertools import groupby
+from typing import ClassVar, Dict, List, Optional
+
+from PIL import Image
+from pydantic import BaseModel, field_validator, model_validator
+
+from ...utils.general import encode_image
+from ..od.schemas import Target
+
 
 class Role(str, Enum):
     USER = "user"
@@ -21,6 +23,7 @@ class MessageType(str, Enum):
     TEXT = "text"
     File = "file"
     MIXED = "mixed"
+
 
 class ImageUrl(BaseModel):
     url: str
@@ -36,6 +39,7 @@ class ImageUrl(BaseModel):
                 )
             )
         return detail
+
 
 class Content(BaseModel):
     type: str = "text"
@@ -77,13 +81,22 @@ class Message(BaseModel):
     content: List[Content | Dict] | Content | str
     objects: List[Target] = []
     kwargs: dict = {}
-    basic_data_types: ClassVar[List[type]] = [str, list, tuple, int, float, bool, datetime.datetime, datetime.time]
+    basic_data_types: ClassVar[List[type]] = [
+        str,
+        list,
+        tuple,
+        int,
+        float,
+        bool,
+        datetime.datetime,
+        datetime.time,
+    ]
 
     @classmethod
     def merge_consecutive_text(cls, content) -> List:
         result = []
         current_str = ""
-        
+
         for part in content:
             if isinstance(part, str):
                 current_str += part
@@ -92,17 +105,17 @@ class Message(BaseModel):
                     result.append(current_str)
                     current_str = ""
                 result.append(part)
-        
+
         if current_str:  # 处理最后的字符串
             result.append(current_str)
-            
+
         return result
 
     @field_validator("content", mode="before")
     @classmethod
     def content_validator(
         cls, content: List[Content | Dict] | Content | str
-    ) -> List[Content] | Content:        
+    ) -> List[Content] | Content:
         if isinstance(content, str):
             return Content(type="text", text=content)
         elif isinstance(content, list):
@@ -120,7 +133,14 @@ class Message(BaseModel):
                     except Exception as e:
                         formatted.append(Content(type="text", text=str(c)))
                 elif isinstance(c, Image.Image):
-                    formatted.append(Content(type="image_url", image_url={"url": f"data:image/jpeg;base64,{encode_image(c)}"}))
+                    formatted.append(
+                        Content(
+                            type="image_url",
+                            image_url={
+                                "url": f"data:image/jpeg;base64,{encode_image(c)}"
+                            },
+                        )
+                    )
                 elif isinstance(c, tuple(cls.basic_data_types)):
                     formatted.append(Content(type="text", text=str(c)))
                 else:
@@ -136,11 +156,11 @@ class Message(BaseModel):
     @classmethod
     def system(cls, content: str | List[str | Dict | Content]) -> "Message":
         return cls(role=Role.SYSTEM, content=content)
-    
+
     @classmethod
     def user(cls, content: str | List[str | Dict | Content]) -> "Message":
         return cls(role=Role.USER, content=content)
-    
+
     @classmethod
     def assistant(cls, content: str | List[str | Dict | Content]) -> "Message":
         return cls(role=Role.ASSISTANT, content=content)

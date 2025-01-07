@@ -11,6 +11,7 @@ class WorkflowTestRequest(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -19,36 +20,47 @@ class WorkflowTestRequest(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'correlation_id': 'str',
-        'created_by': 'str',
-        'external_input_payload_storage_path': 'str',
-        'input': 'dict(str, object)',
-        'name': 'str',
-        'priority': 'int',
-        'sub_workflow_test_request': 'dict(str, WorkflowTestRequest)',
-        'task_ref_to_mock_output': 'dict(str, list[TaskMock])',
-        'task_to_domain': 'dict(str, str)',
-        'version': 'int',
-        'workflow_def': 'WorkflowDef'
+        "correlation_id": "str",
+        "created_by": "str",
+        "external_input_payload_storage_path": "str",
+        "input": "dict(str, object)",
+        "name": "str",
+        "priority": "int",
+        "sub_workflow_test_request": "dict(str, WorkflowTestRequest)",
+        "task_ref_to_mock_output": "dict(str, list[TaskMock])",
+        "task_to_domain": "dict(str, str)",
+        "version": "int",
+        "workflow_def": "WorkflowDef",
     }
 
     attribute_map = {
-        'correlation_id': 'correlationId',
-        'created_by': 'createdBy',
-        'external_input_payload_storage_path': 'externalInputPayloadStoragePath',
-        'input': 'input',
-        'name': 'name',
-        'priority': 'priority',
-        'sub_workflow_test_request': 'subWorkflowTestRequest',
-        'task_ref_to_mock_output': 'taskRefToMockOutput',
-        'task_to_domain': 'taskToDomain',
-        'version': 'version',
-        'workflow_def': 'workflowDef'
+        "correlation_id": "correlationId",
+        "created_by": "createdBy",
+        "external_input_payload_storage_path": "externalInputPayloadStoragePath",
+        "input": "input",
+        "name": "name",
+        "priority": "priority",
+        "sub_workflow_test_request": "subWorkflowTestRequest",
+        "task_ref_to_mock_output": "taskRefToMockOutput",
+        "task_to_domain": "taskToDomain",
+        "version": "version",
+        "workflow_def": "workflowDef",
     }
 
-    def __init__(self, correlation_id=None, created_by=None, external_input_payload_storage_path=None, input=None,
-                 name=None, priority=None, sub_workflow_test_request=None, task_ref_to_mock_output=None,
-                 task_to_domain=None, version=None, workflow_def=None):  # noqa: E501
+    def __init__(
+        self,
+        correlation_id=None,
+        created_by=None,
+        external_input_payload_storage_path=None,
+        input=None,
+        name=None,
+        priority=None,
+        sub_workflow_test_request=None,
+        task_ref_to_mock_output=None,
+        task_to_domain=None,
+        version=None,
+        workflow_def=None,
+    ):  # noqa: E501
         """WorkflowTestRequest - a model defined in Swagger"""  # noqa: E501
         self._correlation_id = None
         self._created_by = None
@@ -67,7 +79,9 @@ class WorkflowTestRequest(object):
         if created_by is not None:
             self.created_by = created_by
         if external_input_payload_storage_path is not None:
-            self.external_input_payload_storage_path = external_input_payload_storage_path
+            self.external_input_payload_storage_path = (
+                external_input_payload_storage_path
+            )
         if input is not None:
             self.input = input
         self.name = name
@@ -187,7 +201,9 @@ class WorkflowTestRequest(object):
         :type: str
         """
         if name is None:
-            raise ValueError("Invalid value for `name`, must not be `None`")  # noqa: E501
+            raise ValueError(
+                "Invalid value for `name`, must not be `None`"
+            )  # noqa: E501
 
         self._name = name
 
@@ -324,18 +340,22 @@ class WorkflowTestRequest(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(WorkflowTestRequest, dict):

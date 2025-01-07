@@ -9,6 +9,7 @@ class TaskDef(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,65 +18,86 @@ class TaskDef(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'owner_app': 'str',
-        'create_time': 'int',
-        'update_time': 'int',
-        'created_by': 'str',
-        'updated_by': 'str',
-        'name': 'str',
-        'description': 'str',
-        'retry_count': 'int',
-        'timeout_seconds': 'int',
-        'input_keys': 'list[str]',
-        'output_keys': 'list[str]',
-        'timeout_policy': 'str',
-        'retry_logic': 'str',
-        'retry_delay_seconds': 'int',
-        'response_timeout_seconds': 'int',
-        'concurrent_exec_limit': 'int',
-        'input_template': 'dict(str, object)',
-        'rate_limit_per_frequency': 'int',
-        'rate_limit_frequency_in_seconds': 'int',
-        'isolation_group_id': 'str',
-        'execution_name_space': 'str',
-        'owner_email': 'str',
-        'poll_timeout_seconds': 'int',
-        'backoff_scale_factor': 'int'
+        "owner_app": "str",
+        "create_time": "int",
+        "update_time": "int",
+        "created_by": "str",
+        "updated_by": "str",
+        "name": "str",
+        "description": "str",
+        "retry_count": "int",
+        "timeout_seconds": "int",
+        "input_keys": "list[str]",
+        "output_keys": "list[str]",
+        "timeout_policy": "str",
+        "retry_logic": "str",
+        "retry_delay_seconds": "int",
+        "response_timeout_seconds": "int",
+        "concurrent_exec_limit": "int",
+        "input_template": "dict(str, object)",
+        "rate_limit_per_frequency": "int",
+        "rate_limit_frequency_in_seconds": "int",
+        "isolation_group_id": "str",
+        "execution_name_space": "str",
+        "owner_email": "str",
+        "poll_timeout_seconds": "int",
+        "backoff_scale_factor": "int",
     }
 
     attribute_map = {
-        'owner_app': 'ownerApp',
-        'create_time': 'createTime',
-        'update_time': 'updateTime',
-        'created_by': 'createdBy',
-        'updated_by': 'updatedBy',
-        'name': 'name',
-        'description': 'description',
-        'retry_count': 'retryCount',
-        'timeout_seconds': 'timeoutSeconds',
-        'input_keys': 'inputKeys',
-        'output_keys': 'outputKeys',
-        'timeout_policy': 'timeoutPolicy',
-        'retry_logic': 'retryLogic',
-        'retry_delay_seconds': 'retryDelaySeconds',
-        'response_timeout_seconds': 'responseTimeoutSeconds',
-        'concurrent_exec_limit': 'concurrentExecLimit',
-        'input_template': 'inputTemplate',
-        'rate_limit_per_frequency': 'rateLimitPerFrequency',
-        'rate_limit_frequency_in_seconds': 'rateLimitFrequencyInSeconds',
-        'isolation_group_id': 'isolationGroupId',
-        'execution_name_space': 'executionNameSpace',
-        'owner_email': 'ownerEmail',
-        'poll_timeout_seconds': 'pollTimeoutSeconds',
-        'backoff_scale_factor': 'backoffScaleFactor'
+        "owner_app": "ownerApp",
+        "create_time": "createTime",
+        "update_time": "updateTime",
+        "created_by": "createdBy",
+        "updated_by": "updatedBy",
+        "name": "name",
+        "description": "description",
+        "retry_count": "retryCount",
+        "timeout_seconds": "timeoutSeconds",
+        "input_keys": "inputKeys",
+        "output_keys": "outputKeys",
+        "timeout_policy": "timeoutPolicy",
+        "retry_logic": "retryLogic",
+        "retry_delay_seconds": "retryDelaySeconds",
+        "response_timeout_seconds": "responseTimeoutSeconds",
+        "concurrent_exec_limit": "concurrentExecLimit",
+        "input_template": "inputTemplate",
+        "rate_limit_per_frequency": "rateLimitPerFrequency",
+        "rate_limit_frequency_in_seconds": "rateLimitFrequencyInSeconds",
+        "isolation_group_id": "isolationGroupId",
+        "execution_name_space": "executionNameSpace",
+        "owner_email": "ownerEmail",
+        "poll_timeout_seconds": "pollTimeoutSeconds",
+        "backoff_scale_factor": "backoffScaleFactor",
     }
 
-    def __init__(self, owner_app=None, create_time=None, update_time=None, created_by=None, updated_by=None, name=None,
-                 description=None, retry_count=None, timeout_seconds=None, input_keys=None, output_keys=None,
-                 timeout_policy=None, retry_logic=None, retry_delay_seconds=None, response_timeout_seconds=None,
-                 concurrent_exec_limit=None, input_template=None, rate_limit_per_frequency=None,
-                 rate_limit_frequency_in_seconds=None, isolation_group_id=None, execution_name_space=None,
-                 owner_email=None, poll_timeout_seconds=None, backoff_scale_factor=None):  # noqa: E501
+    def __init__(
+        self,
+        owner_app=None,
+        create_time=None,
+        update_time=None,
+        created_by=None,
+        updated_by=None,
+        name=None,
+        description=None,
+        retry_count=None,
+        timeout_seconds=None,
+        input_keys=None,
+        output_keys=None,
+        timeout_policy=None,
+        retry_logic=None,
+        retry_delay_seconds=None,
+        response_timeout_seconds=None,
+        concurrent_exec_limit=None,
+        input_template=None,
+        rate_limit_per_frequency=None,
+        rate_limit_frequency_in_seconds=None,
+        isolation_group_id=None,
+        execution_name_space=None,
+        owner_email=None,
+        poll_timeout_seconds=None,
+        backoff_scale_factor=None,
+    ):  # noqa: E501
         """TaskDef - a model defined in Swagger"""  # noqa: E501
         self._owner_app = None
         self._create_time = None
@@ -399,8 +421,9 @@ class TaskDef(object):
         allowed_values = ["RETRY", "TIME_OUT_WF", "ALERT_ONLY"]  # noqa: E501
         if timeout_policy not in allowed_values:
             raise ValueError(
-                "Invalid value for `timeout_policy` ({0}), must be one of {1}"  # noqa: E501
-                .format(timeout_policy, allowed_values)
+                "Invalid value for `timeout_policy` ({0}), must be one of {1}".format(  # noqa: E501
+                    timeout_policy, allowed_values
+                )
             )
 
         self._timeout_policy = timeout_policy
@@ -423,11 +446,16 @@ class TaskDef(object):
         :param retry_logic: The retry_logic of this TaskDef.  # noqa: E501
         :type: str
         """
-        allowed_values = ["FIXED", "EXPONENTIAL_BACKOFF", "LINEAR_BACKOFF"]  # noqa: E501
+        allowed_values = [
+            "FIXED",
+            "EXPONENTIAL_BACKOFF",
+            "LINEAR_BACKOFF",
+        ]  # noqa: E501
         if retry_logic not in allowed_values:
             raise ValueError(
-                "Invalid value for `retry_logic` ({0}), must be one of {1}"  # noqa: E501
-                .format(retry_logic, allowed_values)
+                "Invalid value for `retry_logic` ({0}), must be one of {1}".format(  # noqa: E501
+                    retry_logic, allowed_values
+                )
             )
 
         self._retry_logic = retry_logic
@@ -670,18 +698,22 @@ class TaskDef(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(TaskDef, dict):

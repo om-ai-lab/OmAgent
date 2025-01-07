@@ -9,6 +9,7 @@ class PromptTemplate(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -17,33 +18,44 @@ class PromptTemplate(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'created_by': 'str',
-        'created_on': 'int',
-        'description': 'str',
-        'integrations': 'list[str]',
-        'name': 'str',
-        'tags': 'list[TagObject]',
-        'template': 'str',
-        'updated_by': 'str',
-        'updated_on': 'int',
-        'variables': 'list[str]'
+        "created_by": "str",
+        "created_on": "int",
+        "description": "str",
+        "integrations": "list[str]",
+        "name": "str",
+        "tags": "list[TagObject]",
+        "template": "str",
+        "updated_by": "str",
+        "updated_on": "int",
+        "variables": "list[str]",
     }
 
     attribute_map = {
-        'created_by': 'createdBy',
-        'created_on': 'createdOn',
-        'description': 'description',
-        'integrations': 'integrations',
-        'name': 'name',
-        'tags': 'tags',
-        'template': 'template',
-        'updated_by': 'updatedBy',
-        'updated_on': 'updatedOn',
-        'variables': 'variables'
+        "created_by": "createdBy",
+        "created_on": "createdOn",
+        "description": "description",
+        "integrations": "integrations",
+        "name": "name",
+        "tags": "tags",
+        "template": "template",
+        "updated_by": "updatedBy",
+        "updated_on": "updatedOn",
+        "variables": "variables",
     }
 
-    def __init__(self, created_by=None, created_on=None, description=None, integrations=None, name=None, tags=None,
-                 template=None, updated_by=None, updated_on=None, variables=None):  # noqa: E501
+    def __init__(
+        self,
+        created_by=None,
+        created_on=None,
+        description=None,
+        integrations=None,
+        name=None,
+        tags=None,
+        template=None,
+        updated_by=None,
+        updated_on=None,
+        variables=None,
+    ):  # noqa: E501
         """PromptTemplate - a model defined in Swagger"""  # noqa: E501
         self._created_by = None
         self._created_on = None
@@ -294,18 +306,22 @@ class PromptTemplate(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(PromptTemplate, dict):

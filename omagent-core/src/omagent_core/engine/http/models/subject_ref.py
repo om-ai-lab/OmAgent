@@ -6,9 +6,9 @@ import six
 
 
 class SubjectType(str, Enum):
-    USER = "USER",
-    ROLE = "ROLE",
-    GROUP = "GROUP",
+    USER = ("USER",)
+    ROLE = ("ROLE",)
+    GROUP = ("GROUP",)
     TAG = "TAG"
 
 
@@ -17,6 +17,7 @@ class SubjectRef(object):
 
     Do not edit the class manually.
     """
+
     """
     Attributes:
       swagger_types (dict): The key is attribute name
@@ -24,15 +25,9 @@ class SubjectRef(object):
       attribute_map (dict): The key is attribute name
                             and the value is json key in definition.
     """
-    swagger_types = {
-        'type': 'str',
-        'id': 'str'
-    }
+    swagger_types = {"type": "str", "id": "str"}
 
-    attribute_map = {
-        'type': 'type',
-        'id': 'id'
-    }
+    attribute_map = {"type": "type", "id": "id"}
 
     def __init__(self, type=None, id=None):  # noqa: E501
         """SubjectRef - a model defined in Swagger"""  # noqa: E501
@@ -66,8 +61,9 @@ class SubjectRef(object):
         allowed_values = ["USER", "ROLE", "GROUP"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}"  # noqa: E501
-                .format(type, allowed_values)
+                "Invalid value for `type` ({0}), must be one of {1}".format(  # noqa: E501
+                    type, allowed_values
+                )
             )
 
         self._type = type
@@ -99,18 +95,22 @@ class SubjectRef(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(SubjectRef, dict):

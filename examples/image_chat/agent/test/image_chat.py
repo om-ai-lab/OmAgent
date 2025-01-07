@@ -1,35 +1,30 @@
 from pathlib import Path
 from typing import List
 
-from omagent_core.models.llms.base import BaseLLMBackend
-from omagent_core.utils.registry import registry
-from omagent_core.models.llms.schemas import Message, Content
-from omagent_core.utils.general import encode_image
-from omagent_core.models.llms.prompt.parser import StrParser
-from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.engine.worker.base import BaseWorker
-from omagent_core.utils.container import container
+from omagent_core.models.llms.base import BaseLLMBackend
+from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
+from omagent_core.models.llms.prompt.parser import StrParser
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
+from omagent_core.models.llms.schemas import Content, Message
+from omagent_core.utils.container import container
+from omagent_core.utils.general import encode_image, read_image
+from omagent_core.utils.registry import registry
 from pydantic import Field
-from omagent_core.utils.general import read_image
 
 
 @registry.register_worker()
 class ImageChat(BaseWorker, BaseLLMBackend):
     prompts: List[PromptTemplate] = Field(
         default=[
-            PromptTemplate.from_template(
-                "You are a helpful assistant.", role="system"
-            ),
-            PromptTemplate.from_template(
-                "describe the {{image}}", role="user"
-            ),
+            PromptTemplate.from_template("You are a helpful assistant.", role="system"),
+            PromptTemplate.from_template("describe the {{image}}", role="user"),
         ]
     )
 
     llm: OpenaiGPTLLM
 
-    def _run(self, image_url:str, *args, **kwargs):
+    def _run(self, image_url: str, *args, **kwargs):
         # read image from url, save as PIL image object
         img = read_image(input_source=image_url)
 
@@ -42,7 +37,9 @@ class ImageChat(BaseWorker, BaseLLMBackend):
         """
 
         # `image` variable in user prompt will be replaced by the `img` PIL image object
-        chat_completion_res = self.simple_infer(image=img)["choices"][0]["message"].get("content") # use simple_infer for simple inference
+        chat_completion_res = self.simple_infer(image=img)["choices"][0]["message"].get(
+            "content"
+        )  # use simple_infer for simple inference
         # chat_completion_res = self.infer(input_list=[{"image": img}])[0]["choices"][0]["message"].get("content") # use infer for inference
 
         """Also, `image` variable can be a list of text and images, intersected by the text and images
@@ -54,4 +51,4 @@ class ImageChat(BaseWorker, BaseLLMBackend):
         """
 
         print(chat_completion_res)
-        return {'output': chat_completion_res}
+        return {"output": chat_completion_res}

@@ -12,32 +12,43 @@ class IntegrationDef(object):
       attribute_map (dict): The key is attribute name
                             and the value is json key in definition.
     """
+
     swagger_types = {
-        'category': 'str',
-        'category_label': 'str',
-        'configuration': 'dict(str, object)',
-        'description': 'str',
-        'enabled': 'bool',
-        'icon_name': 'str',
-        'name': 'str',
-        'tags': 'list[str]',
-        'type': 'str'
+        "category": "str",
+        "category_label": "str",
+        "configuration": "dict(str, object)",
+        "description": "str",
+        "enabled": "bool",
+        "icon_name": "str",
+        "name": "str",
+        "tags": "list[str]",
+        "type": "str",
     }
 
     attribute_map = {
-        'category': 'category',
-        'category_label': 'categoryLabel',
-        'configuration': 'configuration',
-        'description': 'description',
-        'enabled': 'enabled',
-        'icon_name': 'iconName',
-        'name': 'name',
-        'tags': 'tags',
-        'type': 'type'
+        "category": "category",
+        "category_label": "categoryLabel",
+        "configuration": "configuration",
+        "description": "description",
+        "enabled": "enabled",
+        "icon_name": "iconName",
+        "name": "name",
+        "tags": "tags",
+        "type": "type",
     }
 
-    def __init__(self, category=None, category_label=None, configuration=None, description=None, enabled=None,
-                 icon_name=None, name=None, tags=None, type=None):  # noqa: E501
+    def __init__(
+        self,
+        category=None,
+        category_label=None,
+        configuration=None,
+        description=None,
+        enabled=None,
+        icon_name=None,
+        name=None,
+        tags=None,
+        type=None,
+    ):  # noqa: E501
         """IntegrationDef - a model defined in Swagger"""  # noqa: E501
         self._category = None
         self._category_label = None
@@ -89,8 +100,9 @@ class IntegrationDef(object):
         allowed_values = ["API", "AI_MODEL", "VECTOR_DB", "RELATIONAL_DB"]  # noqa: E501
         if category not in allowed_values:
             raise ValueError(
-                "Invalid value for `category` ({0}), must be one of {1}"  # noqa: E501
-                .format(category, allowed_values)
+                "Invalid value for `category` ({0}), must be one of {1}".format(  # noqa: E501
+                    category, allowed_values
+                )
             )
 
         self._category = category
@@ -270,18 +282,22 @@ class IntegrationDef(object):
         for attr, _ in six.iteritems(self.swagger_types):
             value = getattr(self, attr)
             if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: x.to_dict() if hasattr(x, "to_dict") else x,
-                    value
-                ))
+                result[attr] = list(
+                    map(lambda x: x.to_dict() if hasattr(x, "to_dict") else x, value)
+                )
             elif hasattr(value, "to_dict"):
                 result[attr] = value.to_dict()
             elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], item[1].to_dict())
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
+                result[attr] = dict(
+                    map(
+                        lambda item: (
+                            (item[0], item[1].to_dict())
+                            if hasattr(item[1], "to_dict")
+                            else item
+                        ),
+                        value.items(),
+                    )
+                )
             else:
                 result[attr] = value
         if issubclass(IntegrationDef, dict):

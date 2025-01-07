@@ -150,6 +150,7 @@ tests
 data/
 tests/mathvista
 running_logs/
+video_cache/
 *.db
 
 # vscode

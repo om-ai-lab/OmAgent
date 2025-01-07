@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+
 from omagent_core.base import BotBase
+
 
 class InputBase(BotBase, ABC):
 
