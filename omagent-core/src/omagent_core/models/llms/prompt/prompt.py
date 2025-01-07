@@ -36,7 +36,16 @@ class PromptTemplate(BasePromptTemplate):
     class Config:
         """Configuration for this pydantic object."""
 
-        extra = "forbid"
+        extra = "allow"
+
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+        input_variables = kwargs.get("input_variables", [])
+        pre_filled_kv = {key: kwargs[key] for key in input_variables if key in kwargs.keys()}
+        if pre_filled_kv:
+            self.template = self.format(**pre_filled_kv)
+            input_variables = list(set(input_variables) - set(pre_filled_kv.keys()))
+            self.input_variables = input_variables
 
     def format(self, **kwargs: Any) -> str:
         """Format the prompt with the inputs.
@@ -139,4 +148,7 @@ class PromptTemplate(BasePromptTemplate):
     def from_config(cls, config: Dict) -> PromptTemplate:
         """Load a prompt template from a config."""
         template = config.pop("template")
-        return cls.from_template(template, **config)
+        if template.endswith(".prompt"):
+            return cls.from_file(template, **config)
+        else:
+            return cls.from_template(template, **config)

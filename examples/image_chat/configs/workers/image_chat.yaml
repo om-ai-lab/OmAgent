@@ -1,2 +1,3 @@
 name: ImageChat
+# image: https://media.githubusercontent.com/media/om-ai-lab/OmAgent/refs/heads/main/docs/images/intro.png # variable can also defined in the corresponding config file
 llm: ${sub|gpt}
