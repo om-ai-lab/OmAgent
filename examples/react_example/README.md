@@ -24,7 +24,7 @@ This example implements a ReAct workflow that consists of following components:
 
 ### The workflow follows this pattern:
 
-![ReAct Workflow](../../docs/images/react.png)
+<img src="../../docs/images/react.png" width="200" alt="ReAct Workflow">
 
 1. User provides input (question)
 2. Agent thinks about the question and decides to take an action (e.g., search)
