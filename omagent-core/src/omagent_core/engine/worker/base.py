@@ -79,11 +79,11 @@ class BaseWorker(BotBase, ABC):
         self._task_type = value
 
     @property
-    def workflow_instance_id(self) -> str:
+    def workflow_instance_id(self) -> Optional[str, dict]:
         return self._workflow_instance_id
 
     @workflow_instance_id.setter
-    def workflow_instance_id(self, value: str):
+    def workflow_instance_id(self, value: Optional[str, dict]):
         self._workflow_instance_id = value
 
     @abstractmethod
@@ -94,9 +94,12 @@ class BaseWorker(BotBase, ABC):
         task_input = {}
         task_output = None
         task_result: TaskResult = self.get_task_result_from_task(task)
-        
-        self.workflow_instance_id = task.workflow_instance_id
-
+        if task.conversation_info:
+            self.workflow_instance_id = task.conversation_info
+            self.workflow_instance_id['workflow_instance_id'] = task.workflow_instance_id
+        else:
+            self.workflow_instance_id = task.workflow_instance_id
+            
         try:
             if is_callable_input_parameter_a_task(
                 callable=self._run,

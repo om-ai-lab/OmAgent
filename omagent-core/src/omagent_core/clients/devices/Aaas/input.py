@@ -1,9 +1,7 @@
 import json
 import time
 
-from omagent_core.clients.devices.Aaas.schemas import (CodeEnum, ContentStatus,
-                                                      InteractionType,
-                                                      MessageType)
+from omagent_core.clients.devices.Aaas.schemas import (ConversationEvent, MessageType)
 from omagent_core.clients.input_base import InputBase
 from omagent_core.engine.http.models.workflow_status import running_status
 from omagent_core.engine.orkes.orkes_workflow_client import (
@@ -17,14 +15,20 @@ from omagent_core.utils.registry import registry
 class AaasInput(InputBase):
     redis_stream_client: RedisConnector
     
-    def read_input(self, workflow_instance_id: str, input_prompt="", conversation_id: str = ""):
+    def read_input(self, workflow_instance_id: dict, input_prompt=""):
+        conversation_info = workflow_instance_id.get('conversationInfo', {})
+        
+        workflow_instance_id = workflow_instance_id.get('workflow_instance_id', '')
+        conversation_id = conversation_info.get('conversationId', '')
+        agent_id = conversation_info.get('agentId', '')
+        chat_id = conversation_info.get('chatId', '')
         stream_name = f"agent_os:conversation:input:{workflow_instance_id}"
         group_name = "OmAaasAgentConsumerGroup"  # consumer group name
         consumer_name = f"{workflow_instance_id}_agent"  # consumer name
         poll_interval: int = 1
         
         if input_prompt is not None:
-            start_id = self._send_input_message(workflow_instance_id, input_prompt, conversation_id)
+            start_id = self._send_output_message(agent_id, conversation_id, chat_id, input_prompt)
         else:
             current_timestamp = int(time.time() * 1000)
             start_id = f"{current_timestamp}-0"
@@ -59,7 +63,7 @@ class AaasInput(InputBase):
                     stream_name, max="+", min=start_id, count=1
                 )
                 logging.info(f"Messages: {messages}")
-
+                
                 # Convert byte data to string
                 messages = [
                     (
@@ -170,50 +174,85 @@ class AaasInput(InputBase):
             return False
         return True
     
-    def _send_input_message(self, agent_id, msg, conversation_id):
-        message_id = self._send_base_message(
-            agent_id,
-            CodeEnum.SUCCESS.value,
-            "",
-            0,
-            MessageType.TEXT.value,
-            msg,
-            ContentStatus.END_BLOCK.value,
-            InteractionType.INPUT.value,
-            0,
-            0,
-            conversation_id
+    def _create_output_data(
+            self,
+            event='',
+            conversation_id='',
+            chat_id='',
+            agent_id='',
+            status='',
+            contentType='',
+            content='',
+            type='',
+            is_finish=True
+    ):
+        data = {
+            'content': json.dumps({
+                'event': event,
+                'data': {
+                    'conversationId': conversation_id,
+                    'chatId': chat_id,
+                    'agentId': agent_id,
+                    'createTime': None,
+                    'endTime': None,
+                    'status': status,
+                    'contentType': contentType,
+                    'content': content,
+                    'type': type,
+                    'isFinish': is_finish
+                }
+            }, ensure_ascii=False)
+        }
+        return data
+    
+    def send_base_message(
+            self,
+            event='',
+            conversation_id='',
+            chat_id='',
+            agent_id='',
+            status='',
+            contentType='',
+            content='',
+            type='',
+            is_finish=True
+    ):
+        stream_name = f"agent_os:conversation:output:{conversation_id}"
+        group_name = "OmAaasAgentConsumerGroup"  # replace with your consumer group name
+        message = self._create_output_data(
+            event=event,
+            conversation_id=conversation_id,
+            chat_id=chat_id,
+            agent_id=agent_id,
+            status=status,
+            contentType=contentType,
+            content=content,
+            type=type,
+            is_finish=is_finish
         )
+        message_id = self.send_to_group(stream_name, group_name, message)
         return message_id
     
-    def _create_message_data(
+    def send_output_message(
             self,
             agent_id,
-            code,
-            error_info,
-            took,
-            msg_type,
+            conversation_id,
+            chat_id,
             msg,
-            content_status,
-            interaction_type,
-            prompt_tokens,
-            output_tokens,
     ):
-        message = {"role": "assistant", "type": msg_type, "content": msg}
-        usage = {"prompt_tokens": prompt_tokens, "output_tokens": output_tokens}
-        data = {
-            "agent_id": agent_id,
-            "code": code,
-            "error_info": error_info,
-            "took": took,
-            "content_status": content_status,
-            "interaction_type": int(interaction_type),
-            "message": message,
-            "usage": usage,
-        }
-        return {"payload": json.dumps(data, ensure_ascii=False)}
+        return self.send_base_message(
+            event=ConversationEvent.MESSAGE_DELTA.value,
+            conversation_id=conversation_id,
+            chat_id=chat_id,
+            agent_id=agent_id,
+            status='delta',
+            contentType=MessageType.TEXT.value,
+            content=msg,
+            type='ask_complete',
+            is_finish=True
+        )
     
-    def _send_to_group(self, stream_name, group_name, data):
+    def send_to_group(self, stream_name, group_name, data):
         logging.info(f"Stream: {stream_name}, Group: {group_name}, Data: {data}")
         message_id = self.redis_stream_client._client.xadd(stream_name, data)
         try:
@@ -225,33 +264,3 @@ class AaasInput(InputBase):
         
         return message_id
     
-    def _send_base_message(
-            self,
-            agent_id,
-            code,
-            error_info,
-            took,
-            msg_type,
-            msg,
-            content_status,
-            interaction_type,
-            prompt_tokens,
-            output_tokens,
-            conversation_id
-    ):
-        stream_name = f"agent_os:conversation:output:{conversation_id}"
-        group_name = "OmAaasAgentConsumerGroup"  # replace with your consumer group name
-        data = self._create_message_data(
-            agent_id,
-            code,
-            error_info,
-            took,
-            msg_type,
-            msg,
-            content_status,
-            interaction_type,
-            prompt_tokens,
-            output_tokens,
-        )
-        message_id = self._send_to_group(stream_name, group_name, data)
-        return message_id
