@@ -1,0 +1,13 @@
+- name: ThinkAction
+  llm: ${sub|text_res_stream}
+  output_parser:
+    name: StrParser
+
+- name: WikiSearch
+  tool_manager:
+    llm: ${sub|text_res}
+    tools:
+      - name: TavilyWebSearch
+        tavily_api_key: ${env|tavily_api_key, null}
+
+- name: ReactOutput
