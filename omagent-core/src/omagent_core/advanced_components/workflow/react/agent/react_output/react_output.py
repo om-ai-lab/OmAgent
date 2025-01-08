@@ -8,7 +8,6 @@ class ReactOutput(BaseWorker):
     def _run(self, action_output: str, workflow_id: str, *args, **kwargs):
         """Simply return the action output with any necessary state"""
         
-        # 从 STM 获取状态
         state = self.stm(workflow_id)
         query = state.get('query', '')
         id = state.get('id', '')

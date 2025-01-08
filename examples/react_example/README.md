@@ -27,10 +27,9 @@ This example implements a ReAct workflow that consists of following components:
 ![ReAct Workflow](../../docs/images/react.png)
 
 1. User provides input (question)
-2. Agent thinks about the question
-3. Agent decides to take an action (e.g., search)
-4. Agent observes the result
-5. Process repeats until the answer is found
+2. Agent thinks about the question and decides to take an action (e.g., search)
+3. Agent observes the result
+4. Process repeats until the answer is found
 
 ## Prerequisites
 
