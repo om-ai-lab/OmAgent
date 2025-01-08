@@ -28,7 +28,7 @@ class AaasInput(InputBase):
         poll_interval: int = 1
         
         if input_prompt is not None:
-            start_id = self._send_output_message(agent_id, conversation_id, chat_id, input_prompt)
+            start_id = self.send_output_message(agent_id, conversation_id, chat_id, input_prompt)
         else:
             current_timestamp = int(time.time() * 1000)
             start_id = f"{current_timestamp}-0"
