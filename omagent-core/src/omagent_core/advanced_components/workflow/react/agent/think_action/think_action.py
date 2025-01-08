@@ -12,8 +12,10 @@ CURRENT_PATH = Path(__file__).parents[0]
 class ThinkAction(BaseLLMBackend, BaseWorker):
     """Combined Think and Action worker that implements ReAct (Reasoning and Acting) approach"""
     
-    debug_mode: bool = Field(default=False)
-    
+    # debug_mode: bool = Field(default=False)
+    example: str = Field(default="")
+    max_steps: int = Field(default=8)
+
     prompts: List[PromptTemplate] = Field(
         default=[
             PromptTemplate.from_file(
@@ -23,7 +25,7 @@ class ThinkAction(BaseLLMBackend, BaseWorker):
         ]
     )
 
-    def _run(self, query: str, id: str = "", next_step: str = "Thought", example: str = "", *args, **kwargs):
+    def _run(self, query: str, id: str = "", next_step: str = "Thought", *args, **kwargs):
         """Process the query using ReAct approach with combined Think and Action steps"""
         # Get context from STM
         state = self.stm(self.workflow_instance_id)
@@ -56,7 +58,7 @@ class ThinkAction(BaseLLMBackend, BaseWorker):
         )
 
         # Build prompt
-        full_prompt = f"{context}\n{next_step} {current_step}:" if context else f"{example}\nQuestion: {query}\n{next_step} {current_step}:"
+        full_prompt = f"{context}\n{next_step} {current_step}:" if context else f"{self.example}\nQuestion: {query}\n{next_step} {current_step}:"
         
         try:
             # First try to get thought and action in one call
@@ -111,7 +113,7 @@ class ThinkAction(BaseLLMBackend, BaseWorker):
         )
         
         # Update context and store in STM
-        new_context = f"{context}\n{next_step} {current_step}: {output}" if context else f"{example}\nQuestion: {query}\n{next_step} {current_step}: {output}"
+        new_context = f"{context}\n{next_step} {current_step}: {output}" if context else f"{self.example}\nQuestion: {query}\n{next_step} {current_step}: {output}"
         state.update({
             'context': new_context,
             'query': query,
@@ -127,6 +129,7 @@ class ThinkAction(BaseLLMBackend, BaseWorker):
             'query': query,
             'id': id,
             'token_usage': token_usage,
-            'body': state.get('body', {})
+            'body': state.get('body', {}),
+            'max_steps': self.max_steps
         }
         

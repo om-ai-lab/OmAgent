@@ -5,15 +5,14 @@ from .agent.think_action.think_action import ThinkAction
 from .agent.wiki_search.wiki_search import WikiSearch
 from .agent.react_output.react_output import ReactOutput
 
+
 class ReactWorkflow(ConductorWorkflow):
     def __init__(self):
         super().__init__(name='react_workflow')
         
-    def set_input(self, query: str, id: str = "", max_turns: int = 8, example: str = ""):
+    def set_input(self, query: str, id: str = ""):
         self.query = query
         self.id = id
-        self.max_turns = max_turns
-        self.example = example
         self._configure_tasks()
         self._configure_workflow()
         
@@ -24,8 +23,7 @@ class ReactWorkflow(ConductorWorkflow):
             task_reference_name='think_action',
             inputs={
                 'query': self.query,
-                'id': self.id,
-                'example': self.example
+                'id': self.id
             }
         )
         
@@ -42,12 +40,10 @@ class ReactWorkflow(ConductorWorkflow):
         self.loop_task = DoWhileTask(
             task_ref_name='react_loop',
             tasks=[self.think_action_task, self.wiki_search_task],
-            inputs={'max_turns': self.max_turns},
+            #inputs={'max_steps': self.max_steps},
             termination_condition=f'''
-                if ($.think_action.is_final == true) {{
-                    false;  // Stop loop if it's a Finish action
-                }} else if ($.think_action.step_number > $.max_turns) {{
-                    false;  // Stop loop if exceeded max turns
+                if (($.think_action.is_final == true) || ($.think_action.step_number > $.think_action.max_steps)) {{
+                    false;  // Stop loop if it's a Finish action or exceeded max turns
                 }} else {{
                     true;   // Continue loop otherwise
                 }}

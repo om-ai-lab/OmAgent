@@ -9,8 +9,6 @@ from pydantic import Field
 class WikiSearch(BaseWorker):
     """Wiki Search worker for React workflow"""
     
-    tool_manager: dict = Field(...)  # Changed to dict type
-    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.docstore = DocstoreExplorer(Wikipedia())

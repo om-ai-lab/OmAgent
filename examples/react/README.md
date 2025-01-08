@@ -95,7 +95,7 @@ Here's a simple example of using the ReAct agent:
 $ python run_cli.py
 
 Please input your question:
-What is the birth date of Mao Zedong?
+The time when the first computer was invented？
 
 [Agent starts reasoning and searching...]
 ```

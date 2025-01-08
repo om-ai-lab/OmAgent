@@ -1,12 +1,15 @@
+import os
+os.environ['HTTP_PROXY'] = 'http://10.8.21.200:47890'
+os.environ['HTTPS_PROXY'] = 'http://10.8.21.200:47890'
+
+
 from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
-from omagent_core.engine.workflow.task.simple_task import simple_task
 from pathlib import Path
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.cli.client import DefaultClient
+from omagent_core.clients.devices.programmatic.client import ProgrammaticClient
 from omagent_core.utils.logger import logging
 from omagent_core.advanced_components.workflow.react.workflow import ReactWorkflow
-from agent.input_interface.input_interface import InputInterface
 
 logging.init_logger("omagent", "omagent", level="INFO")
 
@@ -23,32 +26,37 @@ container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 # Initialize workflow
 workflow = ConductorWorkflow(name='react_basic_workflow_example')
 
-# Configure input task
-input_task = simple_task(
-    task_def_name=InputInterface,
-    task_reference_name='input_interface'
-)
-
 # Configure React Basic workflow
 react_workflow = ReactWorkflow()
 react_workflow.set_input(
-    query=input_task.output('query'),
-    id=input_task.output('id'),
-    example=input_task.output('example'),
-    max_turns=input_task.output('max_turns')
+    query=workflow.input('query'),
+    id=workflow.input('id')
 )
 
 # Configure workflow execution flow
-workflow >> input_task >> react_workflow 
+workflow >> react_workflow 
 
 # Register workflow
 workflow.register(overwrite=True)
 
-# Initialize and start CLI client
+# Initialize programmatic client
 config_path = CURRENT_PATH.joinpath('configs')
-cli_client = DefaultClient(
-    interactor=workflow, config_path=config_path, workers=[InputInterface()]
+programmatic_client = ProgrammaticClient(
+    processor=workflow,
+    config_path=config_path,
+    workers=[]  # No additional workers needed for React workflow
 )
 
-# Start CLI client
-cli_client.start_interactor()
+# Prepare input data
+workflow_input_list = [
+    {
+        "query": "When was Albert Einstein born?", 
+        "id": "21"
+    }
+]
+
+res = programmatic_client.start_batch_processor(
+    workflow_input_list=workflow_input_list
+)
+
+programmatic_client.stop_processor()
