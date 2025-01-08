@@ -16,12 +16,11 @@ class ThoughtDecomposition(BaseWorker):
     
     """
     
-    def _run(self, task: str, query: str):
+    def _run(self, query: str):
         # print(self.params)
         if self.stm(self.workflow_instance_id).get('thought_tree', None) is None:
             thought_tree = ThoughtTree()
-            thought_tree.add_node(content=query, next_step_input=query, parent_id=None)
-            self.stm(self.workflow_instance_id)['task'] = task
+            thought_tree.add_node(content=query, infer_input=query, parent_id=None)
             self.stm(self.workflow_instance_id)['thought_tree'] = thought_tree
             self.stm(self.workflow_instance_id)['current_depth'] = 0
             self.stm(self.workflow_instance_id)['current_node_id'] = 0

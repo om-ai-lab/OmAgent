@@ -11,9 +11,8 @@ class ToTWorkflow(ConductorWorkflow):
     def __init__(self):
         super().__init__(name='tot_workflow')
         
-    def set_tot(self, task: str, query: str):
+    def set_tot(self, query: str):
         self.query = query
-        self.task = task
         self._configure_tasks()
         self._configure_workflow()
 
@@ -24,7 +23,6 @@ class ToTWorkflow(ConductorWorkflow):
             task_reference_name="thought_decomposition",
             inputs={
                 "query": self.query,
-                "task": self.task,
             }
         )
         self.thought_generator_task = simple_task(

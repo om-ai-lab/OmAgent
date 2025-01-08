@@ -39,12 +39,11 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
         current_depth = self.stm(self.workflow_instance_id)['current_depth']
         current_node_id = self.stm(self.workflow_instance_id)['current_node_id']
         
-        evaluator_parameters = self.stm(self.workflow_instance_id)['evaluator_parameters']
-        evaluation_n = evaluator_parameters['evaluation_n']
-        evaluation_type = evaluator_parameters['evaluation_type']
+
+        evaluation_n = self.params['evaluation_n']
+        evaluation_type = self.params['evaluation_type']
         
-        search_parameters = self.stm(self.workflow_instance_id)['search_parameters']
-        search_type = search_parameters['search_type']
+        search_type = self.stm(self.workflow_instance_id)['search_type']
         
 
         if search_type == "bfs":

@@ -157,8 +157,8 @@ video_cache/
 .vscode
 
 # examples/ToT/
-# examples/ToT_wf/
-# omagent-core/src/omagent_core/advanced_components/workflow/ToT/
+examples/ToT_wf/
+omagent-core/src/omagent_core/advanced_components/workflow/ToT/
 # test_record/
 
 
