@@ -20,7 +20,7 @@ This example implements a ReAct workflow that consists of following components:
    - Think: Reason about the current state and decide next action
    - Act: Execute the chosen action (e.g., web search)
    - Observe: Process the results of the action
-   - Repeat until the task is complete or max turns reached
+   - Repeat until the task is complete or max steps reached
 
 ### The workflow follows this pattern:
 
@@ -56,7 +56,7 @@ The container.yaml file manages dependencies and settings for different componen
 
 ## Running the Example
 
-You can run the example in two ways:
+You can run the example in three ways:
 
 1. Using the CLI interface:
    ```bash
@@ -68,7 +68,17 @@ You can run the example in two ways:
    python run_programmatic.py
    ```
 
-When running, you'll be prompted to:
+3. Running batch testing with HotpotQA dataset:
+   ```bash
+   python hotpotqa_test_data_run.py
+   ```
+   This script will:
+   - Read questions from the HotpotQA test dataset
+   - Process each question using the ReAct workflow
+   - Save the results in a standardized format
+   - Output results to `data/hotpot_react_results.json`
+
+When running the CLI or programmatic interface, you'll be prompted to:
 1. Input an example (optional, press Enter to skip)
 2. Set maximum turns (optional, default is 10)
 3. Input your question
