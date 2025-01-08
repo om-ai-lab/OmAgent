@@ -68,15 +68,43 @@ You can run the example in three ways:
    python run_programmatic.py
    ```
 
-3. Running batch testing with HotpotQA dataset:
+3. Running batch testing with dataset:
    ```bash
-   python hotpotqa_test_data_run.py
+   python run_batch_test.py [options]
    ```
    This script will:
-   - Read questions from the HotpotQA test dataset
+   - Read questions from the input dataset
    - Process each question using the ReAct workflow
    - Save the results in a standardized format
-   - Output results to `data/hotpot_react_results.json`
+   - Output results to `data/{dataset_name}_{alg}_{model_id}_results.json`
+
+   Available options:
+   ```bash
+   --input_file     Input dataset file path (relative to project root)
+                    Default: data/hotpot_dev_select_500_data_test_0107.jsonl
+   
+   --dataset_name   Name of the dataset
+                    Default: hotpot
+   
+   --model_id       Model identifier
+                    Default: gpt-3.5-turbo
+   
+   --alg           Algorithm name
+                    Default: ReAct
+   
+   --output_dir    Output directory for results (relative to project root)
+                    Default: data
+   ```
+
+   Example usage:
+   ```bash
+   python run_batch_test.py \
+       --input_file data/custom_test.jsonl \
+       --dataset_name custom \
+       --model_id gpt-4 \
+       --alg ReAct-v2 \
+       --output_dir results
+   ```
 
 When running the CLI or programmatic interface, you'll be prompted to:
 1. Input an example (optional, press Enter to skip)
