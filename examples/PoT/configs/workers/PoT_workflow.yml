@@ -1,0 +1,5 @@
+- name: PoTExecutor
+  llm: ${sub| gpt}
+- name: ChoiceExtractor
+  llm: ${sub| gpt}
+- name: PoTInputInterface

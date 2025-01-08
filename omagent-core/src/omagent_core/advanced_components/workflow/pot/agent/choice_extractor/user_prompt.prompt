@@ -1,0 +1,37 @@
+
+Find the closest options based on the question and prediction, only return the option letter.
+
+Question: A company produces 420 units of a particular computer component every month, at a production cost to the company of $110 per component, and sells all of the components by the end of each month. What is the minimum selling price per component that will guarantee that the yearly profit (revenue from sales minus production costs) will be at least $626,400 ?
+Options: ['A)226', 'B)230', 'C)240', 'D)260', 'E)280']
+Prediction: 234.28571428571428
+Closest Option: B
+
+Question: In how many ways can the letters of the word "PROBLEC" be rearranged to make 7 letter words such that none of the letters repeat?
+Options: ['A)2!', 'B)3!', 'C)7!', 'D)8!', 'E)9!']
+Prediction: 5040
+Closest Option: C
+
+Question: An exam is given in a certain class. The average (arithmetic mean) of the highest score and the lowest score is equal to x. If the average score for the entire class is equal to y and there are z students in the class, where z > 5, then in terms of x, y, and z, what is the average score for the class excluding the highest and lowest scorers?
+Options: ['A)(zy – 2x)/z', 'B)(zy – 2)/z', 'C)(zx – y)/(z – 2)', 'D)(zy – 2x)/(z -2)', 'E)(zy – x)/(z + 2)']
+Prediction: (-2*x + y*z)/(z - 2)
+Closest Option: D
+
+Question: Find the total no. of distinct bike no.'s that can beformed using 2 letters followed by 2 no.'s. How many letters need to be distinct?
+Options: ["A)74453", "B)64543", "C)74325", "D)65000", "E)97656"]
+Prediction = 67600
+Closest Option: D
+
+Question: A wire in the shape of rectangle of length 27 cm and breadth 17 cm is rebent to form a square. What will be the measure of each side?
+Options: ['A)9', 'B)11', 'C)22', 'D)25', 'E)31']
+Prediction = [-21.42428528562855, 21.42428528562855]
+Closest Option: C
+
+Question: A point on the edge of a fan blade that is rotating in a plane 10 centimeters from the center of the fan. What is the distance traveled, in centimeters, by this point after 30 seconds when the fan runs at the rate of 300 revolutions per minutes?
+Options: ['A)750pi', 'B)1500pi', 'C)1875pi', 'D)3000pi', 'E)7500pi']
+Prediction: 9424.77
+Closest Option: D
+
+Question: {{question}}
+Options: {{options}}
+Prediction: {{prediction}}
+Closest Option: 
