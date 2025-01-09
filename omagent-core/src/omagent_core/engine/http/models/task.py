@@ -64,6 +64,7 @@ class Task(object):
         "queue_wait_time": "int",
         "biz_meta": "str",
         "callback_url": "str",
+        "conversation_info": "dict(str, object)",
     }
 
     attribute_map = {
@@ -110,6 +111,7 @@ class Task(object):
         "queue_wait_time": "queueWaitTime",
         "biz_meta": "bizMeta",
         "callback_url": "callbackUrl",
+        "conversation_info": "conversationInfo",
     }
 
     def __init__(
@@ -157,6 +159,7 @@ class Task(object):
         queue_wait_time=None,
         biz_meta=None,
         callback_url=None,
+        conversation_info=None,
     ):  # noqa: E501
         """Task - a model defined in Swagger"""  # noqa: E501
         self._task_type = None
@@ -203,6 +206,7 @@ class Task(object):
         self.discriminator = None
         self.biz_meta = None
         self.callback_url = None
+        self.conversation_info = None
         if task_type is not None:
             self.task_type = task_type
         if status is not None:
@@ -293,7 +297,9 @@ class Task(object):
             self.biz_meta = biz_meta
         if callback_url is not None:
             self.callback_url = callback_url
-
+        if conversation_info is not None:
+            self.conversation_info = conversation_info
+            
     @property
     def task_type(self):
         """Gets the task_type of this Task.  # noqa: E501
@@ -1191,6 +1197,14 @@ class Task(object):
     @callback_url.setter
     def callback_url(self, callback_url):
         self._callback_url = callback_url
+    
+    @property
+    def conversation_info(self):
+        return self._conversation_info
+    
+    @conversation_info.setter
+    def conversation_info(self, conversation_info):
+        self._conversation_info = conversation_info
 
     def to_dict(self):
         """Returns the model properties as a dict"""

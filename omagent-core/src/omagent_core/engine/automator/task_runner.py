@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import traceback
+from omagent_core.engine.orkes.orkes_workflow_client import workflow_client
 
 from omagent_core.engine.configuration.configuration import Configuration
 from omagent_core.engine.configuration.aaas_config import AaasConfig
@@ -140,6 +141,11 @@ class TaskRunner:
             )
         )
         try:
+            _input = workflow_client.get_workflow(task.workflow_instance_id).input
+            if 'conversationInfo' in _input:
+                task.conversation_info = _input
+                logging.info(f'conversation_info: {task.conversation_info}')
+            
             conductor_log_handler = ConductorLogHandler(self.task_client)
             conductor_log_handler.set_task_id(task.task_id)
             logging.addHandler(conductor_log_handler)
