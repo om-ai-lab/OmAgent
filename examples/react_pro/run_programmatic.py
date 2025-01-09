@@ -1,7 +1,3 @@
-import os
-os.environ['HTTP_PROXY'] = 'http://10.8.21.200:47890'
-os.environ['HTTPS_PROXY'] = 'http://10.8.21.200:47890'
-
 from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from pathlib import Path

@@ -27,7 +27,6 @@ class Action(BaseLLMBackend, BaseWorker):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._step_number = 1  # 使用实例变量来跟踪步骤
 
     def _run(self, *args, **kwargs):
         """Process the query using ReAct approach"""
