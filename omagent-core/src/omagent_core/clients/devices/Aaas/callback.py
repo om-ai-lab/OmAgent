@@ -1,3 +1,5 @@
+import json
+
 from omagent_core.clients.base import CallbackBase
 from omagent_core.services.connectors.redis import RedisConnector
 from omagent_core.utils.logger import logging
@@ -24,7 +26,7 @@ class AaasCallback(CallbackBase):
             is_finish=True
     ):
         data = {
-            'content': {
+            'content': json.dumps({
                 'event': event,
                 'data': {
                     'conversationId': conversation_id,
@@ -38,7 +40,7 @@ class AaasCallback(CallbackBase):
                     'type': type,
                     'isFinish': is_finish
                 }
-            }
+            }, ensure_ascii=False)
         }
         return data
     
@@ -68,56 +70,7 @@ class AaasCallback(CallbackBase):
             is_finish=is_finish
         )
         self.send_to_group(stream_name, group_name, message)
-    
-    # def _create_message_data(
-    #         self,
-    #         agent_id,
-    #         code,
-    #         error_info,
-    #         took,
-    #         msg_type,
-    #         msg,
-    #         content_status,
-    #         interaction_type,
-    #         prompt_tokens,
-    #         output_tokens,
-    #         filter_special_symbols=True,
-    #         conversation_id=None,
-    #         chat_id=None
-    # ):
-    #     if msg_type == MessageType.TEXT.value and filter_special_symbols:
-    #         msg = self.filter_special_symbols_in_msg(msg)
-    #     message = {"role": "assistant", "type": msg_type, "content": msg}
-    #     usage = {"prompt_tokens": prompt_tokens, "output_tokens": output_tokens}
-    #     data = {
-    #         "agent_id": agent_id,
-    #         "code": code,
-    #         "error_info": error_info,
-    #         "took": took,
-    #         "content_status": content_status,
-    #         "interaction_type": int(interaction_type),
-    #         "message": message,
-    #         "usage": usage,
-    #     }
-    #     data = {
-    #         'content': {
-    #             'event': '',
-    #             'data': {
-    #                 'conversationId': '',
-    #                 'chatId': '',
-    #                 'agentId': '',
-    #                 'createTime': time.time(),
-    #                 'endTime': time.time(),
-    #                 'status': '',
-    #                 'contentType': '',
-    #                 'content': '',
-    #                 'type': '',
-    #                 'isFinish': True
-    #             }
-    #         }
-    #     }
-    #     return {"payload": json.dumps(data, ensure_ascii=False)}
-    
+
     def send_to_group(self, stream_name, group_name, data):
         logging.info(f"Stream: {stream_name}, Group: {group_name}, Data: {data}")
         self.redis_stream_client._client.xadd(stream_name, data)
@@ -128,38 +81,6 @@ class AaasCallback(CallbackBase):
         except Exception as e:
             logging.debug(f"Consumer group may already exist: {e}")
     
-    # def send_base_message(
-    #         self,
-    #         agent_id,
-    #         code,
-    #         error_info,
-    #         took,
-    #         msg_type,
-    #         msg,
-    #         content_status,
-    #         interaction_type,
-    #         prompt_tokens,
-    #         output_tokens,
-    #         filter_special_symbols=True,
-    #         conversation_id=None
-    # ):
-    #     stream_name = f"agent_os:conversation:output:{conversation_id}"
-    #     group_name = "OmAaasAgentConsumerGroup"  # replace with your consumer group name
-    #     data = self._create_message_data(
-    #         agent_id,
-    #         code,
-    #         error_info,
-    #         took,
-    #         msg_type,
-    #         msg,
-    #         content_status,
-    #         interaction_type,
-    #         prompt_tokens,
-    #         output_tokens,
-    #         filter_special_symbols,
-    #     )
-    #     self.send_to_group(stream_name, group_name, data)
-    
     def send_incomplete(
             self,
             agent_id,
@@ -169,9 +90,12 @@ class AaasCallback(CallbackBase):
             prompt_tokens=0,
             output_tokens=0,
             filter_special_symbols=True,
-            conversation_id='',
-            chat_id='',
     ):
+        conversation_info = agent_id.get('conversationInfo', {})
+        agent_id = conversation_info.get('agentId', '')
+        conversation_id = conversation_info.get('conversationId', '')
+        chat_id = conversation_info.get('chatId', '')
+
         self.send_base_message(
             event=ConversationEvent.CHAT_COMPLETED.value,
             conversation_id=conversation_id,
@@ -194,9 +118,12 @@ class AaasCallback(CallbackBase):
             prompt_tokens=0,
             output_tokens=0,
             filter_special_symbols=True,
-            conversation_id='',
-            chat_id='',
     ):
+        conversation_info = agent_id.get('conversationInfo', {})
+        agent_id = conversation_info.get('agentId', '')
+        conversation_id = conversation_info.get('conversationId', '')
+        chat_id = conversation_info.get('chatId', '')
+
         if interaction_type == InteractionType.DEFAULT.INPUT:
             self.send_base_message(
                 event=ConversationEvent.MESSAGE_DELTA.value,
@@ -231,9 +158,12 @@ class AaasCallback(CallbackBase):
             prompt_tokens=0,
             output_tokens=0,
             filter_special_symbols=True,
-            conversation_id='',
-            chat_id='',
     ):
+        conversation_info = agent_id.get('conversationInfo', {})
+        agent_id = conversation_info.get('agentId', '')
+        conversation_id = conversation_info.get('conversationId', '')
+        chat_id = conversation_info.get('chatId', '')
+
         self.send_base_message(
             event=ConversationEvent.MESSAGE_DELTA.value,
             conversation_id=conversation_id,
@@ -251,10 +181,12 @@ class AaasCallback(CallbackBase):
             agent_id,
             msg,
             msg_type=MessageType.TEXT.value,
-            conversation_id='',
-            chat_id='',
     ):
-        
+        conversation_info = agent_id.get('conversationInfo', {})
+        agent_id = conversation_info.get('agentId', '')
+        conversation_id = conversation_info.get('conversationId', '')
+        chat_id = conversation_info.get('chatId', '')
+
         self.send_base_message(
             event=ConversationEvent.MESSAGE_DELTA.value,
             conversation_id=conversation_id,
@@ -272,9 +204,12 @@ class AaasCallback(CallbackBase):
             agent_id,
             msg,
             msg_type=MessageType.TEXT.value,
-            conversation_id='',
-            chat_id=''
     ):
+        conversation_info = agent_id.get('conversationInfo', {})
+        agent_id = conversation_info.get('agentId', '')
+        conversation_id = conversation_info.get('conversationId', '')
+        chat_id = conversation_info.get('chatId', '')
+
         self.send_base_message(
             event=ConversationEvent.MESSAGE_DELTA.value,
             conversation_id=conversation_id,
@@ -287,10 +222,8 @@ class AaasCallback(CallbackBase):
             is_finish=True
         )
     
-    def finish(self, agent_id, took, type, msg, prompt_tokens=0, output_tokens=0, conversation_id='', chat_id=''):
+    def finish(self, agent_id, took, type, msg, prompt_tokens=0, output_tokens=0):
         self.send_answer(
             agent_id,
-            conversation_id=conversation_id,
-            chat_id=chat_id,
             msg=msg
         )
