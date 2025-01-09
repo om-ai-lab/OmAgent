@@ -101,7 +101,7 @@ class AaasCallback(CallbackBase):
             conversation_id=conversation_id,
             chat_id=chat_id,
             agent_id=agent_id,
-            status='completed',
+            status='delta',
             contentType=msg_type,
             content=msg,
             type='answer',
@@ -130,7 +130,7 @@ class AaasCallback(CallbackBase):
                 conversation_id=conversation_id,
                 chat_id=chat_id,
                 agent_id=agent_id,
-                status='delta',
+                status='completed',
                 contentType=msg_type,
                 content=msg,
                 type='ask_complete',
@@ -142,7 +142,7 @@ class AaasCallback(CallbackBase):
             conversation_id=conversation_id,
             chat_id=chat_id,
             agent_id=agent_id,
-            status='delta',
+            status='completed',
             contentType=msg_type,
             content=msg,
             type='answer',
@@ -165,7 +165,7 @@ class AaasCallback(CallbackBase):
         chat_id = conversation_info.get('chatId', '')
 
         self.send_base_message(
-            event=ConversationEvent.MESSAGE_DELTA.value,
+            event=ConversationEvent.MESSAGE_COMPLETED.value,
             conversation_id=conversation_id,
             chat_id=chat_id,
             agent_id=agent_id,
@@ -192,7 +192,7 @@ class AaasCallback(CallbackBase):
             conversation_id=conversation_id,
             chat_id=chat_id,
             agent_id=agent_id,
-            status='delta',
+            status='completed',
             contentType=msg_type,
             content=msg,
             type='runner_output',
@@ -211,11 +211,11 @@ class AaasCallback(CallbackBase):
         chat_id = conversation_info.get('chatId', '')
 
         self.send_base_message(
-            event=ConversationEvent.MESSAGE_DELTA.value,
+            event=ConversationEvent.MESSAGE_ERROR.value,
             conversation_id=conversation_id,
             chat_id=chat_id,
             agent_id=agent_id,
-            status='delta',
+            status='completed',
             contentType=msg_type,
             content=msg,
             type='runner_output',
