@@ -68,74 +68,46 @@ In conclusion, key features of OmAgent include:
 
 ## 🚀 Quick Start 
 ### Hello World
-TODO: Add here a very simple example that
+### 1、Configuration
 
-1. **Adjust Python Path**: The script modifies the Python path to ensure it can locate necessary modules. Verify the path is correct for your setup:
+The container.yaml file is a configuration file that manages dependencies and settings for different components of the system. To set up your configuration:
 
-   ```python
-    # Set current working directory path
-    CURRENT_PATH = Path(__file__).parents[0]
+1. Generate the container.yaml file:
+   ```bash
+   cd examples/step1_simpleVQA
+   python compile_container.py
+   ```
+   This will create a container.yaml file with default settings under `examples/step1_simpleVQA`.
+
+
+
+2. Configure your LLM settings in `configs/llms/gpt.yml`:
+
+   - Set your OpenAI API key or compatible endpoint through environment variable or by directly modifying the yml file
+   ```bash
+   export custom_openai_key="your_openai_api_key"
+   export custom_openai_endpoint="your_openai_endpoint"
    ```
 
+3. Update settings in the generated `container.yaml`:
+      - Configure Redis connection settings, including host, port, credentials, and both `redis_stream_client` and `redis_stm_client` sections.
+   - Update the Conductor server URL under conductor_config section
+   - Adjust any other component settings as needed
 
-2. **Initialize Logging**: The script sets up logging to track application events. You can adjust the logging level (`INFO`, `DEBUG`, etc.) as needed:
 
-   ```python
-   logging.init_logger("omagent", "omagent", level="INFO")
+For more information about the container.yaml configuration, please refer to the [container module](./docs/concepts/container.md)
+
+### 2、Running the Example
+
+1. Run the simple VQA example:
+
+   For WebpageClient usage: Input and output are in the webpage
+   ```bash
+   cd examples/step1_simpleVQA
+   python run_webpage.py
    ```
-
-3. **Create and Execute Workflow**: The script creates a workflow and adds a task to it. It then starts the agent client to execute the workflow:
-
-   ```python
-    from examples.step1_simpleVQA.agent.simple_vqa.simple_vqa import SimpleVQA
-    from examples.step1_simpleVQA.agent.input_interface.input_interface import InputIterface
-
-    # Import registered modules
-    registry.import_module(project_path=CURRENT_PATH.joinpath('agent'))
-
-    container.register_stm("RedisSTM")
-    # Load container configuration from YAML file
-    container.from_config(CURRENT_PATH.joinpath('container.yaml'))
-
-    workflow = ConductorWorkflow(name='step1_simpleVQA')
-    task1 = simple_task(task_def_name='InputIterface', task_reference_name='input_task')
-    task2 = simple_task(task_def_name='SimpleVQA', task_reference_name='simple_vqa', inputs={'user_instruction': task1.output('user_instruction')})
-    workflow >> task1 >> task2
-    
-    
-    workflow.register(True)
-    
-    agent_client = DefaultClient(interactor=workflow, config_path='examples/step1_simpleVQA/configs', workers=[InputIterface()])
-    agent_client.start_interactor()
-   ```
-
-   - **Workflow**: Defines the sequence of tasks. 'name' is the name of the workflow.
-   - **Task**: Represents a unit of work, in this case, we use SimpleVQA from the examples. 'task_def_name' represents the corresponding class name, 'task_reference_name' represents the name in the conductor.
-   - **DefaultClient**: Starts the agent client to execute the workflow. Here we use DefaultClient, if you want to use app client, please use AppClient.
-   - **agent_client.start_interactor()**: This will start the worker corresponding to the registered task, in this case, it will start SimpleVQA and wait for the conductor's scheduling.
-
-4. **Run Configuration**
-
-- Connection Configuration
-   - Navigate to the directory: `cd examples/step1_simpleVQA`
-   - Execute `python compile_container.py` to generate configuration files needed for connection components. After execution, a `container.yaml` file will be generated.
-   - Modify the `container.yaml` file to update the configurations to your actual settings.
-
-- Agent Configuration
-   - Navigate to the directory: `cd examples/step1_simpleVQA/configs/llms`
-   - Modify the `gpt.yml` file to update the configurations to your actual settings.
-
-
-5. **Run the Script**
-
-Execute the script using Python:
-
-```bash
-cd examples/step1_simpleVQA
-python run_cli.py
-```
-
-- Ensure all services (like Redis) are running before executing the script.
+   Open the webpage at `http://127.0.0.1:7860`, you will see the following interface:
+   <img src="docs/images/simpleVQA_webpage.png" width="400"/>
 
 ## 🏗 Architecture
 The design architecture of OmAgent adheres to three fundamental principles: 

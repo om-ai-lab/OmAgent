@@ -82,12 +82,12 @@ docker compose -f docker/conductor/docker-compose.yml up -d
 
 1. 生成 `container.yaml` 文件：
    ```bash
-   cd examples/step2_outfit_with_switch
+   cd examples/step1_simpleVQA
    python compile_container.py
    ```
-   这将在 `examples/step2_outfit_with_switch` 下创建一个具有默认设置的 `container.yaml` 文件。
+   这将在 `examples/step1_simpleVQA` 下创建一个具有默认设置的 `container.yaml` 文件。
 
-2. 在 `configs/llms/gpt.yml` 和 `configs/llms/text_res.yml` 中配置您的 LLM 设置：
+2. 在 `configs/llms/gpt.yml` 中配置您的 LLM 设置：
 
    - 通过环境变量或直接修改 yml 文件来设置您的 OpenAI API 密钥或兼容的 endpoint
    ```bash
@@ -100,27 +100,19 @@ docker compose -f docker/conductor/docker-compose.yml up -d
    - 在 `conductor_config` 下更新 Conductor 服务器的 URL
    - 根据需要调整其他组件设置
 
-4. websearch 默认使用的是 duckduckgo，如果要更好的效果建议配置[bing搜索](https://www.microsoft.com/en-us/bing/apis/pricing)，修改 `configs/tools/websearch.yml` 文件，设置 `bing_api_key`。
-
 有关 `container.yaml` 配置的更多信息，请参阅 [container 模块](./docs/concepts/container.md)
 
 ### 2、运行示例
 
-1. 运行 outfit with switch 示例：
+1. 运行 simpleVQA 示例：
 
-   对于终端/CLI 使用：输入和输出在终端窗口中
+   对于 WebpageClient 使用：输入和输出都在网页中
    ```bash
-   cd examples/step2_outfit_with_switch
-   python run_cli.py
+   cd examples/step1_simpleVQA
+   python run_webpage.py
    ```
-
-   对于app/GUI 使用：输入和输出在应用程序中
-   ```bash
-   cd examples/step2_outfit_with_switch
-   python run_app.py
-   ```
-   部署app后端服务请参考 [这里](docker/README.md)  
-   OmAgent 的 app 的连接和使用方式请参考 [app使用文档](./docs/concepts/clients/app.md)
+   打开 `http://127.0.0.1:7860` 的网页，你将看到以下界面：
+   <img src="docs/images/simpleVQA_webpage.png" width="400"/>
 
 ## 🏗 架构
 OmAgent的设计架构遵循三项基本原则：  
