@@ -101,19 +101,13 @@ For more information about the container.yaml configuration, please refer to the
 
 1. Run the simple VQA example:
 
-   For terminal/CLI usage: Input and output are in the terminal window
+   For WebpageClient usage: Input and output are in the webpage
    ```bash
    cd examples/step1_simpleVQA
-   python run_cli.py
+   python run_webpage.py
    ```
-
-   For app/GUI usage: Input and output are in the app
-   ```bash
-   cd examples/step1_simpleVQA
-   python run_app.py
-   ```
-   For app backend deployment, please refer to [here](docker/README.md)  
-   For the connection and usage of the OmAgent app, please check [app usage documentation](./docs/concepts/clients/app.md)
+   Open the webpage at `http://127.0.0.1:7860`, you will see the following interface:
+   <img src="docs/images/simpleVQA_webpage.png" width="400"/>
 
 ## 🏗 Architecture
 The design architecture of OmAgent adheres to three fundamental principles: 

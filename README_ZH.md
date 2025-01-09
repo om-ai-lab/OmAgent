@@ -106,19 +106,13 @@ docker compose -f docker/conductor/docker-compose.yml up -d
 
 1. 运行 simpleVQA 示例：
 
-   对于终端/CLI 使用：输入和输出在终端窗口中
+   对于 WebpageClient 使用：输入和输出都在网页中
    ```bash
    cd examples/step1_simpleVQA
-   python run_cli.py
+   python run_webpage.py
    ```
-
-   对于app/GUI 使用：输入和输出在应用程序中
-   ```bash
-   cd examples/step1_simpleVQA
-   python run_app.py
-   ```
-   部署app后端服务请参考 [这里](docker/README.md)  
-   OmAgent 的 app 的连接和使用方式请参考 [app使用文档](./docs/concepts/clients/app.md)
+   打开 `http://127.0.0.1:7860` 的网页，你将看到以下界面：
+   <img src="docs/images/simpleVQA_webpage.png" width="400"/>
 
 ## 🏗 架构
 OmAgent的设计架构遵循三项基本原则：  
