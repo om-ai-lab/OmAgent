@@ -245,7 +245,7 @@ class AaasInput(InputBase):
             conversation_id=conversation_id,
             chat_id=chat_id,
             agent_id=agent_id,
-            status='delta',
+            status='completed',
             contentType=MessageType.TEXT.value,
             content=msg,
             type='ask_complete',
