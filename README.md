@@ -20,18 +20,16 @@
     <a>English</a> | <a href="README_ZH.md">中文</a>
 </p>
 
-## 📖 Introduction
-OmAgent is an open-source agent framework designed to streamlines the development of on-device multimodal agents. Our goal is to enable agents that can empower various hardware devices, ranging from smart phone, smart wearables (e.g. glasses), IP cameras to futuristic robots. As a result, OmAgent creates an abstraction over various types of device and simplifies the process of connecting these devices to the state-of-the-art multimodal foundation models and agent algorithms, to allow everyone build the most interesting on-device agents. Moreover, OmAgent focuses on optimize the end-to-end computing pipeline, on in order to provides the most real-time user interaction experience out of the box. 
+## 📖 Introduction  
+OmAgent is python library for building multimodal language agents with ease. We try to keep the library **simple** without too much overhead like other agent framework.   
+ - We wrap the complex engineering (worker orchestration, task queue, node optimization, etc.) behind the scene and only leave you with a super-easy-to-use interface to define your agent.   
+ - We further enable useful abstractions for reusable agent components, so you can build complex agents aggregating from those basic components.   
+ - We also provides features required for multimodal agents, such as native support for VLM models, video processing, and mobile device connection to make it easy for developers and researchers building agents that can reason over not only text, but image, video and audio inputs. 
 
-In conclusion, key features of OmAgent include:
-
-- **Easy Connection to Diverse Devices**: we make it really simple to connect to physical devices, e.g. phone, glasses and more, so that agent/model developers can build the applications that not running on web page, but running on devices. We welcome contribution to support more devices! 
-
-- **Speed-optimized SOTA Mutlimodal Models**: OmAgent integrates the SOTA commercial and open-source foundation models to provide application developers the most powerful intelligence. Moreover, OmAgent streamlines the audio/video processing and computing process to easily enable natural and fluid interaction between the device and the users. 
-
-- **SOTA Multimodal Agent Algorihtms**: OmAgent provides an easy workflow orchestration interface for researchers and developers implement the latest agent algorithms, e.g. ReAct, DnC and more. We welcome contributions of any new agent algorithm to enable more complex problem solving abilities.
-
-- **Scalability and Flexibility**: OmAgent provides an intuitive interface for building scalable agents, enabling developers to construct agents tailored to specific roles and highly adaptive to various applications. 
+## 🔑 Key Features  
+ - A flexible agent architecture that provides graph-based workflow orchestration engine and various memory type enabling contextual reasoning.  
+ - native multimodal interaction support include VLM models, real-time API, computer vision models, mobile connection and etc.   
+ - A suite of state-of-the-art unimodal and multimodal agent algorithms that goes beyond simple LLM reasoning, e.g. ReAct, CoT, SC-Cot etc.   
 
 
 ## 🛠️ How To Install
@@ -45,30 +43,14 @@ In conclusion, key features of OmAgent include:
   ```bash
   pip install -e omagent-core
   ```
-- Other requirements
-  ```bash
-  cd ..
-  pip install -r requirements.txt
-  ```
 - Set Up Conductor Server (Docker-Compose) Docker-compose includes conductor-server, Elasticsearch, and Redis.
   ```bash
   cd docker
   docker-compose up -d
   ```
 
-- Optional: Install Milvus VectorDB for Long-Term Memory  
-
-  ```shell
-  # Download Milvus startup script
-  curl -sfL https://raw.githubusercontent.com/milvus-io/milvus/master/scripts/standalone_embed.sh -o standalone_embed.sh
-  # Start Milvus in standalone mode
-  bash standalone_embed.sh start
-  ```  
-  You can skip this step because the system defaults to using Milvus Lite.
-
 ## 🚀 Quick Start 
-### Hello World
-### 1、Configuration
+### Configuration
 
 The container.yaml file is a configuration file that manages dependencies and settings for different components of the system. To set up your configuration:
 
@@ -97,9 +79,9 @@ The container.yaml file is a configuration file that manages dependencies and se
 
 For more information about the container.yaml configuration, please refer to the [container module](./docs/concepts/container.md)
 
-### 2、Running the Example
+### Run the demo
 
-1. Run the simple VQA example:
+1. Run the simple VQA demo with webpage GUI:
 
    For WebpageClient usage: Input and output are in the webpage
    ```bash
@@ -109,41 +91,50 @@ For more information about the container.yaml configuration, please refer to the
    Open the webpage at `http://127.0.0.1:7860`, you will see the following interface:
    <img src="docs/images/simpleVQA_webpage.png" width="400"/>
 
-## 🏗 Architecture
-The design architecture of OmAgent adheres to three fundamental principles: 
-1. Graph-based workflow orchestration; 
-2. Native multimodality; 
-3. Device-centricity. 
-With OmAgent, one has the opportunity to craft a bespoke intelligent agent program.
+## 🤖  Example Projects
+### Video QA Agents
+Build a system that can answer any questions about uploaded videos with video understanding agents. See Details [here](examples/video_understanding/README.md).  
+More about the video understanding agent can be found in [paper](https://arxiv.org/abs/2406.16620).
 
-For a deeper comprehension of OmAgent, let us elucidate key terms:
-**Devices**: Central to OmAgent's vision is the empowerment of intelligent hardware devices through artificial intelligence agents, rendering devices a pivotal component of OmAgent's essence. By leveraging the downloadable mobile application we have generously provided, your mobile device can become the inaugural foundational node linked to OmAgent. Devices serve to intake environmental stimuli, such as images and sounds, potentially offering responsive feedback. We have evolved a streamlined backend process to manage the app-centric business logic, thereby enabling developers to concentrate on constructing the intelligence agent's logical framework.
-
-**Workflow**: Within the OmAgent Framework, the architectural structure of intelligent agents is articulated through graphs. Developers possess the liberty to innovate, configure, and sequence node functionalities at will. Presently, we have opted for Conductor-OSS as the workflow orchestration engine, lending support to intricate operations like switch-case, fork-join, and do-while.
-
-**Task and Worker**: Throughout the OmAgent workflow development journey, Task and Worker stand as pivotal concepts. Worker embodies the actual operational logic of workflow nodes, whereas Task oversees the orchestration of the workflow's logic. Tasks are categorized into Operators, managing workflow logic (e.g., looping, branching), and Simple Tasks, representing nodes customized by developers. Each Simple Task is correlated with a Worker; when the workflow progresses to a given Simple Task, the task is dispatched to the corresponding worker for execution. 
+### Mobile Personal Assistant
+Build your personal mulitmodal assistant just like Google Astral in 2 minutes. See Details [here](examples/step3_outfit_with_loop/README.md).
+<p >
+  <img src="docs/images/readme_app.png" width="200"/>
+</p>
 
 
-## 📚 Examples & Tutorials
-You can find the full list of examples in the [examples](./examples/) directory.
+### Agentic Operators
+Compare different agent reasoning algorithms with reproducible and fair conditions. See Details [here]（docs/concepts/agent_operators.md）.
 
-TODO: add tutorial link and brief example just like below. The format can be same as old one. 
+| **Rank** | **Algorithm** | **Eval Time** |  **LLM**  | **Average** | **gsm8k-score** | **gsm8k-cost($)** | **AQuA-score** | **AQuA-cost($)** |
+| :------------: | :-----------------: | :-----------------: | :-------------: | :---------------: | :-------------------: | :-----------------------------------------------------------: | :---: | :----: |
+|  **10**  |         IO         |      2025/1/7      |  gpt-3.5-turbo  |       38.40       |         37.83         |                            0.3328                            | 38.98 | 0.0380 |
+|  **6**  |         COT         |      2025/1/7      |  gpt-3.5-turbo  |       69.86       |         78.70         |                            0.6788                            | 61.02 | 0.0957 |
+|  **5**  |       SC-COT       |      2025/1/7      |  gpt-3.5-turbo  |       73.69       |         80.06         |                            5.0227                            | 67.32 | 0.6491 |
+|  **9**  |         POT         |      2025/1/7      |  gpt-3.5-turbo  |       64.42       |         76.88         |                            0.6902                            | 51.97 | 0.1557 |
+|  **7**  |      ReAct-Pro*      |      2025/1/7      |  gpt-3.5-turbo  |       69.74       |         74.91         |                            3.4633                            | 64.57 | 0.4928 |
+|  **4**  |         IO         |      2025/1/7      | Doubao-lite-32k |       75.58       |         72.02         |                            0.0354                            | 79.13 | 0.0058 |
+|  **2**  |         COT         |      2025/1/7      | Doubao-lite-32k |       85.99       |         89.31         |                            0.0557                            | 82.68 | 0.0066 |
+|  **1**  |       SC-COT       |      2025/1/7      | Doubao-lite-32k |       86.05       |         88.63         |                            0.1533                            | 83.46 | 0.0409 |
+|  **8**  |         POT         |      2025/1/7      | Doubao-lite-32k |       65.76       |         79.15         |                            0.0575                            | 52.36 | 0.0142 |
+|  **3**  |      ReAct-Pro*      |      2025/1/7      | Doubao-lite-32k |       81.58       |         85.60         |                            0.2513                            | 77.56 | 0.0446 |
+
+More Details in our new repo [open-agent-leaderboard](https://github.com/om-ai-lab/open-agent-leaderboard) and [Hugging Face space](https://huggingface.co/spaces/omlab/open-agent-leaderboard)
 
 
-### 🤖 Basic Principles of Building an Agent
-- **Modularity**: Break down the agent's functionality into discrete workers, each responsible for a specific task.
+## 💻 Documentation
+More detailed documentation is available [here](https://om-ai-lab.github.io/OmAgentDocs/).
 
-- **Reusability**: Design workers to be reusable across different workflows and agents.
+## 🤝 Contributing
+For more information on how to contribute, see [here](CONTRIBUTING.md).  
+We value and appreciate the contributions of our community. Special thanks to our contributors for helping us improve OmAgent.
 
-- **Scalability**: Use workflows to scale the agent's capabilities by adding more workers or adjusting the workflow sequence.
+<a href="https://github.com/om-ai-lab/OmAgent/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=om-ai-lab/OmAgent" />
+</a>
 
-- **Interoperability**: Workers can interact with various backends, such as LLMs, databases, or APIs, allowing agents to perform complex operations.
-
-- **Asynchronous Execution**: The workflow engine and task handler manage the execution asynchronously, enabling efficient resource utilization.
-
-
-## 💻 API Documentation
-The API documentation is available [here](https://om-ai-lab.github.io/OmAgentDocs/).
+## 🔔 Follow us
+You can follow us on [X](https://x.com/OmAI_lab) and [Discord](https://discord.gg/G9n5tq4qfK) for more updates and discussions.  
 
 ## 🔗 Related works
 If you are intrigued by multimodal large language models, and agent technologies, we invite you to delve deeper into our research endeavors:  
@@ -164,19 +155,3 @@ If you find our repository beneficial, please cite our paper:
   year={2024}
 }
 ```
-
-## Star History
-[![Star History Chart](https://api.star-history.com/svg?repos=om-ai-lab/OmAgent&type=Date)](https://star-history.com/#om-ai-lab/OmAgent&Date)
-
-
-
-
-
-
-
-## 🗓️ Updates
-* 11/12/2024: OmAgent v0.2.0 is officially released! We have completely rebuilt the underlying framework of OmAgent, making it more flexible and easy to extend. The new version added the concept of devices, making it easier to develop quickly for smart hardware.
-* 10/20/2024: We are actively engaged in developing version 2.0.0 🚧 Exciting new features are underway! You are welcome to join us on X and Discord~
-* 09/20/2024: Our paper has been accepted by EMNLP 2024. See you in Miami!🏝
-* 07/04/2024: The OmAgent open-source project has been unveiled. 🎉
-* 06/24/2024: [The OmAgent research paper has been published.](https://arxiv.org/abs/2406.16620)
