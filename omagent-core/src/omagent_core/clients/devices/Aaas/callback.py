@@ -97,7 +97,7 @@ class AaasCallback(CallbackBase):
         chat_id = conversation_info.get('chatId', '')
 
         self.send_base_message(
-            event=ConversationEvent.CHAT_COMPLETED.value,
+            event=ConversationEvent.MESSAGE_DELTA.value,
             conversation_id=conversation_id,
             chat_id=chat_id,
             agent_id=agent_id,
