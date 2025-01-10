@@ -25,7 +25,7 @@ OmAgent is python library for building multimodal language agents with ease. We 
 
 ## 🔑 Key Features  
  - A flexible agent architecture that provides graph-based workflow orchestration engine and various memory type enabling contextual reasoning.  
- - native multimodal interaction support include VLM models, real-time API, computer vision models, mobile connection and etc.   
+ - Native multimodal interaction support include VLM models, real-time API, computer vision models, mobile connection and etc.   
  - A suite of state-of-the-art unimodal and multimodal agent algorithms that goes beyond simple LLM reasoning, e.g. ReAct, CoT, SC-Cot etc.   
 
 
@@ -67,6 +67,7 @@ The container.yaml file is a configuration file that manages dependencies and se
    export custom_openai_key="your_openai_api_key"
    export custom_openai_endpoint="your_openai_endpoint"
    ```
+   You can use a locally deployed Ollama to call your own language model. The tutorial is [here](docs/concepts/models/Ollama.md).
 
 3. Update settings in the generated `container.yaml`:
       - Configure Redis connection settings, including host, port, credentials, and both `redis_stream_client` and `redis_stm_client` sections.
@@ -85,7 +86,7 @@ For more information about the container.yaml configuration, please refer to the
    cd examples/step1_simpleVQA
    python run_webpage.py
    ```
-   Open the webpage at `http://127.0.0.1:7860`, you will see the following interface:
+   Open the webpage at `http://127.0.0.1:7860`, you will see the following interface:  
    <img src="docs/images/simpleVQA_webpage.png" width="400"/>
 
 ## 🤖  Example Projects
