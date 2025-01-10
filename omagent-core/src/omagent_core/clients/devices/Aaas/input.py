@@ -17,6 +17,7 @@ class AaasInput(InputBase):
     
     def read_input(self, workflow_instance_id: str, input_prompt=""):
         result = self._parse_workflow_instance_id(workflow_instance_id)
+        workflow_instance_id = result.get('workflow_instance_id', '')
         agent_id = result.get('agent_id', '')
         conversation_id = result.get('conversation_id', '')
         chat_id = result.get('chat_id', '')
