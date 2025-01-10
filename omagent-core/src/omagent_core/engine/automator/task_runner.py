@@ -2,6 +2,9 @@ import os
 import sys
 import time
 import traceback
+
+from func_timeout import func_timeout, FunctionTimedOut
+
 from omagent_core.engine.orkes.orkes_workflow_client import workflow_client
 
 from omagent_core.engine.configuration.configuration import Configuration
@@ -150,7 +153,13 @@ class TaskRunner:
             conductor_log_handler.set_task_id(task.task_id)
             logging.addHandler(conductor_log_handler)
             start_time = time.time()
-            task_result = self.worker.execute(task)
+            if task.response_timeout_seconds:
+                task_result = func_timeout(
+                    timeout=task.response_timeout_seconds,
+                    func=self.worker.execute(task),
+                )
+            else:
+                task_result = self.worker.execute(task)
             finish_time = time.time()
             time_spent = finish_time - start_time
             if self.metrics_collector is not None:
@@ -168,6 +177,19 @@ class TaskRunner:
                     task_definition_name=task_definition_name,
                 )
             )
+        except FunctionTimedOut:
+            task_result = TaskResult(
+                task_id=task.task_id,
+                workflow_instance_id=task.workflow_instance_id,
+                worker_id=self.worker.get_identity(),
+            )
+            task_result.status = "FAILED"
+            task_result.reason_for_incompletion = 'Task running timeout'
+            task_result.logs = [
+                TaskExecLog(
+                    traceback.format_exc(), task_result.task_id, int(time.time())
+                )
+            ]
         except Exception as e:
             if self.metrics_collector is not None:
                 self.metrics_collector.increment_task_execution_error(

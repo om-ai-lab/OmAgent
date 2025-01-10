@@ -79,11 +79,11 @@ class BaseWorker(BotBase, ABC):
         self._task_type = value
 
     @property
-    def workflow_instance_id(self) -> Optional[Union[str, dict]]:
+    def workflow_instance_id(self) -> Optional[Union[str]]:
         return self._workflow_instance_id
 
     @workflow_instance_id.setter
-    def workflow_instance_id(self, value: Optional[Union[str, dict]]):
+    def workflow_instance_id(self, value: Optional[Union[str]]):
         self._workflow_instance_id = value
 
     @abstractmethod
@@ -95,8 +95,12 @@ class BaseWorker(BotBase, ABC):
         task_output = None
         task_result: TaskResult = self.get_task_result_from_task(task)
         if task.conversation_info:
-            self.workflow_instance_id = task.conversation_info
-            self.workflow_instance_id['workflow_instance_id'] = task.workflow_instance_id
+            self.workflow_instance_id = '|'.join([
+                task.workflow_instance_id,
+                task.conversation_info.get('agentId', ''),
+                task.conversation_info.get('conversationId', ''),
+                task.conversation_info.get('chatId', ''),
+            ])
         else:
             self.workflow_instance_id = task.workflow_instance_id
             
