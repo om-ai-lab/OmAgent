@@ -3,7 +3,7 @@
 </p>
 
 <div>
-    <h2 align="center">🌟 Build Multimodal Language Agents with Ease 🌟</h2>
+    <h1 align="center">🌟 Build Multimodal Language Agents with Ease 🌟</h1>
 </div>
 
 
@@ -16,9 +16,6 @@
   </a>
 </p>
 
-<p align="center">
-    <a>English</a> | <a href="README_ZH.md">中文</a>
-</p>
 
 ## 📖 Introduction  
 OmAgent is python library for building multimodal language agents with ease. We try to keep the library **simple** without too much overhead like other agent framework.   
@@ -29,7 +26,7 @@ OmAgent is python library for building multimodal language agents with ease. We 
 ## 🔑 Key Features  
  - A flexible agent architecture that provides graph-based workflow orchestration engine and various memory type enabling contextual reasoning.  
  - native multimodal interaction support include VLM models, real-time API, computer vision models, mobile connection and etc.   
- - A suite of state-of-the-art unimodal and multimodal agent algorithms that goes beyond simple LLM reasoning, e.g. ReAct, CoT, SC-Cot, Dnc and etc.   
+ - A suite of state-of-the-art unimodal and multimodal agent algorithms that goes beyond simple LLM reasoning, e.g. ReAct, CoT, SC-Cot etc.   
 
 
 ## 🛠️ How To Install
@@ -79,7 +76,7 @@ The container.yaml file is a configuration file that manages dependencies and se
 
 For more information about the container.yaml configuration, please refer to the [container module](./docs/concepts/container.md)
 
-### Run Demo
+### Run the demo
 
 1. Run the simple VQA demo with webpage GUI:
 
@@ -92,13 +89,16 @@ For more information about the container.yaml configuration, please refer to the
    <img src="docs/images/simpleVQA_webpage.png" width="400"/>
 
 ## 🤖  Example Projects
-### 1. Video QA Agents
-We built a video understanding agent that can answer complex questions about content in long videos. Specifically, we proposed a VideoRAG system with a sophisticated problem solving algorithm. See details [here](examples/video_understanding/README.md). 
+### Video QA Agents
+Build a system that can answer any questions about uploaded videos with video understanding agents. See Details [here](examples/video_understanding/README.md).  
+More about the video understanding agent can be found in [paper](https://arxiv.org/abs/2406.16620).
+<p >
+  <img src="docs/images/OmAgent.png" width="500"/>
+</p>
 
-*This work has been published in EMNLP 2024 [paper](https://arxiv.org/abs/2406.16620).
 
-### 2. Mobile Personal Assistant
-We show you here how to build a personal mulitmodal AI assistant just like [Google Astral](https://deepmind.google/technologies/project-astra/) in 2 minutes. See details [here](examples/step3_outfit_with_loop/README.md).
+### Mobile Personal Assistant
+Build your personal mulitmodal assistant just like Google Astral in 2 minutes. See Details [here](docs/tutorials/agent_with_app.md).
 <p >
   <img src="docs/images/readme_app.png" width="200"/>
 </p>
@@ -107,20 +107,17 @@ We show you here how to build a personal mulitmodal AI assistant just like [Goog
 ### 3. Agentic Operators
 We define reusable agent agentic workflows, e.g. CoT, ReAct, and etc as **agent operators**. This project compares various recently proposed reasoning agent operators with the same LLM choice and test datasets. How do they perform? See details [here](docs/concepts/agent_operators.md).
 
-| **Rank** | **Algorithm** | **Eval Time** |  **LLM**  | **Average** | **gsm8k-score** | **gsm8k-cost($)** | **AQuA-score** | **AQuA-cost($)** |
-| :------------: | :-----------------: | :-----------------: | :-------------: | :---------------: | :-------------------: | :-----------------------------------------------------------: | :---: | :----: |
-|  **10**  |         IO         |      2025/1/7      |  gpt-3.5-turbo  |       38.40       |         37.83         |                            0.3328                            | 38.98 | 0.0380 |
-|  **6**  |         COT         |      2025/1/7      |  gpt-3.5-turbo  |       69.86       |         78.70         |                            0.6788                            | 61.02 | 0.0957 |
-|  **5**  |       SC-COT       |      2025/1/7      |  gpt-3.5-turbo  |       73.69       |         80.06         |                            5.0227                            | 67.32 | 0.6491 |
-|  **9**  |         POT         |      2025/1/7      |  gpt-3.5-turbo  |       64.42       |         76.88         |                            0.6902                            | 51.97 | 0.1557 |
-|  **7**  |      ReAct-Pro*      |      2025/1/7      |  gpt-3.5-turbo  |       69.74       |         74.91         |                            3.4633                            | 64.57 | 0.4928 |
-|  **4**  |         IO         |      2025/1/7      | Doubao-lite-32k |       75.58       |         72.02         |                            0.0354                            | 79.13 | 0.0058 |
-|  **2**  |         COT         |      2025/1/7      | Doubao-lite-32k |       85.99       |         89.31         |                            0.0557                            | 82.68 | 0.0066 |
-|  **1**  |       SC-COT       |      2025/1/7      | Doubao-lite-32k |       86.05       |         88.63         |                            0.1533                            | 83.46 | 0.0409 |
-|  **8**  |         POT         |      2025/1/7      | Doubao-lite-32k |       65.76       |         79.15         |                            0.0575                            | 52.36 | 0.0142 |
-|  **3**  |      ReAct-Pro*      |      2025/1/7      | Doubao-lite-32k |       81.58       |         85.60         |                            0.2513                            | 77.56 | 0.0446 |
+| **Algorithm** |  **LLM**  | **Average** | **gsm8k-score** | **gsm8k-cost($)** | **AQuA-score** | **AQuA-cost($)** |
+ | :-----------------: | :------------: | :-------------: | :---------------: | :-------------------: | :------------------------------------: | :---: |
+ |       SC-COT       |  gpt-3.5-turbo  |       73.69       |         80.06         |                            5.0227                            | 67.32 | 0.6491 |
+|         COT        |  gpt-3.5-turbo  |       69.86       |         78.70         |                            0.6788                            | 61.02 | 0.0957 |
+|      ReAct-Pro      |  gpt-3.5-turbo  |       69.74       |         74.91         |                            3.4633                            | 64.57 | 0.4928 |
+ |         POT         |  gpt-3.5-turbo  |       64.42       |         76.88         |                            0.6902                            | 51.97 | 0.1557 |
+ |         IO*        |  gpt-3.5-turbo  |       38.40       |         37.83         |                            0.3328                            | 38.98 | 0.0380 |
 
-More information can be found in our new repo [open-agent-leaderboard](https://github.com/om-ai-lab/open-agent-leaderboard) and [Hugging Face space](https://huggingface.co/spaces/omlab/open-agent-leaderboard)
+*IO: Input-Output Direct Prompting (Baseline)  
+
+More Details in our new repo [open-agent-leaderboard](https://github.com/om-ai-lab/open-agent-leaderboard) and [Hugging Face space](https://huggingface.co/spaces/omlab/open-agent-leaderboard)
 
 
 ## 💻 Documentation
@@ -135,7 +132,11 @@ We value and appreciate the contributions of our community. Special thanks to ou
 </a>
 
 ## 🔔 Follow us
-You can follow us on [X](https://x.com/OmAI_lab) and [Discord](https://discord.gg/G9n5tq4qfK) for more updates and discussions.  
+You can follow us on [X](https://x.com/OmAI_lab), [Discord](https://discord.gg/G9n5tq4qfK) and WeChat group for more updates and discussions.  
+<p >
+  <img src="docs/images/readme_qr_code.png" width="200"/>
+</p>
+
 
 ## 🔗 Related works
 If you are intrigued by multimodal large language models, and agent technologies, we invite you to delve deeper into our research endeavors:  
