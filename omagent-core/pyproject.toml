@@ -44,6 +44,7 @@ json-repair = "^0.31.0"
 scenedetect = "^0.6.5.1"
 pydub = "^0.25.1"
 httpx = {extras = ["http2"], version = "^0.28.1"}
+func-timeout = "^4.3.5"
 
 [build-system]
 requires = ["poetry-core"]

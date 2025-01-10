@@ -81,6 +81,23 @@ class AaasCallback(CallbackBase):
         except Exception as e:
             logging.debug(f"Consumer group may already exist: {e}")
     
+    @staticmethod
+    def _parse_workflow_instance_id(data: str):
+        split_data = data.split('|')
+        if not split_data:
+            return {}
+        result = {}
+        keys = [
+            'workflow_instance_id',
+            'agent_id',
+            'conversation_id',
+            'chat_id',
+        ]
+        for index, value in enumerate(split_data):
+            if index + 1 <= len(keys):
+                result.setdefault(keys[index], value)
+        return result
+        
     def send_incomplete(
             self,
             agent_id,
@@ -91,10 +108,10 @@ class AaasCallback(CallbackBase):
             output_tokens=0,
             filter_special_symbols=True,
     ):
-        conversation_info = agent_id.get('conversationInfo', {})
-        agent_id = conversation_info.get('agentId', '')
-        conversation_id = conversation_info.get('conversationId', '')
-        chat_id = conversation_info.get('chatId', '')
+        result = self._parse_workflow_instance_id(agent_id)
+        agent_id = result.get('agent_id', '')
+        conversation_id = result.get('conversation_id', '')
+        chat_id = result.get('chat_id', '')
 
         self.send_base_message(
             event=ConversationEvent.MESSAGE_DELTA.value,
@@ -119,10 +136,10 @@ class AaasCallback(CallbackBase):
             output_tokens=0,
             filter_special_symbols=True,
     ):
-        conversation_info = agent_id.get('conversationInfo', {})
-        agent_id = conversation_info.get('agentId', '')
-        conversation_id = conversation_info.get('conversationId', '')
-        chat_id = conversation_info.get('chatId', '')
+        result = self._parse_workflow_instance_id(agent_id)
+        agent_id = result.get('agent_id', '')
+        conversation_id = result.get('conversation_id', '')
+        chat_id = result.get('chat_id', '')
 
         if interaction_type == InteractionType.DEFAULT.INPUT:
             self.send_base_message(
@@ -159,10 +176,10 @@ class AaasCallback(CallbackBase):
             output_tokens=0,
             filter_special_symbols=True,
     ):
-        conversation_info = agent_id.get('conversationInfo', {})
-        agent_id = conversation_info.get('agentId', '')
-        conversation_id = conversation_info.get('conversationId', '')
-        chat_id = conversation_info.get('chatId', '')
+        result = self._parse_workflow_instance_id(agent_id)
+        agent_id = result.get('agent_id', '')
+        conversation_id = result.get('conversation_id', '')
+        chat_id = result.get('chat_id', '')
 
         self.send_base_message(
             event=ConversationEvent.MESSAGE_COMPLETED.value,
@@ -182,10 +199,10 @@ class AaasCallback(CallbackBase):
             msg,
             msg_type=MessageType.TEXT.value,
     ):
-        conversation_info = agent_id.get('conversationInfo', {})
-        agent_id = conversation_info.get('agentId', '')
-        conversation_id = conversation_info.get('conversationId', '')
-        chat_id = conversation_info.get('chatId', '')
+        result = self._parse_workflow_instance_id(agent_id)
+        agent_id = result.get('agent_id', '')
+        conversation_id = result.get('conversation_id', '')
+        chat_id = result.get('chat_id', '')
 
         self.send_base_message(
             event=ConversationEvent.MESSAGE_DELTA.value,
@@ -205,10 +222,10 @@ class AaasCallback(CallbackBase):
             msg,
             msg_type=MessageType.TEXT.value,
     ):
-        conversation_info = agent_id.get('conversationInfo', {})
-        agent_id = conversation_info.get('agentId', '')
-        conversation_id = conversation_info.get('conversationId', '')
-        chat_id = conversation_info.get('chatId', '')
+        result = self._parse_workflow_instance_id(agent_id)
+        agent_id = result.get('agent_id', '')
+        conversation_id = result.get('conversation_id', '')
+        chat_id = result.get('chat_id', '')
 
         self.send_base_message(
             event=ConversationEvent.MESSAGE_ERROR.value,

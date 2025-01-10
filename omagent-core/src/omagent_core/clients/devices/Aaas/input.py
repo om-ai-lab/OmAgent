@@ -15,13 +15,13 @@ from omagent_core.utils.registry import registry
 class AaasInput(InputBase):
     redis_stream_client: RedisConnector
     
-    def read_input(self, workflow_instance_id: dict, input_prompt=""):
-        conversation_info = workflow_instance_id.get('conversationInfo', {})
+    def read_input(self, workflow_instance_id: str, input_prompt=""):
+        result = self._parse_workflow_instance_id(workflow_instance_id)
+        workflow_instance_id = result.get('workflow_instance_id', '')
+        agent_id = result.get('agent_id', '')
+        conversation_id = result.get('conversation_id', '')
+        chat_id = result.get('chat_id', '')
         
-        workflow_instance_id = workflow_instance_id.get('workflow_instance_id', '')
-        conversation_id = conversation_info.get('conversationId', '')
-        agent_id = conversation_info.get('agentId', '')
-        chat_id = conversation_info.get('chatId', '')
         stream_name = f"agent_os:conversation:input:{workflow_instance_id}"
         group_name = "OmAaasAgentConsumerGroup"  # consumer group name
         consumer_name = f"{workflow_instance_id}_agent"  # consumer name
@@ -173,6 +173,23 @@ class AaasInput(InputBase):
             logging.error(f"Error processing message: {e}")
             return False
         return True
+
+    @staticmethod
+    def _parse_workflow_instance_id(data: str):
+        split_data = data.split('|')
+        if not split_data:
+            return {}
+        result = {}
+        keys = [
+            'workflow_instance_id',
+            'agent_id',
+            'conversation_id',
+            'chat_id',
+        ]
+        for index, value in enumerate(split_data):
+            if index + 1 <= len(keys):
+                result.setdefault(keys[index], value)
+        return result
     
     def _create_output_data(
             self,
