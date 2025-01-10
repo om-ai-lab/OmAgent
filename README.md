@@ -105,7 +105,7 @@ We show you here how to build a personal mulitmodal AI assistant just like [Goog
 
 
 ### 3. Agentic Operators
-We define reusable agent agentic workflow, e.g. CoT, ReAct, and etc as **agent operators**. This project compare various recently proposed agent reasoning operators with fair experimental conditions, i.e. fixing LLM models and test data the same. How do they perform? See details [here](docs/concepts/agent_operators.md).
+We define reusable agent agentic workflows, e.g. CoT, ReAct, and etc as **agent operators**. This project compares various recently proposed reasoning agent operators with the same LLM choice and test datasets. How do they perform? See details [here](docs/concepts/agent_operators.md).
 
 | **Rank** | **Algorithm** | **Eval Time** |  **LLM**  | **Average** | **gsm8k-score** | **gsm8k-cost($)** | **AQuA-score** | **AQuA-cost($)** |
 | :------------: | :-----------------: | :-----------------: | :-------------: | :---------------: | :-------------------: | :-----------------------------------------------------------: | :---: | :----: |
