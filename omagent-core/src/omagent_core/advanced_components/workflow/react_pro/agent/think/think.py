@@ -84,7 +84,7 @@ class Think(BaseLLMBackend, BaseWorker):
         )
         
         # Update context and store in STM
-        new_context = f"{context}\nThought {current_step}: {output}" if context else f"{query}\nThought {current_step}: {output}"
+        new_context = f"{context}\nThought {current_step}: {output}" if context else f"{self.example}\nQuestion: {query}\nThought {current_step}: {output}"
         state.update({
             'context': new_context,
             'id': id,

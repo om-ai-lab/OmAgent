@@ -8,4 +8,4 @@ Solve a question-answering task using alternating Thought, Action, and Observati
 
 - You can take as many steps as needed.
 
-Question: {{context}} 
+{{context}} 

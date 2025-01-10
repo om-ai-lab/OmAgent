@@ -19,7 +19,7 @@ container.register_stm("RedisSTM")
 container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 
 # Initialize workflow
-workflow = ConductorWorkflow(name='react_pro_workflow_example')
+workflow = ConductorWorkflow(name='react_pro_example')
 
 # Configure React Pro workflow
 react_workflow = ReactProWorkflow()
@@ -60,10 +60,4 @@ res = programmatic_client.start_batch_processor(
 programmatic_client.stop_processor()
 
 # Print results
-if res and len(res) > 0:
-    output = res[0].get('output', {})
-    print("\nResults:")
-    print(f"Final Answer: {output.get('output', 'No answer generated')}")
-    print(f"Steps taken: {output.get('step_number', 0)}")
-    token_usage = output.get('token_usage', {})
-    print(f"Token usage: {token_usage.get('prompt_tokens', 0)} prompt + {token_usage.get('completion_tokens', 0)} completion") 
+print(res)

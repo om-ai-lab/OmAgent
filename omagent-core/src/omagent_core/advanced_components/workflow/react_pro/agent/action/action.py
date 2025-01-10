@@ -15,10 +15,6 @@ class Action(BaseLLMBackend, BaseWorker):
     prompts: List[PromptTemplate] = Field(
         default=[
             PromptTemplate.from_file(
-                CURRENT_PATH.joinpath("sys_prompt.prompt"), 
-                role="system"
-            ),
-            PromptTemplate.from_file(
                 CURRENT_PATH.joinpath("user_prompt.prompt"), 
                 role="user"
             ),
@@ -97,14 +93,5 @@ class Action(BaseLLMBackend, BaseWorker):
             'token_usage': token_usage,
             'body': state.get('body', {})
         }
-        
-    def _parse_action_type(self, response: str) -> str:
-        """Parse the action type from response"""
-        if "Search[" in response:
-            return "Search"
-        elif "Lookup[" in response:
-            return "Lookup"
-        elif "Finish[" in response:
-            return "Finish"
-        return "Unknown"
+    
         
