@@ -6,13 +6,13 @@ from omagent_core.engine.workflow.task.simple_task import simple_task
 from pathlib import Path
 from dotenv import load_dotenv
 import yaml
-load_dotenv()  # 加载.env文件中的变量
+load_dotenv() 
 
 from omagent_core.utils.registry import registry
 from omagent_core.clients.devices.app.client import AppClient
 from omagent_core.utils.logger import logging
-from agent.input_interface.input_interface import COTInputInterface  # Change to COTInputInterface
-from omagent_core.advanced_components.workflow.self_consist_cot.workflow import SelfConsistentWorkflow  # Change to SelfConsistentWorkflow
+from agent.input_interface.input_interface import COTInputInterface  
+from omagent_core.advanced_components.workflow.self_consist_cot.workflow import SelfConsistentWorkflow  
 logging.init_logger("omagent", "omagent", level="INFO")
 
 # Set current working directory path
@@ -31,20 +31,17 @@ registry.import_module(CURRENT_PATH.joinpath('agent'))
 container.register_stm("RedisSTM")
 container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 
-# Initialize simple VQA workflow
+# Initialize simple general_self_consist_cot workflow
 workflow = ConductorWorkflow(name='general_self_consist_cot')
 
 # Configure workflow tasks:
 # 1. Input interface for user interaction
-client_input_task = simple_task(task_def_name=COTInputInterface, task_reference_name='input_interface')  # Change to COTInputInterface
+client_input_task = simple_task(task_def_name=COTInputInterface, task_reference_name='input_interface')  
 
-self_consist_cot_workflow = SelfConsistentWorkflow()  # Change to SelfConsistentWorkflow
-self_consist_cot_workflow.set_input(user_question=client_input_task.output('user_question'), num_path=path_config['num_path'])  # Set appropriate inputs
+self_consist_cot_workflow = SelfConsistentWorkflow()  
+self_consist_cot_workflow.set_input(user_question=client_input_task.output('user_question'), num_path=path_config['num_path'])  
 
-# 6. Conclude task for task conclusion
-
-
-# Configure workflow execution flow: Input -> Initialize global variables -> Self Consistent Loop -> Conclude
+# Configure workflow execution flow
 workflow >> client_input_task >> self_consist_cot_workflow 
 
 # Register workflow

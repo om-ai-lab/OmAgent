@@ -16,6 +16,12 @@ CURRENT_PATH = Path(__file__).parents[0]
 @registry.register_worker()
 class COTExtract(BaseLLMBackend, BaseWorker):
 
+
+    """ 
+    COTExtract class for handling extraction tasks using OpenaiGPTLLM.
+    It manages the prompts and interacts with the base worker architecture.
+    """
+
     llm: OpenaiGPTLLM
 
     prompts: List[PromptTemplate] = Field(
@@ -27,6 +33,18 @@ class COTExtract(BaseLLMBackend, BaseWorker):
     )
 
     def _run(self,  reasoning_result:List[str], *args, **kwargs):
+
+        """
+        Executes the reasoning process based on the final answers and question provided.
+
+        Args:
+            reasoning_result (List[str]): A list of reasoning results to be processed.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            dict: A dictionary containing the final answer and prompt and completion tokens.
+        """
 
         final_answer = []
         prompt_tokens = []
