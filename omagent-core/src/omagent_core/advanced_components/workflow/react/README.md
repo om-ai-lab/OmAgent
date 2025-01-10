@@ -29,9 +29,6 @@ The config of the React operator is as follows, you can simply copy and paste th
   output_parser: 
     name: StrParser
 - name: WikiSearch
-  llm: ${sub|text_res}
-  output_parser: 
-    name: StrParser
 - name: ReactOutput
 ```
 
