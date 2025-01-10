@@ -40,7 +40,7 @@ class Action(BaseLLMBackend, BaseWorker):
         # Get current step number
         current_step = state.get('step_number', 1)
         
-        # 记录输出信息
+        # Record output information
         self.callback.info(
             agent_id=self.workflow_instance_id, 
             progress='Action', 
