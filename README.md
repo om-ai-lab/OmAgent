@@ -3,7 +3,7 @@
 </p>
 
 <div>
-    <h1 align="center">🌟 Build Multimodal Language Agents with Ease 🌟</h1>
+    <h2 align="center">🌟 Build Multimodal Language Agents with Ease 🌟</h2>
 </div>
 
 
@@ -29,7 +29,7 @@ OmAgent is python library for building multimodal language agents with ease. We 
 ## 🔑 Key Features  
  - A flexible agent architecture that provides graph-based workflow orchestration engine and various memory type enabling contextual reasoning.  
  - native multimodal interaction support include VLM models, real-time API, computer vision models, mobile connection and etc.   
- - A suite of state-of-the-art unimodal and multimodal agent algorithms that goes beyond simple LLM reasoning, e.g. ReAct, CoT, SC-Cot etc.   
+ - A suite of state-of-the-art unimodal and multimodal agent algorithms that goes beyond simple LLM reasoning, e.g. ReAct, CoT, SC-Cot, Dnc and etc.   
 
 
 ## 🛠️ How To Install
@@ -79,7 +79,7 @@ The container.yaml file is a configuration file that manages dependencies and se
 
 For more information about the container.yaml configuration, please refer to the [container module](./docs/concepts/container.md)
 
-### Run the demo
+### Run Demo
 
 1. Run the simple VQA demo with webpage GUI:
 
@@ -92,19 +92,20 @@ For more information about the container.yaml configuration, please refer to the
    <img src="docs/images/simpleVQA_webpage.png" width="400"/>
 
 ## 🤖  Example Projects
-### Video QA Agents
-Build a system that can answer any questions about uploaded videos with video understanding agents. See Details [here](examples/video_understanding/README.md).  
-More about the video understanding agent can be found in [paper](https://arxiv.org/abs/2406.16620).
+### 1. Video QA Agents
+We built a video understanding agent that can answer complex questions about content in long videos. Specifically, we proposed a VideoRAG system with a sophisticated problem solving algorithm. See details [here](examples/video_understanding/README.md). 
 
-### Mobile Personal Assistant
-Build your personal mulitmodal assistant just like Google Astral in 2 minutes. See Details [here](examples/step3_outfit_with_loop/README.md).
+*This work has been published in EMNLP 2024 [paper](https://arxiv.org/abs/2406.16620).
+
+### 2. Mobile Personal Assistant
+We show you here how to build a personal mulitmodal AI assistant just like [Google Astral](https://deepmind.google/technologies/project-astra/) in 2 minutes. See details [here](examples/step3_outfit_with_loop/README.md).
 <p >
   <img src="docs/images/readme_app.png" width="200"/>
 </p>
 
 
-### Agentic Operators
-Compare different agent reasoning algorithms with reproducible and fair conditions. See Details [here]（docs/concepts/agent_operators.md）.
+### 3. Agentic Operators
+We define reusable agent agentic workflow, e.g. CoT, ReAct, and etc as **agent operators**. This project compare various recently proposed agent reasoning operators with fair experimental conditions, i.e. fixing LLM models and test data the same. How do they perform? See details [here](docs/concepts/agent_operators.md).
 
 | **Rank** | **Algorithm** | **Eval Time** |  **LLM**  | **Average** | **gsm8k-score** | **gsm8k-cost($)** | **AQuA-score** | **AQuA-cost($)** |
 | :------------: | :-----------------: | :-----------------: | :-------------: | :---------------: | :-------------------: | :-----------------------------------------------------------: | :---: | :----: |
@@ -119,7 +120,7 @@ Compare different agent reasoning algorithms with reproducible and fair conditio
 |  **8**  |         POT         |      2025/1/7      | Doubao-lite-32k |       65.76       |         79.15         |                            0.0575                            | 52.36 | 0.0142 |
 |  **3**  |      ReAct-Pro*      |      2025/1/7      | Doubao-lite-32k |       81.58       |         85.60         |                            0.2513                            | 77.56 | 0.0446 |
 
-More Details in our new repo [open-agent-leaderboard](https://github.com/om-ai-lab/open-agent-leaderboard) and [Hugging Face space](https://huggingface.co/spaces/omlab/open-agent-leaderboard)
+More information can be found in our new repo [open-agent-leaderboard](https://github.com/om-ai-lab/open-agent-leaderboard) and [Hugging Face space](https://huggingface.co/spaces/omlab/open-agent-leaderboard)
 
 
 ## 💻 Documentation
