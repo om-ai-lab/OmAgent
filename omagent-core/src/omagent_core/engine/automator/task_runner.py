@@ -156,7 +156,8 @@ class TaskRunner:
             if task.response_timeout_seconds:
                 task_result = func_timeout(
                     timeout=task.response_timeout_seconds,
-                    func=self.worker.execute(task),
+                    func=self.worker.execute,
+                    args=(task,)
                 )
             else:
                 task_result = self.worker.execute(task)
