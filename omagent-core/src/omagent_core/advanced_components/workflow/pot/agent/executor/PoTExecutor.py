@@ -11,6 +11,7 @@ import func_timeout
 import numpy as np
 import math
 import statistics
+from sympy import symbols
 
 # Get absolute path to the directory containing this file
 CURRENT_PATH = root_path = Path(__file__).parents[0]
@@ -91,6 +92,8 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
         return ans
 
     def extract_code_blocks(self, text):
+        if '```python' not in text:
+            return text
         code_blocks = []
         lines = text.split('\n')
         in_code_block = False
@@ -259,7 +262,7 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
 
         # Extract generated code from LLM response
         result = chat_complete_res["choices"][0]["message"]["content"]
-        
+
         result = self.extract_code_blocks(result)
         
         # For zero-shot cases, add imports and answer extraction
