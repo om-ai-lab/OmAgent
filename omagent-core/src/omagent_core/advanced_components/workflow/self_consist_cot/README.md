@@ -10,19 +10,43 @@ The Self-Consistent CoT workflow consists of three main stages:
 2. **CoT Extract**: Extracts final answers from each reasoning path
 3. **CoT Conclusion**: Analyzes extracted answers to produce a final consensus answer
 
-## Usage
+## Inputs, Outputs and Configs
 
-```python
-from omagent_core.advanced_components.workflow.self_consist_cot.workflow import SelfConsistentWorkflow
+### Inputs:
+The inputs that the Self-Consistent CoT workflow requires are as follows:
+| Name     | Type | Required | Description |
+| -------- | ----- | ----- | ---- |
+| user_question | str | true | The question or task to be solved |
+| path_num | int | false | Number of reasoning paths to generate (default: 5) |
 
-# Initialize the workflow
-workflow = SelfConsistentWorkflow()
+### Outputs:
+The outputs that the Self-Consistent CoT operator returns are as follows:
+| Name     | Type | Description |
+| -------- | ----- | ---- |
+| final_answer | str | The final concluded answer from COTConclusion |
+| question | str | The original input question |
+| prompt_tokens | int | Number of prompt tokens used |
+| completion_tokens | int | Number of completion tokens used |
+| body | str | The response body from COTConclusion |
 
-# Set input parameters
-workflow.set_input(
-    user_question="Your question here",  # The question to be answered
-    path_num=5                          # Number of reasoning paths to generate
-)
+### Configs:
+The config of the Self-Consistent CoT workflow is as follows, you can simply copy and paste the following config into your project as a self_consist_cot_workflow.yml file.
+```yml
+- name: COTReasoning
+  llm: ${sub|json_res}
+  tool_manager: ${sub|all_tools}
+  output_parser: 
+    name: StrParser
+- name: COTExtract
+  llm: ${sub|json_res}
+  tool_manager: ${sub|all_tools}
+  output_parser: 
+    name: StrParser
+- name: COTConclusion
+  llm: ${sub|text_res}
+  tool_manager: ${sub|all_tools}
+  output_parser: 
+    name: StrParser
 ```
 
 ## Components
@@ -38,6 +62,21 @@ Extracts final answers from each reasoning path, focusing on the conclusion rath
 ### COTConclusion
 
 Analyzes all extracted answers to determine the most consistent and reliable final answer.
+
+## Usage
+
+```python
+from omagent_core.advanced_components.workflow.self_consist_cot.workflow import SelfConsistentWorkflow
+
+# Initialize the workflow
+workflow = SelfConsistentWorkflow()
+
+# Set input parameters
+workflow.set_input(
+    user_question="Your question here",  # The question to be answered
+    path_num=5                          # Number of reasoning paths to generate
+)
+```
 
 ## Example
 
