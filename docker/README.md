@@ -37,4 +37,4 @@ To support app development and debugging, we also need to deploy additional serv
    docker-compose -f conductor_with_app/conductor/docker-compose.yaml up -d
    ```
 
-4. Now you can link the app to backend automatically(if within the same local area network) or by setting the IP address(http://<your_ip>:8082 by default) in the app. Details see [here](../docs/concepts/app.md).
+4. Now you can link the app to backend automatically(if within the same local area network) or by setting the IP address(http://<your_ip>:8082 by default) in the app. Details see [here](../docs/concepts/clients/app.md).
