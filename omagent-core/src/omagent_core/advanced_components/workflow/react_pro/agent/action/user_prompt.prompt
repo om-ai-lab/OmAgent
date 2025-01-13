@@ -1,0 +1,11 @@
+Solve a question-answering task using alternating Thought, Action, and Observation steps:
+
+- Thought: Reason about the current situation.
+- Action: Can be one of these three types:
+  1. Search[entity]: Search for the specified entity online. If it exists, return its first paragraph; if not, return some similar entities for further search.
+  2. Lookup[keyword]: From the last successfully found paragraph through Search, return the next sentence containing the specified keyword.
+  3. Finish[answer]: Return the final answer and end the task.
+
+- You can take as many steps as needed.
+
+{{context}} 

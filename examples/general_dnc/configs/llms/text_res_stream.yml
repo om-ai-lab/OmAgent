@@ -5,3 +5,5 @@ endpoint: ${env| custom_openai_endpoint, https://api.openai.com/v1}
 temperature: 0
 stream: true
 response_format: text
+stream_options:
+  include_usage: true

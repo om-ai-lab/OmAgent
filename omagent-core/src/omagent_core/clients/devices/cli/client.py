@@ -47,9 +47,7 @@ class DefaultClient:
         workflow_instance_id = None
         try:
             absolute_path = Path(self._config_path).resolve()
-            print(f"{absolute_path}")
             worker_config = build_from_file(self._config_path)
-            print("worker_config:", worker_config)
             self._task_handler_interactor = TaskHandler(
                 worker_config=worker_config, workers=self._workers
             )
@@ -80,7 +78,7 @@ class DefaultClient:
                 try:
                     status = self._interactor.get_workflow(
                         workflow_id=workflow_instance_id
-                    ).status  # 获取执行状态
+                    ).status
                     if status in terminal_status:
                         break
                     data_flag = False

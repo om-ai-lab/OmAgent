@@ -264,7 +264,7 @@ class ToolManager(BaseLLMBackend):
             self.callback.info(
                 agent_id=self.workflow_instance_id,
                 progress=f"Conqueror",
-                message=f'Tool {toolcall_structure["name"]} executing.',
+                message=f'Tool {toolcall_structure["name"]} executing. Arguments: {toolcall_structure["arguments"]}',
             )
             tool_execution_res = []
             try:

@@ -78,7 +78,7 @@ class VideoScenes(BaseModel):
             scene_manager.add_detector(
                 ContentDetector(
                     threshold=threshold,
-                    min_scene_len=video.frame_rate * min_scene_len,
+                    min_scene_len=int(video.frame_rate * min_scene_len),
                     weights=weight,
                 )
             )
@@ -86,7 +86,7 @@ class VideoScenes(BaseModel):
             scene_manager.add_detector(
                 ContentDetector(
                     threshold=threshold,
-                    min_scene_len=video.frame_rate * min_scene_len,
+                    min_scene_len=int(video.frame_rate * min_scene_len),
                     weights=weight,
                     kernel_size=kernel_size,
                 )

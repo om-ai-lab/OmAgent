@@ -1,0 +1,5 @@
+- name: CoTReasoning
+  llm: ${sub|gpt4o}
+  output_parser: 
+    name: StrParser
+  concurrency: 15

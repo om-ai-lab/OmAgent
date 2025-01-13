@@ -94,7 +94,8 @@ class TaskHandler:
                 "concurrency", BaseWorker.model_fields["concurrency"].default
             )
             workers.extend([worker_cls(**config) for _ in range(concurrency)])
-
+        for worker in workers:
+            worker.task_definition_name = worker.id or worker.name
         self.__create_task_runner_processes(
             workers, container.conductor_config, metrics_settings
         )
