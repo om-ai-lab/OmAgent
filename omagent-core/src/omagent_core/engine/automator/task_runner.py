@@ -96,6 +96,8 @@ class TaskRunner:
                 else:
                     task = None
             else:
+                if domain is not None:
+                    params["domain"] = domain
                 task = self.task_client.poll(tasktype=task_definition_name, **params)
 
             finish_time = time.time()
