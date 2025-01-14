@@ -1,17 +1,27 @@
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.registry import registry
 from omagent_core.utils.logger import logging
-from langchain.agents.react.base import DocstoreExplorer
-from langchain_community.docstore.wikipedia import Wikipedia
+import wikipedia
 from pydantic import Field
+
+class WikipediaSearcher:
+    """Simple Wikipedia search implementation that mimics DocstoreExplorer"""
+    
+    def search(self, query: str) -> str:
+        """Search Wikipedia and return the page content"""
+        try:
+            page_content = wikipedia.page(query).content
+            return page_content
+        except wikipedia.PageError:
+            return f"Could not find [{query}]. Similar: {wikipedia.search(query)}"
+        except wikipedia.DisambiguationError:
+            return f"Could not find [{query}]. Similar: {wikipedia.search(query)}"
 
 @registry.register_worker()
 class WikiSearch(BaseWorker):
     """Wiki Search worker for React workflow"""
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.docstore = DocstoreExplorer(Wikipedia())
+    wiki_searcher: WikipediaSearcher = Field(default_factory=WikipediaSearcher)
 
     def _run(self, action_output: str, *args, **kwargs):
         """Execute search or lookup based on action output"""
@@ -60,7 +70,7 @@ class WikiSearch(BaseWorker):
             return action_output
         
         try:
-            result = self.docstore.search(search_term)
+            result = self.wiki_searcher.search(search_term)
             if result:
                 result_text = result.strip('\n').strip().replace('\n', '')
                 
