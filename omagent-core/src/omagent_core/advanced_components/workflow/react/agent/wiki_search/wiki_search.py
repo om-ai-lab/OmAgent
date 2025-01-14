@@ -8,27 +8,14 @@ class WikipediaSearcher:
     """Simple Wikipedia search implementation that mimics DocstoreExplorer"""
     
     def search(self, query: str) -> str:
-        """Search Wikipedia and return the most relevant page content"""
+        """Search Wikipedia and return the page content"""
         try:
-            # Get the most relevant page title
-            search_results = wikipedia.search(query, results=1)
-            if not search_results:
-                return ""
-            
-            # Get the page content
-            page = wikipedia.page(search_results[0], auto_suggest=False)
-            return page.content
-            
-        except wikipedia.DisambiguationError as e:
-            # If disambiguation occurs, use the first option
-            try:
-                page = wikipedia.page(e.options[0], auto_suggest=False)
-                return page.content
-            except:
-                return ""
-        except Exception as e:
-            logging.error(f"Error searching Wikipedia: {str(e)}")
-            return ""
+            page_content = wikipedia.page(query).content
+            return page_content
+        except wikipedia.PageError:
+            return f"Could not find [{query}]. Similar: {wikipedia.search(query)}"
+        except wikipedia.DisambiguationError:
+            return f"Could not find [{query}]. Similar: {wikipedia.search(query)}"
 
 @registry.register_worker()
 class WikiSearch(BaseWorker):
