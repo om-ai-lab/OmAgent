@@ -1,17 +1,40 @@
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.utils.registry import registry
 from omagent_core.utils.logger import logging
-from langchain.agents.react.base import DocstoreExplorer
-from langchain_community.docstore.wikipedia import Wikipedia
+import wikipedia
 from pydantic import Field
+
+class WikipediaSearcher:
+    """Simple Wikipedia search implementation that mimics DocstoreExplorer"""
+    
+    def search(self, query: str) -> str:
+        """Search Wikipedia and return the most relevant page content"""
+        try:
+            # Get the most relevant page title
+            search_results = wikipedia.search(query, results=1)
+            if not search_results:
+                return ""
+            
+            # Get the page content
+            page = wikipedia.page(search_results[0], auto_suggest=False)
+            return page.content
+            
+        except wikipedia.DisambiguationError as e:
+            # If disambiguation occurs, use the first option
+            try:
+                page = wikipedia.page(e.options[0], auto_suggest=False)
+                return page.content
+            except:
+                return ""
+        except Exception as e:
+            logging.error(f"Error searching Wikipedia: {str(e)}")
+            return ""
 
 @registry.register_worker()
 class WikiSearch(BaseWorker):
     """Wiki Search worker for React workflow"""
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.docstore = DocstoreExplorer(Wikipedia())
+    wiki_searcher: WikipediaSearcher = Field(default_factory=WikipediaSearcher)
 
     def _run(self, action_output: str, *args, **kwargs):
         """Execute search or lookup based on action output"""
@@ -60,7 +83,7 @@ class WikiSearch(BaseWorker):
             return action_output
         
         try:
-            result = self.docstore.search(search_term)
+            result = self.wiki_searcher.search(search_term)
             if result:
                 result_text = result.strip('\n').strip().replace('\n', '')
                 
