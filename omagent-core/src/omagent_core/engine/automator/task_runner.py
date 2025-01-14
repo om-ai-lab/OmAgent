@@ -148,7 +148,7 @@ class TaskRunner:
         try:
             _input = workflow_client.get_workflow(task.workflow_instance_id).input
             if 'conversationInfo' in _input:
-                task.conversation_info = _input
+                task.conversation_info = _input.get('conversationInfo', {})
                 logging.info(f'conversation_info: {task.conversation_info}')
             
             conductor_log_handler = ConductorLogHandler(self.task_client)
