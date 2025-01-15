@@ -156,10 +156,7 @@ video_cache/
 # vscode
 .vscode
 
-# examples/ToT/
-examples/ToT_wf/
-omagent-core/src/omagent_core/advanced_components/workflow/ToT/
-# test_record/
+omagent-test-data/
 
 
 examples/Fitness_Instructor/
