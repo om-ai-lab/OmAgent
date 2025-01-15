@@ -7,6 +7,7 @@ import logging
 from omagent_core.engine.http.models import *
 import json
 
+
 class LocalWorkflowExecutor:
     def __init__(self):
         logging.basicConfig(level=logging.INFO)
@@ -20,14 +21,13 @@ class LocalWorkflowExecutor:
 
         for key, value in input_params.items():
             if isinstance(value, str) and value.startswith('${') and value.endswith('}'):
-                # Extract reference path
+
                 ref_path = value[2:-1]
                 parts = ref_path.split('.')
                 
-                # Get referenced task output
                 if parts[0] in self.task_outputs:
                     task_output = self.task_outputs[parts[0]]['output']
-                    for part in parts[2:]:  # Skip task name and 'output'
+                    for part in parts[2:]:  
                         if isinstance(task_output, dict):
                             task_output = task_output.get(part, {})
                     processed_inputs[key] = task_output
@@ -79,14 +79,17 @@ class LocalWorkflowExecutor:
                 # Execute all tasks in loop
                 for loop_task in task['loopOver' if 'loopOver' in task else 'loop_over']:                    
                     self.execute_task(loop_task, workers)
-                exit_monitor_output = self.task_outputs['task_exit_monitor']['output']
-                if exit_monitor_output.get('exit_flag', False):
-                    break
+                if 'loopCondition' in task or "loop_condition" in task:
+                    should_continue = not self.evaluate_loop_condition(task['loopCondition' if 'loopCondition' in task else "loop_condition"])            
+                    if not should_continue:
+                        break
+                else:
+                    exit_monitor_output = self.task_outputs['task_exit_monitor']['output']
+                    if exit_monitor_output.get('exit_flag', False):
+                        break
                     
         elif task_type == 'SWITCH':
-            # Get switch case value
             case_value = self.evaluate_input_parameters(task)['switchCaseValue']
-            # Execute matching case
             if case_value in task['decision_cases']:
                 for case_task in task['decision_cases'][case_value]:
                     self.execute_task(case_task.to_dict(), workers)
@@ -95,6 +98,31 @@ class LocalWorkflowExecutor:
                     self.execute_task(default_task.to_dict(), workers)
                     
         return {}
+
+    def evaluate_loop_condition(self, condition: str) -> bool:
+        """Evaluate loop condition using the task outputs"""
+        condition = condition.strip()
+        if condition.startswith('if'):
+            condition = condition[2:].strip()        
+        condition = condition.split('{')[0].strip()        
+        if '$.' in condition:
+            task_ref = condition[condition.find('$.') + 2:condition.find('[')]
+            output_key = condition[condition.find('[') + 1:condition.find(']')].strip('"\'')            
+            task_output = self.task_outputs.get(task_ref, {}).get('output', {})
+            print ("task_output:",task_output)
+            if isinstance(task_output, dict):
+                value = task_output.get(output_key)                
+                if '==' in condition:
+                    expected_value = condition.split('==')[1].strip()
+                    if expected_value.lower() == 'true':
+                        return value == True
+                    elif expected_value.lower() == 'false':
+                        return value == False
+                    else:
+                        return value == expected_value
+        
+        return False
+
 
 class WorkflowExecutor:
     def __init__(self):
