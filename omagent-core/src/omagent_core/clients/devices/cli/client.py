@@ -42,20 +42,19 @@ class DefaultClient:
         self._config_path = config_path
         self._workers = workers
         self._input_prompt = input_prompt
+        self._task_to_domain = {}
 
     def start_interactor(self):
         workflow_instance_id = None
         try:
             absolute_path = Path(self._config_path).resolve()
-            print(f"{absolute_path}")
             worker_config = build_from_file(self._config_path)
-            print("worker_config:", worker_config)
             self._task_handler_interactor = TaskHandler(
-                worker_config=worker_config, workers=self._workers
+                worker_config=worker_config, workers=self._workers, task_to_domain=self._task_to_domain
             )
             self._task_handler_interactor.start_processes()
             workflow_instance_id = self._interactor.start_workflow_with_input(
-                workflow_input={}
+                workflow_input={}, task_to_domain=self._task_to_domain
             )
 
             stream_name = f"{workflow_instance_id}_output"
@@ -80,7 +79,7 @@ class DefaultClient:
                 try:
                     status = self._interactor.get_workflow(
                         workflow_id=workflow_instance_id
-                    ).status  # 获取执行状态
+                    ).status
                     if status in terminal_status:
                         break
                     data_flag = False
@@ -182,11 +181,11 @@ class DefaultClient:
         try:
             worker_config = build_from_file(self._config_path)
             self._task_handler_processor = TaskHandler(
-                worker_config=worker_config, workers=self._workers
+                worker_config=worker_config, workers=self._workers, task_to_domain=self._task_to_domain
             )
             self._task_handler_processor.start_processes()
             workflow_instance_id = self._processor.start_workflow_with_input(
-                workflow_input={}
+                workflow_input={}, task_to_domain=self._task_to_domain
             )
             user_input = input(
                 f"{Fore.GREEN}Please input a folder path of images:(WaitPress Enter to finish the entire input.):\n>>>{Style.RESET_ALL}"

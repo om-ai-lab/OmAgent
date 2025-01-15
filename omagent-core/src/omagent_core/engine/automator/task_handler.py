@@ -54,6 +54,7 @@ class TaskHandler:
         workers: List[BaseWorker] = [],
         metrics_settings: MetricsSettings = None,
         import_modules: List[str] = None,
+        task_to_domain: dict[str, str] = None,
     ):
         """Initialize a new TaskHandler instance.
 
@@ -94,7 +95,9 @@ class TaskHandler:
                 "concurrency", BaseWorker.model_fields["concurrency"].default
             )
             workers.extend([worker_cls(**config) for _ in range(concurrency)])
-
+        for worker in workers:
+            if task_to_domain is not None:
+                task_to_domain[worker.task_definition_name] = worker.domain
         self.__create_task_runner_processes(
             workers, container.conductor_config, metrics_settings
         )

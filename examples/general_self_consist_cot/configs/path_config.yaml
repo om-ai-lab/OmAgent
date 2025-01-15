@@ -1,0 +1,2 @@
+# Configuration for number of paths in self-consistent chain-of-thought reasoning
+num_path: 5  # number of paths for reasoning

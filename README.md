@@ -1,10 +1,11 @@
+<p align="center">
+  <img src="docs/images/OmAgent-banner.png" width="400"/>
+</p>
+
 <div>
-    <h1> <img src="docs/images/logo.png" height=40 align="top"> OmAgent</h1>
+    <h1 align="center">🌟 Build Multimodal Language Agents with Ease 🌟</h1>
 </div>
 
-<p align="center">
-  <img src="docs/images/intro.png" width="600"/>
-</p>
 
 <p align="center">
   <a href="https://twitter.com/intent/follow?screen_name=OmAI_lab" target="_blank">
@@ -15,198 +16,128 @@
   </a>
 </p>
 
-<p align="center">
-    <a>English</a> | <a href="README_ZH.md">中文</a>
-</p>
 
-## 🗓️ Updates
-* 11/12/2024: OmAgent v0.2.0 is officially released! We have completely rebuilt the underlying framework of OmAgent, making it more flexible and easy to extend. The new version added the concept of devices, making it easier to develop quickly for smart hardware.
-* 10/20/2024: We are actively engaged in developing version 2.0.0 🚧 Exciting new features are underway! You are welcome to join us on X and Discord~
-* 09/20/2024: Our paper has been accepted by EMNLP 2024. See you in Miami!🏝
-* 07/04/2024: The OmAgent open-source project has been unveiled. 🎉
-* 06/24/2024: [The OmAgent research paper has been published.](https://arxiv.org/abs/2406.16620)
+## 📖 Introduction  
+OmAgent is python library for building multimodal language agents with ease. We try to keep the library **simple** without too much overhead like other agent framework.   
+ - We wrap the complex engineering (worker orchestration, task queue, node optimization, etc.) behind the scene and only leave you with a super-easy-to-use interface to define your agent.   
+ - We further enable useful abstractions for reusable agent components, so you can build complex agents aggregating from those basic components.   
+ - We also provides features required for multimodal agents, such as native support for VLM models, video processing, and mobile device connection to make it easy for developers and researchers building agents that can reason over not only text, but image, video and audio inputs. 
 
+## 🔑 Key Features  
+ - A flexible agent architecture that provides graph-based workflow orchestration engine and various memory type enabling contextual reasoning.  
+ - Native multimodal interaction support include VLM models, real-time API, computer vision models, mobile connection and etc.   
+ - A suite of state-of-the-art unimodal and multimodal agent algorithms that goes beyond simple LLM reasoning, e.g. ReAct, CoT, SC-Cot etc.   
 
-
-
-## 📖 Introduction
-OmAgent is an open-source agent framework designed to streamlines the development of on-device multimodal agents. Our goal is to enable agents that can empower various hardware devices, ranging from smart phone, smart wearables (e.g. glasses), IP cameras to futuristic robots. As a result, OmAgent creates an abstraction over various types of device and simplifies the process of connecting these devices to the state-of-the-art multimodal foundation models and agent algorithms, to allow everyone build the most interesting on-device agents. Moreover, OmAgent focuses on optimize the end-to-end computing pipeline, on in order to provides the most real-time user interaction experience out of the box. 
-
-In conclusion, key features of OmAgent include:
-
-- **Easy Connection to Diverse Devices**: we make it really simple to connect to physical devices, e.g. phone, glasses and more, so that agent/model developers can build the applications that not running on web page, but running on devices. We welcome contribution to support more devices! 
-
-- **Speed-optimized SOTA Mutlimodal Models**: OmAgent integrates the SOTA commercial and open-source foundation models to provide application developers the most powerful intelligence. Moreover, OmAgent streamlines the audio/video processing and computing process to easily enable natural and fluid interaction between the device and the users. 
-
-- **SOTA Multimodal Agent Algorithms**: OmAgent provides an easy workflow orchestration interface for researchers and developers implement the latest agent algorithms, e.g. ReAct, DnC and more. We welcome contributions of any new agent algorithm to enable more complex problem solving abilities.
-
-- **Scalability and Flexibility**: OmAgent provides an intuitive interface for building scalable agents, enabling developers to construct agents tailored to specific roles and highly adaptive to various applications.  
 
 ## 🛠️ How To Install
-
-### 1. Deploy the Workflow Orchestration Engine  
-OmAgent utilizes [Conductor](https://github.com/conductor-oss/conductor) as its workflow orchestration engine. Conductor is an open-source, distributed, and scalable workflow engine that supports a variety of programming languages and frameworks. By default, it uses Redis for persistence and Elasticsearch (7.x) as the indexing backend.  
-It is recommended to deploy Conductor using Docker:
-```bash
-docker-compose -f docker/conductor/docker-compose.yml up -d
-```
-- Once deployed, you can access the Conductor UI at `http://localhost:5001`. (Note: Mac system will occupy port 5000 by default, so we use 5001 here. You can specify other ports when deploying Conductor.)
-- The Conductor API can be accessed via `http://localhost:8080`.
-- More details about the deployment can be found [here](docker/README.md).
-
-### 2. Install OmAgent  
-- **Python Version**: Ensure Python 3.10 or higher is installed.
-- **Install `omagent_core`**:
+- python >= 3.10
+- Install omagent_core  
+  Use pip to install omagent_core latest release.
+  ```bash
+  pip install omagent-core
+  ```
+  Or install the latest version from the source code like below.
   ```bash
   pip install -e omagent-core
   ```
-- **Install dependencies for the sample project**:
+- Set Up Conductor Server (Docker-Compose) Docker-compose includes conductor-server, Elasticsearch, and Redis.
   ```bash
-  pip install -r requirements.txt
+  cd docker
+  docker-compose up -d
   ```
 
-- **Install Optional Components**: 
-  - Install Milvus VectorDB for enhanced support of long-term memory.
-OmAgent uses Milvus Lite as the default vector database for storing vector data related to long-term memory. To utilize the full Milvus service, you may deploy the [Milvus vector database](https://milvus.io/docs/install_standalone-docker.md) via Docker.
-  - Pull git lfs files.
-We provide sample image files for our examples in the `examples/step4_outfit_with_ltm/wardrobe_images` directory. To use them, ensure Git LFS is installed. You can install it with the following command:
-      ```bash
-      git lfs install
-      ```
-      Then, pull the files by executing:
-      ```bash
-      git lfs pull
-      ```
-  
-
-
-### 3. Connect Devices  
-If you wish to use smart devices to access your agents, we provide a smartphone app and corresponding backend, allowing you to focus on agent functionality without worrying about complex device connection issues.  
-- **Deploy the app backend**   
-    The APP backend comprises the backend program, along with two middleware components: the MySQL database and MinIO object storage. For installation and deployment instructions, please refer to [this link](docker/README.md).
-- **Download, install, and debug the smartphone app**  
-  At present, we offer an Android APP available for download and testing. For detailed instructions on acquiring and using it, please refer to [here](docs/concepts/clients/app.md). The iOS version is currently under development and will be available soon.
-
-
 ## 🚀 Quick Start 
-### Hello World
-### 1、Configuration
+### Configuration
 
 The container.yaml file is a configuration file that manages dependencies and settings for different components of the system. To set up your configuration:
 
 1. Generate the container.yaml file:
    ```bash
-   cd examples/step2_outfit_with_switch
+   cd examples/step1_simpleVQA
    python compile_container.py
    ```
-   This will create a container.yaml file with default settings under `examples/step2_outfit_with_switch`.
+   This will create a container.yaml file with default settings under `examples/step1_simpleVQA`.
 
 
 
-2. Configure your LLM settings in `configs/llms/gpt.yml` and `configs/llms/text_res.yml`:
+2. Configure your LLM settings in `configs/llms/gpt.yml`:
 
    - Set your OpenAI API key or compatible endpoint through environment variable or by directly modifying the yml file
    ```bash
    export custom_openai_key="your_openai_api_key"
    export custom_openai_endpoint="your_openai_endpoint"
    ```
+   You can use a locally deployed Ollama to call your own language model. The tutorial is [here](docs/concepts/models/Ollama.md).
 
 3. Update settings in the generated `container.yaml`:
       - Configure Redis connection settings, including host, port, credentials, and both `redis_stream_client` and `redis_stm_client` sections.
    - Update the Conductor server URL under conductor_config section
    - Adjust any other component settings as needed
 
-4. Websearch gives multiple providers, you can choose one of them by modifying the `configs/tools/all_tools.yml` file.
-   1. [**Recommend**] Use Tavily as the websearch tool, `all_tools.yml` file should be like this:
-   ```yaml
-   llm: ${sub|text_res}
-   tools:
-       - ...other tools...
-       - name: TavilyWebSearch
-         tavily_api_key: ${env|tavily_api_key, null}
-   ```
-   You can get the `tavily_api_key` from [here](https://app.tavily.com/home). It start with `tvly-xxx`. By setting the `tavily_api_key`, you can get better search results.
-   2. Use bing search or duckduckgo search, `all_tools.yml` file should be like this:
-   ```yaml
-   llm: ${sub|text_res}
-   tools:
-       - ...other tools...
-       - name: WebSearch
-         bing_api_key: ${env|bing_api_key, null}
-   ```
-   For better results, it is recommended to configure [Bing Search](https://www.microsoft.com/en-us/bing/apis/pricing) setting the `bing_api_key`.
 
 For more information about the container.yaml configuration, please refer to the [container module](./docs/concepts/container.md)
 
-### 2、Running the Example
+### Run the demo
 
-1. Run the outfit with switch example:
+1. Run the simple VQA demo with webpage GUI:
 
-   For terminal/CLI usage: Input and output are in the terminal window
+   For WebpageClient usage: Input and output are in the webpage
    ```bash
-   cd examples/step2_outfit_with_switch
-   python run_cli.py
+   cd examples/step1_simpleVQA
+   python run_webpage.py
    ```
+   Open the webpage at `http://127.0.0.1:7860`, you will see the following interface:  
+   <img src="docs/images/simpleVQA_webpage.png" width="400"/>
 
-   For app/GUI usage: Input and output are in the app
-   ```bash
-   cd examples/step2_outfit_with_switch
-   python run_app.py
-   ```
-   For app backend deployment, please refer to [here](docker/README.md)  
-   For the connection and usage of the OmAgent app, please check [app usage documentation](./docs/concepts/clients/app.md)
-
-
-## 🏗 Architecture
-The design architecture of OmAgent adheres to three fundamental principles:  
-1. Graph-based workflow orchestration;   
-2. Native multimodality;   
-3. Device-centricity.   
-
-With OmAgent, one has the opportunity to craft a bespoke intelligent agent program.  
-
-For a deeper comprehension of OmAgent, let us elucidate key terms:  
-
-<p align="center">
-  <img src="docs/images/architecture.jpg" width="700"/>
-</p>  
-
-- **Devices**: Central to OmAgent's vision is the empowerment of intelligent hardware devices through artificial intelligence agents, rendering devices a pivotal component of OmAgent's essence. By leveraging the downloadable mobile application we have generously provided, your mobile device can become the inaugural foundational node linked to OmAgent. Devices serve to intake environmental stimuli, such as images and sounds, potentially offering responsive feedback. We have evolved a streamlined backend process to manage the app-centric business logic, thereby enabling developers to concentrate on constructing the intelligence agent's logical framework.  See [client](docs/concepts/clients/devices) for more details.
-
-- **Workflow**: Within the OmAgent Framework, the architectural structure of intelligent agents is articulated through graphs. Developers possess the liberty to innovate, configure, and sequence node functionalities at will. Presently, we have opted for Conductor as the workflow orchestration engine, lending support to intricate operations like switch-case, fork-join, and do-while. See [workflow](docs/concepts/workflow/workflow.md) for more details.
-
-- **Task and Worker**: Throughout the OmAgent workflow development journey, Task and Worker stand as pivotal concepts. Worker embodies the actual operational logic of workflow nodes, whereas Task oversees the orchestration of the workflow's logic. Tasks are categorized into Operators, managing workflow logic (e.g., looping, branching), and Simple Tasks, representing nodes customized by developers. Each Simple Task is correlated with a Worker; when the workflow progresses to a given Simple Task, the task is dispatched to the corresponding worker for execution. See [task](docs/concepts/workflow/task.md) and [worker](docs/concepts/workflow/worker.md) for more details.
+## 🤖  Example Projects
+### Video QA Agents
+Build a system that can answer any questions about uploaded videos with video understanding agents. See Details [here](examples/video_understanding/README.md).  
+More about the video understanding agent can be found in [paper](https://arxiv.org/abs/2406.16620).
+<p >
+  <img src="docs/images/OmAgent.png" width="500"/>
+</p>
 
 
-### Basic Principles of Building an Agent
-- **Modularity**: Break down the agent's functionality into discrete workers, each responsible for a specific task.
-
-- **Reusability**: Design workers to be reusable across different workflows and agents.
-
-- **Scalability**: Use workflows to scale the agent's capabilities by adding more workers or adjusting the workflow sequence.
-
-- **Interoperability**: Workers can interact with various backends, such as LLMs, databases, or APIs, allowing agents to perform complex operations.
-
-- **Asynchronous Execution**: The workflow engine and task handler manage the execution asynchronously, enabling efficient resource utilization.  
+### Mobile Personal Assistant
+Build your personal mulitmodal assistant just like Google Astral in 2 minutes. See Details [here](docs/tutorials/agent_with_app.md).
+<p >
+  <img src="docs/images/readme_app.png" width="200"/>
+</p>
 
 
-## Examples
-We provide exemplary projects to demonstrate the construction of intelligent agents using OmAgent. You can find a comprehensive list in the [examples](./examples/) directory. Here is the reference sequence:
+### 3. Agentic Operators
+We define reusable agent agentic workflows, e.g. CoT, ReAct, and etc as **agent operators**. This project compares various recently proposed reasoning agent operators with the same LLM choice and test datasets. How do they perform? See details [here](docs/concepts/agent_operators.md).
 
-1. [step1_simpleVQA](./examples/step1_simpleVQA) illustrates the creation of a simple multimodal VQA agent with OmAgent. 
+| **Algorithm** |  **LLM**  | **Average** | **gsm8k-score** | **gsm8k-cost($)** | **AQuA-score** | **AQuA-cost($)** |
+ | :-----------------: | :------------: | :-------------: | :---------------: | :-------------------: | :------------------------------------: | :---: |
+ |       SC-COT       |  gpt-3.5-turbo  |       73.69       |         80.06         |                            5.0227                            | 67.32 | 0.6491 |
+|         COT        |  gpt-3.5-turbo  |       69.86       |         78.70         |                            0.6788                            | 61.02 | 0.0957 |
+|      ReAct-Pro      |  gpt-3.5-turbo  |       69.74       |         74.91         |                            3.4633                            | 64.57 | 0.4928 |
+ |         POT         |  gpt-3.5-turbo  |       64.42       |         76.88         |                            0.6902                            | 51.97 | 0.1557 |
+ |         IO*        |  gpt-3.5-turbo  |       38.40       |         37.83         |                            0.3328                            | 38.98 | 0.0380 |
 
-2. [step2_outfit_with_switch](./examples/step2_outfit_with_switch) demonstrates how to build an agent with switch-case branches using OmAgent. 
+*IO: Input-Output Direct Prompting (Baseline)  
 
-3. [step3_outfit_with_loop](./examples/step3_outfit_with_loop) shows the construction of an agent incorporating loops using OmAgent. 
+More Details in our new repo [open-agent-leaderboard](https://github.com/om-ai-lab/open-agent-leaderboard) and [Hugging Face space](https://huggingface.co/spaces/omlab/open-agent-leaderboard)
 
-4. [step4_outfit_with_ltm](./examples/step4_outfit_with_ltm) exemplifies using OmAgent to create an agent equipped with long-term memory. 
 
-5. [dnc_loop](./examples/general_dnc) demonstrates the development of an agent utilizing the DnC algorithm to tackle complex problems. 
+## 💻 Documentation
+More detailed documentation is available [here](https://om-ai-lab.github.io/OmAgentDocs/).
 
-6. [video_understanding](./examples/video_understanding) showcases the creation of a video understanding agent for interpreting video content using OmAgent. 
+## 🤝 Contributing
+For more information on how to contribute, see [here](CONTRIBUTING.md).  
+We value and appreciate the contributions of our community. Special thanks to our contributors for helping us improve OmAgent.
 
-## API Documentation
-The API documentation is available [here](https://om-ai-lab.github.io/OmAgentDocs/).
+<a href="https://github.com/om-ai-lab/OmAgent/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=om-ai-lab/OmAgent" />
+</a>
+
+## 🔔 Follow us
+You can follow us on [X](https://x.com/OmAI_lab), [Discord](https://discord.gg/G9n5tq4qfK) and WeChat group for more updates and discussions.  
+<p >
+  <img src="docs/images/readme_qr_code.png" width="200"/>
+</p>
+
 
 ## 🔗 Related works
 If you are intrigued by multimodal large language models, and agent technologies, we invite you to delve deeper into our research endeavors:  
@@ -227,16 +158,3 @@ If you find our repository beneficial, please cite our paper:
   year={2024}
 }
 ```
-
-## Third-Party Dependencies
-
-This project includes code from the following third-party projects:
-
-- **conductor-python**  
-  - License: Apache License 2.0
-  - [Link to Project](https://github.com/conductor-sdk/conductor-python)
-  - [Link to License](http://www.apache.org/licenses/LICENSE-2.0)
-
-
-## Star History
-[![Star History Chart](https://api.star-history.com/svg?repos=om-ai-lab/OmAgent&type=Date)](https://star-history.com/#om-ai-lab/OmAgent&Date)

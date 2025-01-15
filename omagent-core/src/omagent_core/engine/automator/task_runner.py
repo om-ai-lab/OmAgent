@@ -3,9 +3,15 @@ import sys
 import time
 import traceback
 
+from func_timeout import func_timeout, FunctionTimedOut
+
+from omagent_core.engine.orkes.orkes_workflow_client import workflow_client
+
 from omagent_core.engine.configuration.configuration import Configuration
+from omagent_core.engine.configuration.aaas_config import AaasConfig
 from omagent_core.engine.configuration.settings.metrics_settings import \
     MetricsSettings
+from omagent_core.engine.http.api.aaas_task_api import AaasTaskApi
 from omagent_core.engine.http.api.task_resource_api import TaskResourceApi
 from omagent_core.engine.http.api_client import ApiClient
 from omagent_core.engine.http.models.task import Task
@@ -14,6 +20,7 @@ from omagent_core.engine.http.models.task_result import TaskResult
 from omagent_core.engine.http.rest import AuthorizationException
 from omagent_core.engine.telemetry.metrics_collector import MetricsCollector
 from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.engine.workflow.task.task_type import TaskType
 from omagent_core.utils.container import container
 from omagent_core.utils.handler import ConductorLogHandler
 from omagent_core.utils.logger import logging
@@ -24,6 +31,7 @@ class TaskRunner:
         self,
         worker: BaseWorker,
         configuration: Configuration = None,
+        aaas_config: AaasConfig = None,
         metrics_settings: MetricsSettings = None,
     ):
         if not isinstance(worker, BaseWorker):
@@ -33,10 +41,14 @@ class TaskRunner:
         if not isinstance(configuration, Configuration):
             configuration = container.conductor_config
         self.configuration = configuration
+        if not isinstance(aaas_config, AaasConfig):
+            aaas_config = container.aaas_config
+        self.aaas_config = aaas_config
         self.metrics_collector = None
         if metrics_settings is not None:
             self.metrics_collector = MetricsCollector(metrics_settings)
         self.task_client = TaskResourceApi(ApiClient(configuration=self.configuration))
+        self.aaas_task_client = AaasTaskApi(configuration=self.aaas_config)
 
     def run(self) -> None:
         task_names = ",".join(self.worker.task_definition_names)
@@ -71,9 +83,23 @@ class TaskRunner:
             start_time = time.time()
             domain = self.worker.get_domain()
             params = {"workerid": self.worker.get_identity()}
-            if domain is not None:
-                params["domain"] = domain
-            task = self.task_client.poll(tasktype=task_definition_name, **params)
+            # if domain is not None:
+            #     params["domain"] = domain
+            # task = self.task_client.poll(tasktype=task_definition_name, **params)
+            if self.worker.task_type and self.worker.task_type == TaskType.CUSTOM:
+                params["is_prod"] = self.aaas_config.is_prod
+                if not self.aaas_config.is_prod:
+                    params["domain"] = self.aaas_config.domain_token
+                tasks = self.aaas_task_client.batch_poll_from_aaas(task_definition_name, **params)
+                if len(tasks) > 0:
+                    task = tasks[0]
+                else:
+                    task = None
+            else:
+                if domain is not None:
+                    params["domain"] = domain
+                task = self.task_client.poll(tasktype=task_definition_name, **params)
+
             finish_time = time.time()
             time_spent = finish_time - start_time
             if self.metrics_collector is not None:
@@ -120,11 +146,23 @@ class TaskRunner:
             )
         )
         try:
+            _input = workflow_client.get_workflow(task.workflow_instance_id).input
+            if 'conversationInfo' in _input:
+                task.conversation_info = _input.get('conversationInfo', {})
+                logging.info(f'conversation_info: {task.conversation_info}')
+            
             conductor_log_handler = ConductorLogHandler(self.task_client)
             conductor_log_handler.set_task_id(task.task_id)
             logging.addHandler(conductor_log_handler)
             start_time = time.time()
-            task_result = self.worker.execute(task)
+            if task.response_timeout_seconds:
+                task_result = func_timeout(
+                    timeout=task.response_timeout_seconds,
+                    func=self.worker.execute,
+                    args=(task,)
+                )
+            else:
+                task_result = self.worker.execute(task)
             finish_time = time.time()
             time_spent = finish_time - start_time
             if self.metrics_collector is not None:
@@ -142,6 +180,19 @@ class TaskRunner:
                     task_definition_name=task_definition_name,
                 )
             )
+        except FunctionTimedOut:
+            task_result = TaskResult(
+                task_id=task.task_id,
+                workflow_instance_id=task.workflow_instance_id,
+                worker_id=self.worker.get_identity(),
+            )
+            task_result.status = "FAILED"
+            task_result.reason_for_incompletion = 'Task running timeout'
+            task_result.logs = [
+                TaskExecLog(
+                    traceback.format_exc(), task_result.task_id, int(time.time())
+                )
+            ]
         except Exception as e:
             if self.metrics_collector is not None:
                 self.metrics_collector.increment_task_execution_error(
@@ -185,7 +236,11 @@ class TaskRunner:
                 # Wait for [10s, 20s, 30s] before next attempt
                 time.sleep(attempt * 10)
             try:
-                response = self.task_client.update_task(body=task_result)
+                # response = self.task_client.update_task(body=task_result)
+                if self.worker.task_type and self.worker.task_type == TaskType.CUSTOM:
+                    response = self.aaas_task_client.update_task_to_aaas(body=task_result)
+                else:
+                    response = self.task_client.update_task(body=task_result)
                 logging.debug(
                     "Updated task, id: {task_id}, workflow_instance_id: {workflow_instance_id}, task_definition_name: {task_definition_name}, response: {response}".format(
                         task_id=task_result.task_id,

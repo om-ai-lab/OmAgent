@@ -43,12 +43,16 @@ class VideoQA(BaseWorker, BaseLLMBackend):
         chat_complete_res = self.simple_infer(question=question)
         content = chat_complete_res["choices"][0]["message"]["content"]
         content = json_repair.loads(content)
-        start_time = (
-            None if content.get("start_time", -1) == -1 else content.get("start_time")
-        )
-        end_time = (
-            None if content.get("end_time", -1) == -1 else content.get("end_time")
-        )
+        try:
+            start_time = (
+                None if content.get("start_time", -1) == -1 else content.get("start_time")
+            )
+            end_time = (
+                None if content.get("end_time", -1) == -1 else content.get("end_time")
+            )
+        except Exception as e:
+            start_time = None
+            end_time = None
         question_vector = self.text_encoder.infer([question])[0]
         filter_expr = ""
         if video_md5 is not None:
