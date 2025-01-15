@@ -77,8 +77,8 @@ class TavilyWebSearch(BaseTool):
         self,
         search_query: str,
         topic: str,
-        include_answer: bool,
-        include_images: bool,
+        include_answer: bool = True,
+        include_images: bool = False,
         include_raw_content: bool = False,
         days: int = 3,
         max_results=5,
@@ -86,11 +86,11 @@ class TavilyWebSearch(BaseTool):
         """
         Search with search tools and browse the website returned by search. Note some websites may not be accessable due to network error.
         """
-        self.callback.info(
-            agent_id=self.workflow_instance_id,
-            progress=f"Conqueror",
-            message=f"Detail of search structure: search_query: {search_query}, topic: {topic}, include_answer: {include_answer}, include_images: {include_images}, include_raw_content: {include_raw_content}, days: {days}, max_results: {max_results}.",
-        )
+        # self.callback.info(
+        #     agent_id=self.workflow_instance_id,
+        #     progress=f"Conqueror",
+        #     message=f"Detail of search structure: search_query: {search_query}, topic: {topic}, include_answer: {include_answer}, include_images: {include_images}, include_raw_content: {include_raw_content}, days: {days}, max_results: {max_results}.",
+        # )
 
         try:
             search_results = self.tavily_client.search(

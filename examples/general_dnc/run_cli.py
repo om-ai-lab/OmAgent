@@ -21,10 +21,10 @@ CURRENT_PATH = root_path = Path(__file__).parents[0]
 registry.import_module(CURRENT_PATH.joinpath("agent"))
 
 # Load container configuration from YAML file
-container.register_stm("RedisSTM")
+container.register_stm("SharedMemSTM")
 container.from_config(CURRENT_PATH.joinpath("container.yaml"))
 
-# Initialize simple VQA workflow
+# Initialize general dnc workflow
 workflow = ConductorWorkflow(name="general_dnc")
 
 # Configure workflow tasks:
@@ -33,10 +33,11 @@ client_input_task = simple_task(
     task_def_name=InputInterface, task_reference_name="input_interface"
 )
 
+# 2. DnC workflow for task execution
 dnc_workflow = DnCWorkflow()
 dnc_workflow.set_input(query=client_input_task.output("query"))
 
-# 6. Conclude task for task conclusion
+# 3. Conclude task for task conclusion
 conclude_task = simple_task(
     task_def_name=Conclude,
     task_reference_name="task_conclude",
@@ -47,7 +48,7 @@ conclude_task = simple_task(
 )
 
 
-# Configure workflow execution flow: Input -> Initialize global variables -> DnC Loop -> Conclude
+# Configure workflow execution flow: Input -> DnC Loop -> Conclude
 workflow >> client_input_task >> dnc_workflow >> conclude_task
 
 # Register workflow

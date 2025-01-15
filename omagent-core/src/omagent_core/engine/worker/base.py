@@ -54,6 +54,7 @@ class BaseWorker(BotBase, ABC):
     )
     domain: Optional[str] = Field(default=None, description="The domain of workflow")
     concurrency: int = Field(default=5, description="The concurrency of worker")
+    _task_type: Optional[str] = None
 
     def model_post_init(self, __context: Any) -> None:
         self.task_definition_name = self.name
@@ -64,16 +65,25 @@ class BaseWorker(BotBase, ABC):
         self.worker_id = deepcopy(self.get_identity())
 
         self._workflow_instance_id = None
+        self._task_type = None
         for _, attr_value in self.__dict__.items():
             if isinstance(attr_value, BotBase):
                 attr_value._parent = self
 
     @property
-    def workflow_instance_id(self) -> str:
+    def task_type(self) -> str:
+        return self._task_type
+
+    @task_type.setter
+    def task_type(self, value: str):
+        self._task_type = value
+
+    @property
+    def workflow_instance_id(self) -> Optional[Union[str]]:
         return self._workflow_instance_id
 
     @workflow_instance_id.setter
-    def workflow_instance_id(self, value: str):
+    def workflow_instance_id(self, value: Optional[Union[str]]):
         self._workflow_instance_id = value
 
     @abstractmethod
@@ -88,8 +98,16 @@ class BaseWorker(BotBase, ABC):
         task_input = {}
         task_output = None
         task_result: TaskResult = self.get_task_result_from_task(task)
-        self.workflow_instance_id = task.workflow_instance_id
-
+        if task.conversation_info:
+            self.workflow_instance_id = '|'.join([
+                task.workflow_instance_id,
+                task.conversation_info.get('agentId', ''),
+                task.conversation_info.get('conversationId', ''),
+                task.conversation_info.get('chatId', ''),
+            ])
+        else:
+            self.workflow_instance_id = task.workflow_instance_id
+            
         try:
             if is_callable_input_parameter_a_task(
                 callable=self._run,
@@ -205,6 +223,8 @@ class BaseWorker(BotBase, ABC):
             task_id=task.task_id,
             workflow_instance_id=task.workflow_instance_id,
             worker_id=self.get_identity(),
+            biz_meta=task.biz_meta,
+            callback_url=task.callback_url,
         )
 
     def get_domain(self) -> str:

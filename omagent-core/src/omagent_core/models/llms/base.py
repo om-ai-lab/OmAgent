@@ -19,6 +19,8 @@ from .prompt.base import _OUTPUT_PARSER, StrParser
 from .prompt.parser import BaseOutputParser
 from .prompt.prompt import PromptTemplate
 from .schemas import Message
+import copy
+from collections.abc import Iterator
 
 T = TypeVar("T", str, dict, list)
 
@@ -46,7 +48,7 @@ class BaseLLM(BotBase, ABC):
         """Run the LLM on the given prompt and input."""
         raise NotImplementedError("Async generation not implemented for this LLM.")
 
-    def generate(self, records: List[Message], **kwargs) -> str:
+    def generate(self, records: List[Message], **kwargs) -> str: # TODO: use python native lru cache
         """Run the LLM on the given prompt and input."""
         if self.cache:
             key = self._cache_key(records)
@@ -102,8 +104,14 @@ class BaseLLMBackend(BotBase, ABC):
     output_parser: Optional[BaseOutputParser] = None
     prompts: List[PromptTemplate] = []
     llm: BaseLLM
-    token_usage: ClassVar[dict] = defaultdict(int)
 
+
+    @property
+    def token_usage(self):
+        if not hasattr(self, 'workflow_instance_id'):
+            raise AttributeError("workflow_instance_id not set")
+        return dict(self.stm(self.workflow_instance_id).get('token_usage', defaultdict(int)))
+    
     @field_validator("output_parser", mode="before")
     @classmethod
     def set_output_parser(cls, output_parser: Union[BaseOutputParser, Dict, None]):
@@ -123,6 +131,7 @@ class BaseLLMBackend(BotBase, ABC):
     ) -> List[PromptTemplate]:
         init_prompts = []
         for prompt in prompts:
+            prompt = copy.deepcopy(prompt)
             if isinstance(prompt, Path):
                 if prompt.suffix == ".prompt":
                     init_prompts.append(PromptTemplate.from_file(prompt))
@@ -152,7 +161,7 @@ class BaseLLMBackend(BotBase, ABC):
 
     def prep_prompt(
         self, input_list: List[Dict[str, Any]], prompts=None, **kwargs
-    ) -> List[Message]:
+    ) -> List[List[Message]]:
         """Prepare prompts from inputs."""
         if prompts is None:
             prompts = self.prompts
@@ -194,20 +203,37 @@ class BaseLLMBackend(BotBase, ABC):
     def infer(self, input_list: List[Dict[str, Any]], **kwargs) -> List[T]:
         prompts = self.prep_prompt(input_list, **kwargs)
         res = []
+        stm_token_usage = self.stm(self.workflow_instance_id).get('token_usage', defaultdict(int))
+        
+        def process_stream(self, stream_output):
+            for chunk in stream_output:
+                if chunk.usage is not None:
+                    for key, value in chunk.usage.dict().items():
+                        if key in ["prompt_tokens", "completion_tokens", 'total_tokens']:
+                            if value is not None:
+                                stm_token_usage[key] += value
+                    self.stm(self.workflow_instance_id)['token_usage'] = stm_token_usage
+            
+                yield chunk
+        
         for prompt in prompts:
             output = self.llm.generate(prompt, **kwargs)
-            # for key, value in output["usage"].items():
-            #     if value is not None:
-            #         pass
-            if not self.llm.stream:
-                for choice in output["choices"]:
-                    if choice.get("message"):
-                        choice["message"]["content"] = self.output_parser.parse(
-                            choice["message"]["content"]
-                        )
+            if not isinstance(output, Iterator):
+                for key, value in output.get("usage", {}).items():
+                    if key in ["prompt_tokens", "completion_tokens", 'total_tokens']:
+                        if value is not None:
+                            stm_token_usage[key] += value
+                if not self.llm.stream:
+                    for choice in output["choices"]:
+                        if choice.get("message"):
+                            choice["message"]["content"] = self.output_parser.parse(
+                                choice["message"]["content"]
+                            )
                 res.append(output)
             else:
-                res.append(output)
+                res.append(process_stream(self, output))
+                
+        self.stm(self.workflow_instance_id)['token_usage'] = stm_token_usage
         return res
 
     async def ainfer(self, input_list: List[Dict[str, Any]], **kwargs) -> List[T]:
