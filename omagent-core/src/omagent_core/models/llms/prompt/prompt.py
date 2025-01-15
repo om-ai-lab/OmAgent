@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 from string import Formatter
 from typing import Any, Dict, List, Union
 
@@ -107,6 +108,13 @@ class PromptTemplate(BasePromptTemplate):
         return cls(input_variables=input_variables, template=template, **kwargs)
 
     @classmethod
+    def find_file(cls, start_dir, file_name):
+        for root, dirs, files in os.walk(start_dir):
+            if file_name in files:
+                return os.path.join(root, file_name)
+        return None
+
+    @classmethod
     def from_file(
         cls, template_file: Union[str, Path], **kwargs: Any
     ) -> PromptTemplate:
@@ -119,9 +127,17 @@ class PromptTemplate(BasePromptTemplate):
         Returns:
             The prompt loaded from the file.
         """
-        with open(str(template_file), "r") as f:
-            template = f.read()
-        return cls.from_template(template=template, **kwargs)
+        original_file = template_file
+        while True:
+            if os.path.exists(template_file):
+                with open(template_file, "r") as f:
+                    template = f.read()
+                return cls.from_template(template=template, **kwargs)
+            
+            if "/" in template_file:
+                template_file = "/".join(template_file.split("/", 1)[1:])
+            else:
+                raise ValueError(f"the prompt file path ({original_file}) is not valid")
 
     @classmethod
     def from_template(
