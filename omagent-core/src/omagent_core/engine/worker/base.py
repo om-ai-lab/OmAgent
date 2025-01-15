@@ -90,6 +90,10 @@ class BaseWorker(BotBase, ABC):
     def _run(self, *args, **kwargs) -> Any:
         """Run the Node."""
 
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        print ("__call__")
+        return self._run(*args, **kwds)
+
     def execute(self, task: Task) -> TaskResult:
         task_input = {}
         task_output = None
