@@ -42,9 +42,9 @@ class OpenaiGPTLLM(BaseLLM):
     stream: bool = Field(default=False, description="Whether to stream the response")
     max_tokens: int = Field(default=2048, description="The max tokens of LLM")
     use_default_sys_prompt: bool = Field(
-        default=False, description="Whether to use the default system prompt"
+        default=True, description="Whether to use the default system prompt"
     )
-    response_format: Optional[str] = Field(default='text', description="The response format of openai")
+    response_format: Optional[Union[dict, str]] = Field(default='text', description="The response format of openai")
     n: int = Field(default=1, description="The number of responses to generate")
     frequency_penalty: float = Field(
         default=0, description="The frequency penalty of LLM, -2 to 2"
@@ -80,7 +80,27 @@ class OpenaiGPTLLM(BaseLLM):
         protected_namespaces = ()
         extra = "allow"
 
+    def check_response_format(self) -> Optional[dict]:
+        if isinstance(self.response_format, str):
+            if self.response_format == "text":
+                self.response_format = {"type": "text"}
+            elif self.response_format == "json_object":
+                self.response_format = {"type": "json_object"}
+        elif isinstance(self.response_format, dict):
+            for key, value in self.response_format.items():
+                if key not in ["type", "json_schema"]:
+                    raise ValueError(f"Invalid response format key: {key}")
+                if key == "type":
+                    if value not in ["text", "json_object"]:
+                        raise ValueError(f"Invalid response format value: {value}")
+                elif key == "json_schema":
+                    if not isinstance(value, dict):
+                        raise ValueError(f"Invalid response format value: {value}")
+        else:
+            raise ValueError(f"Invalid response format: {self.response_format}")
+
     def model_post_init(self, __context: Any) -> None:
+        self.check_response_format()
         self.client = OpenAI(api_key=self.api_key, base_url=self.endpoint)
         self.aclient = AsyncOpenAI(api_key=self.api_key, base_url=self.endpoint)
 
