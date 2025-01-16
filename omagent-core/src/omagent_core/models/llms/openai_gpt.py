@@ -1,7 +1,7 @@
 import os
 import sysconfig
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union, Optional
 
 import geocoder
 from openai import AsyncOpenAI, OpenAI
@@ -35,43 +35,44 @@ class OpenaiGPTLLM(BaseLLM):
         default=os.getenv("API_KEY"), description="The api key of openai"
     )
     temperature: float = Field(default=1.0, description="The temperature of LLM")
-    top_p: float = Field(default=1.0, description="The top p of LLM, controls diversity of responses. Should not be used together with temperature - use either temperature or top_p but not both")
+    top_p: float = Field(
+        default=1.0,
+        description="The top p of LLM, controls diversity of responses. Should not be used together with temperature - use either temperature or top_p but not both",
+    )
     stream: bool = Field(default=False, description="Whether to stream the response")
     max_tokens: int = Field(default=2048, description="The max tokens of LLM")
     use_default_sys_prompt: bool = Field(
         default=False, description="Whether to use the default system prompt"
     )
-    response_format: str = Field(
-        default="text", description="The response format of openai"
-    )
-    n: int = Field(
-        default=1, description="The number of responses to generate"
-    )
+    response_format: Optional[str] = Field(default='text', description="The response format of openai")
+    n: int = Field(default=1, description="The number of responses to generate")
     frequency_penalty: float = Field(
         default=0, description="The frequency penalty of LLM, -2 to 2"
     )
-    logit_bias: Union[dict, None] = Field(
+    logit_bias: Optional[dict] = Field(
         default=None, description="The logit bias of LLM"
     )
-    logprobs: bool = Field(
-        default=False, description="The logprobs of LLM"
-    )
-    top_logprobs: Union[int, None] = Field(
-        default=None, description="The top logprobs of LLM, logprobs must be set to true if this parameter is used"
+    logprobs: bool = Field(default=False, description="The logprobs of LLM")
+    top_logprobs: Optional[int] = Field(
+        default=None,
+        description="The top logprobs of LLM, logprobs must be set to true if this parameter is used",
     )
     stop: Union[str, List[str], None] = Field(
-        default=None, description="Specifies stop sequences that will halt text generation, can be string or list of strings"
+        default=None,
+        description="Specifies stop sequences that will halt text generation, can be string or list of strings",
     )
-    stream_options: Union[dict, None] = Field(
-        default=None, description="Configuration options for streaming responses when stream=True"
+    stream_options: Optional[dict] = Field(
+        default=None,
+        description="Configuration options for streaming responses when stream=True",
     )
-    tools: Union[List[dict], None] = Field(
-        default=None, description="A list of function tools (max 128) that the model can call, each requiring a type, name and optional description/parameters defined in JSON Schema format."
+    tools: Optional[List[dict]] = Field(
+        default=None,
+        description="A list of function tools (max 128) that the model can call, each requiring a type, name and optional description/parameters defined in JSON Schema format.",
     )
-    tool_choice: Union[str, dict] = Field(
-        default="none", description="Controls which tool (if any) is called by the model: 'none', 'auto', 'required', or a specific tool."
-)
-
+    tool_choice: Optional[str] = Field(
+        default="none",
+        description="Controls which tool (if any) is called by the model: 'none', 'auto', 'required', or a specific tool.",
+    )
 
     class Config:
         """Configuration for this pydantic object."""
@@ -81,107 +82,102 @@ class OpenaiGPTLLM(BaseLLM):
 
     def model_post_init(self, __context: Any) -> None:
         self.client = OpenAI(api_key=self.api_key, base_url=self.endpoint)
-        # self.aclient = AsyncOpenAI(api_key=self.api_key, base_url=self.endpoint)
+        self.aclient = AsyncOpenAI(api_key=self.api_key, base_url=self.endpoint)
 
     def _call(self, records: List[Message], **kwargs) -> Dict:
         if self.api_key is None or self.api_key == "":
             raise ValueError("api_key is required")
 
-        body = self._msg2req(records)
-        if kwargs.get("tool_choice"):
-            body["tool_choice"] = kwargs["tool_choice"]
-        if kwargs.get("tools"):
-            body["tools"] = kwargs["tools"]
+        messages = self._msg2req(records)
 
         if self.vision:
             res = self.client.chat.completions.create(
                 model=self.model_id,
-                messages=body["messages"],
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                stream=self.stream,
-                n=self.n,
-                top_p=self.top_p,
-                frequency_penalty=self.frequency_penalty,
-                logit_bias=self.logit_bias,
-                logprobs=self.logprobs,
-                top_logprobs=self.top_logprobs,
-                stop=self.stop,
-                stream_options=self.stream_options,
+                messages=messages,
+                temperature=kwargs.get("temperature", self.temperature),
+                max_tokens=kwargs.get("max_tokens", self.max_tokens),
+                stream=kwargs.get("stream", self.stream),
+                n=kwargs.get("n", self.n),
+                top_p=kwargs.get("top_p", self.top_p),
+                frequency_penalty=kwargs.get(
+                    "frequency_penalty", self.frequency_penalty
+                ),
+                logit_bias=kwargs.get("logit_bias", self.logit_bias),
+                logprobs=kwargs.get("logprobs", self.logprobs),
+                top_logprobs=kwargs.get("top_logprobs", self.top_logprobs),
+                stop=kwargs.get("stop", self.stop),
+                stream_options=kwargs.get("stream_options", self.stream_options),
             )
         else:
             res = self.client.chat.completions.create(
                 model=self.model_id,
-                messages=body["messages"],
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                response_format=body.get("response_format", None),
-                tools=body.get("tools", None),
-                stream=self.stream,
-                n=self.n,
-                top_p=self.top_p,
-                frequency_penalty=self.frequency_penalty,
-                logit_bias=self.logit_bias,
-                logprobs=self.logprobs,
-                top_logprobs=self.top_logprobs,
-                stop=self.stop,
-                stream_options=self.stream_options,
+                messages=messages,
+                temperature=kwargs.get("temperature", self.temperature),
+                max_tokens=kwargs.get("max_tokens", self.max_tokens),
+                response_format=kwargs.get("response_format", self.response_format),
+                tools=kwargs.get("tools", None),
+                tool_choice=kwargs.get("tool_choice", None),
+                stream=kwargs.get("stream", self.stream),
+                n=kwargs.get("n", self.n),
+                top_p=kwargs.get("top_p", self.top_p),
+                frequency_penalty=kwargs.get(
+                    "frequency_penalty", self.frequency_penalty
+                ),
+                logit_bias=kwargs.get("logit_bias", self.logit_bias),
+                logprobs=kwargs.get("logprobs", self.logprobs),
+                top_logprobs=kwargs.get("top_logprobs", self.top_logprobs),
+                stop=kwargs.get("stop", self.stop),
+                stream_options=kwargs.get("stream_options", self.stream_options),
             )
-            
-        if self.stream:
+
+        if kwargs.get("stream", self.stream):
             return res
         else:
-            res = res.model_dump()
-            body.update({"response": res})
-            # self.callback.send_block(body)
-            return res
+            return res.model_dump()
 
     async def _acall(self, records: List[Message], **kwargs) -> Dict:
         if self.api_key is None or self.api_key == "":
             raise ValueError("api_key is required")
 
-        body = self._msg2req(records)
-        if kwargs.get("tool_choice"):
-            body["tool_choice"] = kwargs["tool_choice"]
-        if kwargs.get("tools"):
-            body["tools"] = kwargs["tools"]
+        messages = self._msg2req(records)
 
         if self.vision:
             res = await self.aclient.chat.completions.create(
                 model=self.model_id,
-                messages=body["messages"],
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                n=self.n,
-                top_p=self.top_p,
-                frequency_penalty=self.frequency_penalty,
-                logit_bias=self.logit_bias,
-                logprobs=self.logprobs,
-                top_logprobs=self.top_logprobs,
-                stop=self.stop,
-                stream_options=self.stream_options,
+                messages=messages,
+                temperature=kwargs.get("temperature", self.temperature),
+                max_tokens=kwargs.get("max_tokens", self.max_tokens),
+                n=kwargs.get("n", self.n),
+                top_p=kwargs.get("top_p", self.top_p),
+                frequency_penalty=kwargs.get(
+                    "frequency_penalty", self.frequency_penalty
+                ),
+                logit_bias=kwargs.get("logit_bias", self.logit_bias),
+                logprobs=kwargs.get("logprobs", self.logprobs),
+                top_logprobs=kwargs.get("top_logprobs", self.top_logprobs),
+                stop=kwargs.get("stop", self.stop),
+                stream_options=kwargs.get("stream_options", self.stream_options),
             )
         else:
             res = await self.aclient.chat.completions.create(
                 model=self.model_id,
-                messages=body["messages"],
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                response_format=body.get("response_format", None),
-                tools=body.get("tools", None),
-                n=self.n,
-                top_p=self.top_p,
-                frequency_penalty=self.frequency_penalty,
-                logit_bias=self.logit_bias,
-                logprobs=self.logprobs,
-                top_logprobs=self.top_logprobs,
-                stop=self.stop,
-                stream_options=self.stream_options,
+                messages=messages,
+                temperature=kwargs.get("temperature", self.temperature),
+                max_tokens=kwargs.get("max_tokens", self.max_tokens),
+                response_format=kwargs.get("response_format", self.response_format),
+                tools=kwargs.get("tools", None),
+                n=kwargs.get("n", self.n),
+                top_p=kwargs.get("top_p", self.top_p),
+                frequency_penalty=kwargs.get(
+                    "frequency_penalty", self.frequency_penalty
+                ),
+                logit_bias=kwargs.get("logit_bias", self.logit_bias),
+                logprobs=kwargs.get("logprobs", self.logprobs),
+                top_logprobs=kwargs.get("top_logprobs", self.top_logprobs),
+                stop=kwargs.get("stop", self.stop),
+                stream_options=kwargs.get("stream_options", self.stream_options),
             )
-        res = res.model_dump()
-        body.update({"response": res})
-        # self.callback.send_block(body)
-        return res
+        return res.model_dump()
 
     def _msg2req(self, records: List[Message]) -> dict:
         def get_content(msg: List[Content] | Content) -> List[dict] | str:
@@ -218,15 +214,7 @@ class OpenaiGPTLLM(BaseLLM):
             messages = processed_messages
         if self.use_default_sys_prompt:
             messages = [self._generate_default_sys_prompt()] + messages
-        body = {
-            "model": self.model_id,
-            "messages": messages,
-            "temperature": self.temperature,
-            "max_tokens": self.max_tokens,
-        }
-        if self.response_format != "text":
-            body["response_format"] = {"type": self.response_format}
-        return body
+        return messages
 
     def _generate_default_sys_prompt(self) -> Dict:
         loc = self._get_location()
