@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 from typing import Any, Dict, List
 
-from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig, pipeline
 from pydantic import Field
 from .schemas import Content, Message
 from ...utils.registry import registry
@@ -32,6 +31,7 @@ class Qwen2LLM(BaseLLM):
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
+        from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig, pipeline
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.model = AutoModelForCausalLM.from_pretrained(self.model_name).to(self.device)        
 

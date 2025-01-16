@@ -67,5 +67,5 @@ workflow.register(overwrite=True)
 # Initialize and start app client with workflow configuration
 config_path = CURRENT_PATH.joinpath('configs')
 cli_client = DefaultClient(interactor=workflow, config_path=config_path, workers=[SimpleInput()])
-cli_client.start_interaction()
+cli_client.start_interactor()
 
