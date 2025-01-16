@@ -22,6 +22,7 @@ class ProgrammaticClient:
         self._config_path = config_path
         self._workers = workers
         self._task_handler_processor = None
+        self._task_to_domain = {}
 
     def start_processor(self):
         worker_config = build_from_file(self._config_path)
@@ -29,14 +30,14 @@ class ProgrammaticClient:
             worker_config=worker_config, workers=self._workers
         )
         self._task_handler_processor.start_processes()
-        self._processor.start_workflow_with_input(workflow_input={})
+        self._processor.start_workflow_with_input(workflow_input={}, task_to_domain=self._task_to_domain)
 
     def start_processor_with_input(self, workflow_input: dict):
         try:
             if self._task_handler_processor is None:
                 worker_config = build_from_file(self._config_path)
                 self._task_handler_processor = TaskHandler(
-                    worker_config=worker_config, workers=self._workers
+                    worker_config=worker_config, workers=self._workers, task_to_domain=self._task_to_domain
                 )
                 self._task_handler_processor.start_processes()
             return self._process_workflow(self._processor, workflow_input)
@@ -46,8 +47,9 @@ class ProgrammaticClient:
     def start_batch_processor(self, workflow_input_list: list[dict], max_tasks: int = 10):
         results = [None] * len(workflow_input_list)
         worker_config = build_from_file(self._config_path)
-        self._task_handler_processor = TaskHandler(worker_config=worker_config, workers=self._workers)
-        self._task_handler_processor.start_processes()
+        if self._task_handler_processor is None:
+            self._task_handler_processor = TaskHandler(worker_config=worker_config, workers=self._workers, task_to_domain=self._task_to_domain)
+            self._task_handler_processor.start_processes()
         
         result_queue = multiprocessing.Queue()
         active_processes = []
@@ -87,7 +89,7 @@ class ProgrammaticClient:
         workflow_instance_id = None
         try:
             workflow_instance_id = workflow.start_workflow_with_input(
-                workflow_input=workflow_input
+                workflow_input=workflow_input, task_to_domain=self._task_to_domain
             )
             while True:
                 status = workflow.get_workflow(workflow_id=workflow_instance_id).status
