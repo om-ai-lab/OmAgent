@@ -57,7 +57,7 @@ class BaseWorker(BotBase, ABC):
     _task_type: Optional[str] = None
 
     def model_post_init(self, __context: Any) -> None:
-        self.task_definition_name = self.name
+        self.task_definition_name = self.id or self.name
         self.next_task_index = 0
         self._task_definition_name_cache = None
 

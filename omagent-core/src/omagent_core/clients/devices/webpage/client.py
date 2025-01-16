@@ -36,6 +36,8 @@ class WebpageClient:
         self._config_path = config_path
         self._workers = workers
         self._workflow_instance_id = None
+        self._worker_config = build_from_file(self._config_path)
+        self._task_to_domain = {}
         self._incomplete_message = ""
         self._custom_css = """
             #OmAgent {
@@ -70,9 +72,8 @@ class WebpageClient:
         """
 
     def start_interactor(self):
-        worker_config = build_from_file(self._config_path)
         self._task_handler_interactor = TaskHandler(
-            worker_config=worker_config, workers=self._workers
+            worker_config=self._worker_config, workers=self._workers, task_to_domain=self._task_to_domain
         )
         self._task_handler_interactor.start_processes()
         try:
@@ -113,9 +114,8 @@ class WebpageClient:
         self._task_handler_interactor.stop_processes()
 
     def start_processor(self):
-        worker_config = build_from_file(self._config_path)
         self._task_handler_processor = TaskHandler(
-            worker_config=worker_config, workers=self._workers
+            worker_config=self._worker_config, workers=self._workers, task_to_domain=self._task_to_domain
         )
         self._task_handler_processor.start_processes()
 
@@ -161,7 +161,7 @@ class WebpageClient:
     def add_message(self, history, message):
         if self._workflow_instance_id is None:
             self._workflow_instance_id = self._interactor.start_workflow_with_input(
-                workflow_input={}
+                workflow_input={}, task_to_domain=self._task_to_domain
             )
         contents = []
         for x in message["files"]:
@@ -184,7 +184,7 @@ class WebpageClient:
     def add_processor_message(self, history, message):
         if self._workflow_instance_id is None:
             self._workflow_instance_id = self._processor.start_workflow_with_input(
-                workflow_input={}
+                workflow_input={}, task_to_domain=self._task_to_domain
             )
         image_items = []
         for idx, x in enumerate(message["files"]):

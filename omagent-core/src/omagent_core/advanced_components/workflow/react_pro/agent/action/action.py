@@ -21,9 +21,6 @@ class Action(BaseLLMBackend, BaseWorker):
         ]
     )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def _run(self, *args, **kwargs):
         """Process the query using ReAct approach"""
         # Get context and other states from STM
