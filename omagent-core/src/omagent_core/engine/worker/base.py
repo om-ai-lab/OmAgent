@@ -79,11 +79,11 @@ class BaseWorker(BotBase, ABC):
         self._task_type = value
 
     @property
-    def workflow_instance_id(self) -> Optional[Union[str]]:
+    def workflow_instance_id(self) -> Optional[str]:
         return self._workflow_instance_id
 
     @workflow_instance_id.setter
-    def workflow_instance_id(self, value: Optional[Union[str]]):
+    def workflow_instance_id(self, value: Optional[str]):
         self._workflow_instance_id = value
 
     @abstractmethod
