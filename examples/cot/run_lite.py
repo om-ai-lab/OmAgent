@@ -20,16 +20,18 @@ class SimpleInput(BaseWorker):
         cot_method = input(f"\n{Fore.GREEN}Enter cot_method (type 'few_shot' or zero_shot): ")
         assert cot_method in [ 'few_shot', 'zero_shot' ], "Invalid method provided"        
         if cot_method == 'few_shot':
-            message = input(f"\nIf using few_shot method, please provide your examples (in the order of question, reasoning, answer). If using zero_shot, please press enter to skip:")            
-            cot_examples = [
-                    {
-                        "q": example[ 0 ][ 'data' ],
-                        "r": example[ 1 ][ 'data' ],
-                        "a": example[ 2 ][ 'data' ]
-                    } for example in
-                    [ message[ i : i + 3 ] for i in range( 0, len( message ), 3 ) ]
-                ]
-            
+            if os.path.exists("cot_examples.json"):
+                cot_examples = json.load(open("cot_examples.json", "r"))                                    
+            elif os.path.exists("examples/cot/cot_examples.json"):
+                cot_examples = json.load(open("examples/cot/cot_examples.json", "r"))                                    
+            else:
+                while True:
+                    path = input(f"\n{Fore.GREEN}Enter the path to your cot_examples.json file: ")
+                    if os.path.exists(path):
+                        cot_examples = json.load(open(path, "r"))
+                        break
+                    else:
+                        print(f"{Fore.RED}File not found at {path}")
         else:
             cot_examples = []
         logging.info(

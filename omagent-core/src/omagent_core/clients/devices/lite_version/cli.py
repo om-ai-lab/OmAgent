@@ -41,7 +41,7 @@ class DefaultClient:
     def start_processor_with_input(self, workflow_input: dict):                          
         self._interactor.start_workflow_with_input(workflow_input=workflow_input, workers=self.workers)
 
-    def start_interaction(self):
+    def start_interactor(self):
         """
         This function takes keyboard input from the user and runs the workflow 
         using the `start_workflow_with_input` method.
