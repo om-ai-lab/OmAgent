@@ -1,0 +1,5 @@
+<Instruction> Merge the following 2 lists into one list by appending the second list to the first list.
+Only output the final list without any additional text or thoughts! </Instruction>
+
+List 1: {{input1}}
+List 2: {{input2}}
