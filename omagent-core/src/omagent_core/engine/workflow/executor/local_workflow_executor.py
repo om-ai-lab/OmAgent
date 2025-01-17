@@ -21,12 +21,11 @@ class LocalWorkflowExecutor:
 
         for key, value in input_params.items():
             if isinstance(value, str) and value.startswith('${') and value.endswith('}'):
-
                 ref_path = value[2:-1]
                 parts = ref_path.split('.')
                 
                 if parts[0] in self.task_outputs:
-                    task_output = self.task_outputs[parts[0]]['output']
+                    task_output = self.task_outputs[parts[0]][parts[1]]
                     for part in parts[2:]:  
                         if isinstance(task_output, dict):
                             task_output = task_output.get(part, {})
@@ -39,6 +38,7 @@ class LocalWorkflowExecutor:
     def start_workflow(self, workflow_def, start_request, workers) -> str:
         workflow_id = str(uuid.uuid4())        
         print ("start_request:", start_request.input)
+        self.task_outputs["workflow"] = {"input": start_request.input}        
         output = {}
         for i, task_def in enumerate(workflow_def.tasks):
             if i == 0:
@@ -65,7 +65,8 @@ class LocalWorkflowExecutor:
             
             worker = worker_class()            
             """
-            inputs = self.evaluate_input_parameters(task)            
+            inputs = self.evaluate_input_parameters(task)      
+            print (inputs)      
             # Execute task
             result = worker._run(**inputs)
             # Store output
