@@ -37,8 +37,8 @@ def main():
     args = parse_args()
 
     # Set environment variables for OpenAI API
-    #os.environ["custom_openai_endpoint"] = args.endpoint
-    #os.environ["custom_openai_key"] = args.api_key
+    os.environ["custom_openai_endpoint"] = args.endpoint
+    os.environ["custom_openai_key"] = args.api_key
     os.environ["model_id"] = args.model_id
 
     # Load examples for few-shot learning
