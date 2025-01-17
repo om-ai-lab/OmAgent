@@ -82,7 +82,7 @@ class LocalWorkflowExecutor:
                 for loop_task in task['loopOver' if 'loopOver' in task else 'loop_over']:                    
                     self.execute_task(loop_task, workers)
                 if 'loopCondition' in task or "loop_condition" in task:
-                    should_continue = not self.evaluate_loop_condition(task['loopCondition' if 'loopCondition' in task else "loop_condition"])            
+                    should_continue = self.evaluate_loop_condition(task['loopCondition' if 'loopCondition' in task else "loop_condition"])            
                     if not should_continue:
                         break
                 else:
@@ -163,21 +163,24 @@ class LocalWorkflowExecutor:
         else:
             return False
             
-        # Parse left side (task reference)
+        # Parse left side (task reference)    
         if left.startswith('$.'):
             task_ref_full = left[2:]  # Remove $.
             if '[' in task_ref_full:
                 task_ref = task_ref_full.split('[')[0]  # Get part before [
                 array_part = task_ref_full[task_ref_full.find('[')+1:task_ref_full.find(']')].replace("'","")  # Get part between [ ]
                 properties = [array_part]  # Use the array part as a property
+            elif "." in task_ref_full:
+                task_ref,array_part= task_ref_full.split(".")
+                properties = [array_part]  # Use the array part as a property
             else:
                 task_ref = task_ref_full
                 properties = []
+            
             # Get task output and navigate through properties
-            value = self.task_outputs.get(task_ref, {}).get('output', {}).get(array_part, {})
-            print (value, type(value))
-            if type(value) == bool:
-                return not value
+            value = self.task_outputs.get(task_ref, {}).get('output', {}).get(array_part, {})            
+            #if type(value) == bool:
+            #    return value
             # Parse right side (could be another task reference or a literal)
             if right.startswith('$.'):
                 task_ref = right[2:].split('.')[0]
@@ -199,7 +202,6 @@ class LocalWorkflowExecutor:
                         right_value = int(right)
                     except ValueError:
                         right_value = right
-            print (value, operator, right_value)    
             # Compare values
             if operator == '>':
                 return value > right_value
