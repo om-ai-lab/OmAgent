@@ -39,10 +39,12 @@ class LocalWorkflowExecutor:
     def start_workflow(self, workflow_def, start_request, workers) -> str:
         workflow_id = str(uuid.uuid4())        
         print ("start_request:", start_request.input)
+        output = {}
         for i, task_def in enumerate(workflow_def.tasks):
             if i == 0:
                 task_def.input_parameters = start_request.input
-            self.execute_task(task_def.to_dict(), workers)
+            output = self.execute_task(task_def.to_dict(), workers)
+        return output
 
         #return workflow_id
     def worker_task(self, worker, *args, **kwargs):
@@ -97,7 +99,7 @@ class LocalWorkflowExecutor:
                 for default_task in task.get('defaultCase' if 'defaultCase' in task else 'default_case', []):
                     self.execute_task(default_task.to_dict(), workers)
                     
-        return {}
+        return self.task_outputs
 
     def evaluate_loop_condition(self, condition: str) -> bool:
         """Evaluate loop condition using the task outputs"""
@@ -142,25 +144,40 @@ class LocalWorkflowExecutor:
         # Handle different comparison operators
         if '==' in condition:
             left, right = [part.strip() for part in condition.split('==')]
+            operator = '=='
+        elif '>=' in condition:  # Check >= before > to avoid incorrect splitting
+            left, right = [part.strip() for part in condition.split('>=')]
+            operator = '>='
+        elif '<=' in condition:  # Check <= before < to avoid incorrect splitting
+            left, right = [part.strip() for part in condition.split('<=')]
+            operator = '<='
+        elif '!=' in condition:
+            left, right = [part.strip() for part in condition.split('!=')]
+            operator = '!='
         elif '>' in condition:
             left, right = [part.strip() for part in condition.split('>')]
             operator = '>'
+        elif '<' in condition:
+            left, right = [part.strip() for part in condition.split('<')]
+            operator = '<'
         else:
             return False
             
         # Parse left side (task reference)
         if left.startswith('$.'):
-            task_ref = left[2:].split('.')[0]
-            properties = left[2:].split('.')[1:]
-            
+            task_ref_full = left[2:]  # Remove $.
+            if '[' in task_ref_full:
+                task_ref = task_ref_full.split('[')[0]  # Get part before [
+                array_part = task_ref_full[task_ref_full.find('[')+1:task_ref_full.find(']')].replace("'","")  # Get part between [ ]
+                properties = [array_part]  # Use the array part as a property
+            else:
+                task_ref = task_ref_full
+                properties = []
             # Get task output and navigate through properties
-            value = self.task_outputs.get(task_ref, {}).get('output', {})
-            for prop in properties:
-                if isinstance(value, dict):
-                    value = value.get(prop)
-                else:
-                    return False
-                    
+            value = self.task_outputs.get(task_ref, {}).get('output', {}).get(array_part, {})
+            print (value, type(value))
+            if type(value) == bool:
+                return not value
             # Parse right side (could be another task reference or a literal)
             if right.startswith('$.'):
                 task_ref = right[2:].split('.')[0]
@@ -182,15 +199,23 @@ class LocalWorkflowExecutor:
                         right_value = int(right)
                     except ValueError:
                         right_value = right
-                        
+            print (value, operator, right_value)    
             # Compare values
             if operator == '>':
                 return value > right_value
-            else:
+            elif operator == '>=':
+                return value >= right_value
+            elif operator == '<':
+                return value < right_value
+            elif operator == '<=':
+                return value <= right_value
+            elif operator == '!=':
+                return value != right_value
+            else:  # operator == '=='
                 return value == right_value
                 
         return False
-
+                
 
 class WorkflowExecutor:
     def __init__(self):
