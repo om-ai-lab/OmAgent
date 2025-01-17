@@ -8,7 +8,10 @@ from pydantic import Field
 from typing import List
 from omagent_core.utils.logger import logging
 import func_timeout
+import numpy as np
 import math
+import statistics
+from sympy import symbols
 
 # Get absolute path to the directory containing this file
 CURRENT_PATH = root_path = Path(__file__).parents[0]
@@ -88,6 +91,30 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
                 ans = str(ans)
         return ans
 
+    def extract_code_blocks(self, text):
+        if '```python' not in text:
+            return text
+        code_blocks = []
+        lines = text.split('\n')
+        in_code_block = False
+        current_block = []
+        
+        for line in lines:
+            if line.startswith('```'):
+                if in_code_block:
+                    # End of code block
+                    in_code_block = False
+                    if current_block:  # Only add non-empty blocks
+                        code_blocks.append('\n'.join(current_block))
+                    current_block = []
+                else:
+                    # Start of code block
+                    in_code_block = True
+            elif in_code_block and not line.startswith('```'):
+                current_block.append(line)
+        
+        return '\n'.join(code_blocks)
+
     def safe_execute(self, code_string: str, keys=None):
         """Safely executes generated Python code with timeout protection.
         
@@ -116,16 +143,9 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
                 else:
                     return [locals_.get(k, None) for k in keys]
             except Exception as e:
-                logging.info("Execution error: error message {}, code_string {}".format(e, code_string))
+                logging.info("\n--------------\nExecution error: error message {}, code_string:\n {}".format(e, code_string))
                 return None
         try:
-            # Clean up markdown code formatting
-            if code_string.startswith('```python'):
-                code_string = code_string[9:]
-            if code_string.endswith('ans\n```'):
-                code_string = code_string[:-7]
-            if code_string.endswith('```'):
-                code_string = code_string[:-3]
             # Execute with 5 second timeout
             ans = func_timeout.func_timeout(5, execute, args=(code_string,))
         except func_timeout.FunctionTimedOut:
@@ -242,16 +262,8 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
 
         # Extract generated code from LLM response
         result = chat_complete_res["choices"][0]["message"]["content"]
-        
-        # Clean up markdown code formatting
-        if result.startswith('```python\n'):
-            result = result[10:]
-        if result.startswith('```python'):
-            result = result[9:]
-        if result.endswith('solver()\n```'):
-            result = result.replace('solver()\n```', '')
-        if result.endswith('```'):
-            result = result[:-3]
+
+        result = self.extract_code_blocks(result)
         
         # For zero-shot cases, add imports and answer extraction
         if examples is None:

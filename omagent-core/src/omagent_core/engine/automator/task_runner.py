@@ -96,6 +96,8 @@ class TaskRunner:
                 else:
                     task = None
             else:
+                if domain is not None:
+                    params["domain"] = domain
                 task = self.task_client.poll(tasktype=task_definition_name, **params)
 
             finish_time = time.time()
@@ -146,7 +148,7 @@ class TaskRunner:
         try:
             _input = workflow_client.get_workflow(task.workflow_instance_id).input
             if 'conversationInfo' in _input:
-                task.conversation_info = _input
+                task.conversation_info = _input.get('conversationInfo', {})
                 logging.info(f'conversation_info: {task.conversation_info}')
             
             conductor_log_handler = ConductorLogHandler(self.task_client)
