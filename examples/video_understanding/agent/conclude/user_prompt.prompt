@@ -1,0 +1,7 @@
+Now, it's your turn to complete the task.
+
+Task (The task you need to complete.): {{task}}
+result (The result from former agents.): {{result}}
+images: {{img_placeholders}}
+
+Now show your super capability as a super agent that beyond regular AIs or LLMs!

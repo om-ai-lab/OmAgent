@@ -1,0 +1,6 @@
+Now, it's your turn to complete the task.
+
+Task (The task you need to complete.): {{task}}
+Failed detail (The result from former agents.): {{failed_detail}}
+
+Now show your super capability as a super agent that beyond regular AIs or LLMs!

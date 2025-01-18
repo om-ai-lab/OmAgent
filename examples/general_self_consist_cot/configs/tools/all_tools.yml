@@ -1,0 +1,9 @@
+llm: ${sub|text_res}
+tools:
+    - Calculator
+    - CodeInterpreter
+    - ReadFileContent
+    - WriteFileContent
+    - ShellTool
+    - name: TavilyWebSearch
+      tavily_api_key: ${env|tavily_api_key, null}

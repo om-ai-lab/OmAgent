@@ -1,0 +1,2 @@
+name: OutfitRecommendation
+llm: ${sub| gpt}

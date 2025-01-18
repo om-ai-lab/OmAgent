@@ -1,0 +1,7 @@
+Now, it's your turn to complete the task.
+Generate answer according to the language type in user's instruction.
+
+User's conversation: {{user_instruct}}
+Searched weather: {{weather}}
+Proposed outfit recommendation: {{outfit}}
+User's wardrobe: {{items}}

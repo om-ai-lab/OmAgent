@@ -1,0 +1,55 @@
+
+[tool.poetry]
+name = "omagent_core"
+version = "0.2.2"
+description = "Core package for OmAgent"
+authors = ["OM AI Lab <OmAIglobal2024@gmail.com>"]
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+repository = "https://github.com/om-ai-lab/OmAgent"
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+sqlmodel = "^0.0.22"
+pymysql = "^1.1.1"
+sqlalchemy-utils = "^0.41.2"
+tenacity = "^9.0.0"
+pyyaml = "^6.0.2"
+pymilvus = "^2.5.0"
+networkx = "^3.4.2"
+duckduckgo-search = "^6.3.7"
+bs4 = "^0.0.2"
+pillow = "^11.0.0"
+geocoder = "^1.38.1"
+rich = "^13.9.4"
+jsonpath = "^0.82.2"
+jinja2 = "^3.1.4"
+colorama = "^0.4.6"
+openai = "^1.58.1"
+certifi = "^2024.12.14"
+prometheus-client = "^0.21.1"
+six = "^1.17.0"
+requests = "^2.32.3"
+typing-extensions = "^4.12.2"
+astor = "^0.8.1"
+shortuuid = "^1.0.13"
+dacite = "^1.8.1"
+pydantic-settings = "^2.7.0"
+redis = "^5.2.1"
+json-repair = "^0.31.0"
+scenedetect = "^0.6.5.1"
+pydub = "^0.25.1"
+httpx = {extras = ["http2"], version = "^0.28.1"}
+func-timeout = "^4.3.5"
+gradio = "^5.7.1"
+tavily-python = "^0.5.0"
+opencv-python = "^4.10.0.84"
+wikipedia = "^1.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
