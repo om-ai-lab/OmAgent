@@ -18,7 +18,7 @@
 
 
 ## 📖 Introduction  
-OmAgent is python library for building multimodal language agents with ease. We try to keep the library **simple** without too much overhead like other agent frameworks.   
+OmAgent is Python library for building multimodal language agents with ease. We try to keep the library **simple** without too much overhead like other agent frameworks.   
  - We wrap the complex engineering (worker orchestration, task queue, node optimization, etc.) behind the scene and only leave you with a super-easy-to-use interface to define your agent.   
  - We further enable useful abstractions for reusable agent components, so you can build complex agents aggregating from those basic components.   
  - We also provides features required for multimodal agents, such as native support for VLM models, video processing, and mobile device connection to make it easy for developers and researchers building agents that can reason over not only text, but image, video and audio inputs. 
