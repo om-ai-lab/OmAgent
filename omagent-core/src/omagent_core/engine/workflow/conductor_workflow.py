@@ -21,14 +21,14 @@ from omagent_core.utils.logger import logging
 from omagent_core.utils.registry import registry
 from shortuuid import uuid
 from typing_extensions import Self
+import os
 
-import json
 
 class ConductorWorkflow:
     SCHEMA_VERSION = 2
 
     def __init__(self, name: str, version: int = None, description: str = None, lite_version: bool = False) -> Self:
-        if lite_version:
+        if lite_version or os.getenv("OMAGENT_MODE") == "lite":
             self._executor = LiteWorkflowExecutor()
         else:
             self._executor = WorkflowExecutor()
