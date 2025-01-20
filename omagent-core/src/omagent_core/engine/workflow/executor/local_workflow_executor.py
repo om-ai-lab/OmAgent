@@ -168,7 +168,7 @@ class LocalWorkflowExecutor:
             task_ref_full = left[2:]  # Remove $.
             if '[' in task_ref_full:
                 task_ref = task_ref_full.split('[')[0]  # Get part before [
-                array_part = task_ref_full[task_ref_full.find('[')+1:task_ref_full.find(']')].replace("'","")  # Get part between [ ]
+                array_part = task_ref_full[task_ref_full.find('[')+1:task_ref_full.find(']')].replace("'","").replace('"','')  # Get part between [ ]
                 properties = [array_part]  # Use the array part as a property
             elif "." in task_ref_full:
                 task_ref,array_part= task_ref_full.split(".")
