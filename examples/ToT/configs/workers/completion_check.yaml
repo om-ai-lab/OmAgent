@@ -1,2 +1,0 @@
-name: CompletionCheck
-llm: ${sub|gpt}

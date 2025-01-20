@@ -1,2 +1,0 @@
-name: StateSelection
-llm: ${sub|gpt}

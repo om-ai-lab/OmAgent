@@ -1,2 +1,0 @@
-name: ThoughtGenerator
-llm: ${sub|gpt}

@@ -1,2 +1,0 @@
-name: StateEvaluator
-llm: ${sub|gpt}

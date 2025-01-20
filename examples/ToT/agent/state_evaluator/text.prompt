@@ -1,3 +1,0 @@
-Given an instruction and several choices, decide which choice is most promising. Analyze each choice in detail, then conclude in the last line "The best choice is {s}", where is the integer id of the choice.
-
-{{choices}}

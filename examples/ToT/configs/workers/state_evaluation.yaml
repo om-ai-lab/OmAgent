@@ -1,2 +1,0 @@
-name: StateEvaluation
-llm: ${sub|gpt}
