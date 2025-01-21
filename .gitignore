@@ -155,3 +155,6 @@ video_cache/
 
 # vscode
 .vscode
+
+# JSON files
+*.json
