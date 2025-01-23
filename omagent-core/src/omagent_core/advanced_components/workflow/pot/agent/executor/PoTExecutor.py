@@ -12,6 +12,7 @@ import numpy as np
 import math
 import statistics
 from sympy import symbols
+import itertools
 
 # Get absolute path to the directory containing this file
 CURRENT_PATH = root_path = Path(__file__).parents[0]
@@ -66,53 +67,88 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
             >>> floatify_ans([3.14])
             3.14
         """
-        if ans is None:
-            return None
-        elif type(ans) == dict:
-            # For dictionaries, extract the first value
-            ans = list(ans.values())[0]
-        elif type(ans) == bool:
-            # Preserve boolean values without conversion
-            ans = ans
-        elif type(ans) in [list, tuple]:
-            if not ans:
+        try:
+            if ans is None:
                 return None
+            elif type(ans) == dict:
+                # For dictionaries, extract the first value
+                ans = list(ans.values())[0]
+            elif type(ans) == bool:
+                # Preserve boolean values without conversion
+                ans = ans
+            elif type(ans) in [list, tuple]:
+                if not ans:
+                    return None
+                else:
+                    # For sequences, try to convert first element to float
+                    try:
+                        ans = float(ans[0])
+                    except Exception:
+                        ans = str(ans[0])
             else:
-                # For sequences, try to convert first element to float
+                # For all other types, attempt float conversion
                 try:
-                    ans = float(ans[0])
+                    ans = float(ans)
                 except Exception:
-                    ans = str(ans[0])
-        else:
-            # For all other types, attempt float conversion
-            try:
-                ans = float(ans)
-            except Exception:
-                ans = str(ans)
+                    ans = str(ans)
+        except Exception as e:
+            logging.info(f"Error in floatify_ans: {e}")
+            return None
         return ans
 
-    def extract_code_blocks(self, text):
-        if '```python' not in text:
-            return text
+    def extract_code_blocks(self, text, is_fewshot=False):
         code_blocks = []
         lines = text.split('\n')
+        if '```python' not in text:
+            if is_fewshot:
+                return text
+            
+            if 'def solver():' in text:
+                return text
+            
+            for line in lines:
+                if not line.strip():  # Skip empty lines or lines with only whitespace
+                    continue
+                if not line.startswith('    '):
+                    code_blocks.append('    ' + line)
+                else:
+                    code_blocks.append(line)
+            return '\n'.join(code_blocks)
+        
         in_code_block = False
         current_block = []
         
         for line in lines:
-            if line.startswith('```'):
+            if line.strip().startswith('```'):
                 if in_code_block:
                     # End of code block
                     in_code_block = False
                     if current_block:  # Only add non-empty blocks
-                        code_blocks.append('\n'.join(current_block))
+                        if current_block[0].startswith('    '):
+                            code_blocks.append('\n'.join(current_block))
+                            
+                        # Detect if code needs to be indented as a function
+                        elif 'def solver():' not in '\n'.join(current_block):
+                            # Add proper indentation for function body
+                            indented_block = []
+                            for code_line in current_block:
+                                if code_line.strip():  # Skip empty lines
+                                    if is_fewshot:
+                                        indented_block.append(code_line)
+                                    else:
+                                        indented_block.append('    ' + code_line)
+                                else:
+                                    indented_block.append(code_line)
+                            code_blocks.append('\n'.join(indented_block))
+                        else:
+                            code_blocks.append('\n'.join(current_block))
                     current_block = []
                 else:
                     # Start of code block
                     in_code_block = True
             elif in_code_block and not line.startswith('```'):
                 current_block.append(line)
-        
+    
         return '\n'.join(code_blocks)
 
     def safe_execute(self, code_string: str, keys=None):
@@ -143,7 +179,7 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
                 else:
                     return [locals_.get(k, None) for k in keys]
             except Exception as e:
-                logging.info("\n--------------\nExecution error: error message {}, code_string:\n {}".format(e, code_string))
+                logging.info("\n--------------\nExecution error: error message {}, code_string:\n{}\n--------------".format(e, code_string))
                 return None
         try:
             # Execute with 5 second timeout
@@ -262,16 +298,19 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
 
         # Extract generated code from LLM response
         result = chat_complete_res["choices"][0]["message"]["content"]
-
-        result = self.extract_code_blocks(result)
+        print('---------------------\n')
+        print(result)
+       
+        result = self.extract_code_blocks(result, is_fewshot = examples != None)
         
         # For zero-shot cases, add imports and answer extraction
         if examples is None:
-            if result.startswith('def solver():'):
-                result = result.replace('def solver():', '')
-            result = 'import math\nimport numpy as np\nimport statistics\ndef solver():\n' + result + '\nans = solver()'
+            if 'def solver():' in result:
+                result = result + '\nans = solver()'
+            else:
+                result = 'import math\nimport numpy as np\nimport statistics\ndef solver():\n' + result + '\nans = solver()'
 
-        logging.info('generated execution code: {}'.format(result))
+        logging.info('generated execution code:\n{}'.format(result))
         
         # Execute code safely and process result
         ans = self.safe_execute(result)
