@@ -45,7 +45,7 @@ can load two models.
 ![local-ai get model names right](./images/local-ai.png)
 
 ### Modify the yaml of OmAgent
-Modify the ./configs/llms/json_res.yml
+Modify ./configs/llms/json_res.yml
 ```yaml
 name: OpenaiTextEmbeddingV3
 model_id: text-embedding-ada-002
