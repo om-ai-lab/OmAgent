@@ -1,5 +1,7 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Type
+from threading import Thread
+from fakeredis import TcpFakeServer
 
 from omagent_core.engine.configuration.aaas_config import AaasConfig
 import yaml
@@ -21,6 +23,15 @@ class Container:
         self._input_name: Optional[str] = None
         self.conductor_config = Configuration()
         self.aaas_config = AaasConfig()
+
+        if os.getenv("OMAGENT_MODE") == "lite":
+            try:
+                server_address = ("127.0.0.1", 6379)
+                server = TcpFakeServer(server_address, server_type="redis")
+                t = Thread(target=server.serve_forever, daemon=True)
+                t.start()
+            except Exception as e:
+                print("Warning: error starting fake redis server:", e)
 
     def register_connector(
         self,
