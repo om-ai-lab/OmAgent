@@ -1,4 +1,7 @@
 # Import core modules and components for the Program of Thought (PoT) workflow
+import os
+os.environ["OMAGENT_MODE"] = "lite"
+
 from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
@@ -6,7 +9,8 @@ from agent.input_interface.input_interface import PoTInputInterface
 from omagent_core.advanced_components.workflow.pot.workflow import PoTWorkflow
 from pathlib import Path
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.cli.client import DefaultClient
+from omagent_core.clients.devices.cli import DefaultClient
+
 from omagent_core.utils.logger import logging
 
 

@@ -18,7 +18,7 @@ from omagent_core.engine.http.models.workflow_test_request import \
 from omagent_core.engine.orkes.orkes_base_client import OrkesBaseClient
 from omagent_core.engine.workflow_client import WorkflowClient
 from omagent_core.utils.container import container
-
+import os
 
 class OrkesWorkflowClient(OrkesBaseClient, WorkflowClient):
     def __init__(self, configuration: Configuration):
@@ -116,6 +116,8 @@ class OrkesWorkflowClient(OrkesBaseClient, WorkflowClient):
         include_output: bool = None,
         include_variables: bool = None,
     ) -> WorkflowStatus:
+        if os.getenv("OMAGENT_MODE") == "lite":
+            return WorkflowStatus(status="RUNNING")
         kwargs = {}
         if include_output is not None:
             kwargs["include_output"] = include_output

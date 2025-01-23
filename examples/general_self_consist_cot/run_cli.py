@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 load_dotenv()  
 
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.cli.client import DefaultClient
+from omagent_core.clients.devices.cli import DefaultClient
+
 from omagent_core.utils.logger import logging
 from agent.input_interface.input_interface import COTInputInterface
 from omagent_core.advanced_components.workflow.self_consist_cot.workflow import SelfConsistentWorkflow
