@@ -41,7 +41,7 @@ local-ai run
 can load two models.
 
 **Make sure get model names right, or embedding model may get empty result.**
-![local-ai get model names right](./docs/images/video_understanding_workflow_diagram.png)
+![local-ai get model names right](./images/local-ai.png)
 
 ### Modify the yaml of OmAgent
 Modify the ./configs/llms/json_res.yml
