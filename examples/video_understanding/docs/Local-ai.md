@@ -33,7 +33,7 @@ and
 ```bash
 local-ai run <path-to-your-whisper-yaml>
 ```
-once, to initially link yaml file to the model.
+to initially link yaml file to the model.
 Then next time only run
 ```bash
 local-ai run
