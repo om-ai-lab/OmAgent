@@ -1,4 +1,6 @@
 Read the following questions and answer them with Python code, store the result as a 'ans' variable.
+Here are some examples:
 {{examples}}
+Now, answer the following question:
 Question: {{question}}
 # Python code, return ans

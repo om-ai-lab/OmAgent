@@ -4,7 +4,7 @@ import numpy as np
 import statistics
 
 # Question: {{question}}
-# Answer this question by implementing a solver() function, use for loop if necessary. Only complete the function, do not return any other text.
+# Answer this question by implementing a solver() function, use for loop if necessary. return the answer in the end of function. Only generate excutable code, no other text.
 def solver():
     # Let's write a Python program step by step, and then return the answer
     # Firstly, we need define the following variable:
