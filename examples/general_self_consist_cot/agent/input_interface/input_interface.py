@@ -13,11 +13,6 @@ class COTInputInterface(BaseWorker):
 
         question = user_input['messages'][-1]['content'][0]['data']
 
-        #user_input = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt='Please input the path number:')
-
-        #num_path = user_input['messages'][-1]['content'][0]['data']
-
         self.stm(self.workflow_instance_id)['user_question'] = question
-        #self.stm(self.workflow_instance_id)['num_path'] = num_path
 
         return {'user_question': question}
