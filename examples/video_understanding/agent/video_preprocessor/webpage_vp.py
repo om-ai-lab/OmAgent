@@ -82,7 +82,6 @@ class WebpageVideoPreprocessor(BaseLLMBackend, BaseWorker):
         Returns:
             dict: Dictionary containing video_md5 and video_path
         """
-        print(f'start process: {video_path}')
         video_md5 = self.calculate_md5(video_path)
         kwargs["video_md5"] = video_md5
         
