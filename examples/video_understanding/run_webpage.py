@@ -71,6 +71,6 @@ process_workflow.register(overwrite=True)
 
 # Initialize and start app client with workflow configuration
 cli_client = WebpageClient(
-    interactor=workflow, processor=process_workflow, config_path="webpage_configs"
+    interactor=workflow, processor=process_workflow, config_path="examples/video_understanding/webpage_configs"
 )
 cli_client.start_interactor()

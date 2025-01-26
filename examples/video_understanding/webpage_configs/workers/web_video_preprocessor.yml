@@ -7,7 +7,6 @@ stt:
   name: STT
   endpoint: ${env| custom_openai_endpoint, https://api.openai.com/v1}
   api_key: ${env| custom_openai_key, openai_api_key}
-  model_id: Systran/faster-whisper-large-v3
-output_parser: 
+output_parser:
   name: DictParser
 text_encoder: ${sub| text_encoder}
