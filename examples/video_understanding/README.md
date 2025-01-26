@@ -87,16 +87,7 @@ The container.yaml file is a configuration file that manages dependencies and se
 
 ## Running the Example
 
-3. Run the video understanding example, currently only supports CLI usage:
-
-   ```bash
-   python run_cli.py
-   ```
-
-   First time you need to input the video file path, it will take a while to preprocess the video and store the information into vector database.
-   After the video is preprocessed, you can input your question about the video and the system will answer it. Note that the agent may give the wrong or vague answer, especially some questions are related the name of the characters in the video.
-
-4. Run the video understanding example, currently only supports Webpage usage:
+1. Run the video understanding example via Webpage:
 
    ```bash
    python run_webpage.py
@@ -104,6 +95,15 @@ The container.yaml file is a configuration file that manages dependencies and se
 
    First, select a video or upload a video file on the left; after the video preprocessing is completed, ask questions about the video content on the right.
 
+
+2. Run the video understanding example, currently only supports CLI usage:
+
+   ```bash
+   python run_cli.py
+   ```
+
+   First time you need to input the video file path, it will take a while to preprocess the video and store the information into vector database.
+   After the video is preprocessed, you can input your question about the video and the system will answer it. Note that the agent may give the wrong or vague answer, especially some questions are related the name of the characters in the video.
 
 ## Troubleshooting
 
