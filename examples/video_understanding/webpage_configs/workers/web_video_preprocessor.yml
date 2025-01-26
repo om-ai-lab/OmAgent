@@ -5,7 +5,7 @@ scene_detect_threshold: 27
 frame_extraction_interval: 5
 stt:
   name: STT
-  endpoint: http://172.16.36.38:10005/v1
+  endpoint: ${env| custom_openai_endpoint, https://api.openai.com/v1}
   api_key: ${env| custom_openai_key, openai_api_key}
   model_id: Systran/faster-whisper-large-v3
 output_parser: 
