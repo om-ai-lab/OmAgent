@@ -1,7 +1,7 @@
 
 [tool.poetry]
 name = "omagent_core"
-version = "0.2.2"
+version = "0.2.3"
 description = "Core package for OmAgent"
 authors = ["OM AI Lab <OmAIglobal2024@gmail.com>"]
 readme = "README.md"
@@ -49,6 +49,8 @@ gradio = "^5.7.1"
 tavily-python = "^0.5.0"
 opencv-python = "^4.10.0.84"
 wikipedia = "^1.4.0"
+func_timeout = "^4.3.5"
+sympy = "^1.13.3"
 
 [build-system]
 requires = ["poetry-core"]
