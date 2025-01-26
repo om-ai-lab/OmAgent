@@ -151,7 +151,7 @@ class Message(BaseModel):
             raise ValueError(
                 "Content must be a string, a list of Content objects or list of dicts."
             )
-        return formatted
+        return formatted[0] if len(formatted) == 1 else formatted
 
     @classmethod
     def system(cls, content: str | List[str | Dict | Content]) -> "Message":
