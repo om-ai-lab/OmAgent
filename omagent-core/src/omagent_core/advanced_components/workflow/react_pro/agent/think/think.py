@@ -24,7 +24,7 @@ class Think(BaseLLMBackend, BaseWorker):
         ]
     )
 
-    def _run(self, query: str, id: str = "", *args, **kwargs):
+    def _run(self, query: str, *args, **kwargs):
         """Process the query using ReAct approach"""
         # Get context from STM
         state = self.stm(self.workflow_instance_id)
@@ -41,21 +41,19 @@ class Think(BaseLLMBackend, BaseWorker):
         if not context:
             state['step_number'] = 1
         
-        # Get current step number
         current_step = state.get('step_number', 1)
-    
-        # Record input information
+        
+        #Record input information
         self.callback.info(
             agent_id=self.workflow_instance_id, 
             progress='Think', 
             message=f'Step {current_step}'
         )
-        
+         
+        reflections = state.get('reflection_history', '')
+
         # Build prompt
-        full_prompt = f"{context}\nThought {current_step}:" if context else f"{self.example}\nQuestion: {query}\nThought {current_step}:"
-        
-        # Add dynamic step number hint
-        full_prompt += f"\nNote: Only output Thought {current_step}."
+        full_prompt = f"{context}\nThought {current_step}:" if context else f"{self.example}\n{reflections}\nQuestion: {query}\nThought {current_step}:"
         
         # Get response
         response = self.simple_infer(query=query, context=full_prompt)
@@ -66,7 +64,7 @@ class Think(BaseLLMBackend, BaseWorker):
         state["body"] = body
         
         # Process non-streaming response
-        output = response['choices'][0]['message']['content']
+        output = response['choices'][0]['message']['content'].split('\n')[0]
         
         # Update token usage
         if 'usage' in response:
@@ -84,10 +82,9 @@ class Think(BaseLLMBackend, BaseWorker):
         )
         
         # Update context and store in STM
-        new_context = f"{context}\nThought {current_step}: {output}" if context else f"{self.example}\nQuestion: {query}\nThought {current_step}: {output}"
+        new_context = f"{context}\nThought {current_step}: {output}" if context else f"{self.example}\n{reflections}\nQuestion: {query}\nThought {current_step}: {output}"
         state.update({
             'context': new_context,
-            'id': id,
             'query': query,
             'step_number': current_step  # Update step number
         })

@@ -1,0 +1,13 @@
+- name: Think
+  llm: ${sub| text_res}
+  max_steps: 8
+
+- name: Action
+  llm: ${sub| text_res}
+
+- name: WikiSearch
+
+- name: ReactOutput
+
+- name: Reflect
+  llm: ${sub| text_res} 
