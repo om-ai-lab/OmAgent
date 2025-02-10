@@ -9,10 +9,8 @@ class InputInterface(BaseWorker):
     def _run(self, *args, **kwargs):
         """Process user input"""
         query = input("Please enter your question: ")
-        previous_attempts = input("Please enter previous attempts (or press Enter to skip): ")
         
         return {
             "query": query,
-            "previous_attempts": previous_attempts,
             "id": ""  # Optional ID field
         } 

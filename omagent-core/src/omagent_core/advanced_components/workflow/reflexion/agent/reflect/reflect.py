@@ -65,7 +65,14 @@ class Reflect(BaseLLMBackend, BaseWorker):
         
         # Process response
         critical_result = response['choices'][0]['message']['content']
-
+        
+        # Record output information
+        self.callback.info(
+            agent_id=self.workflow_instance_id,
+            progress='critical',
+            message=f'critical: {critical_result}'
+        )
+        
         if "False" in critical_result:
             return {
                 'reflection': 'No more turns',

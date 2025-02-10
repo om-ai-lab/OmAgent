@@ -16,24 +16,19 @@ This example implements a Reflexion workflow that consists of following componen
    - Generates improvement strategies
 
 2. **Multi-stage Workflow**
-   ```mermaid
-   graph TD
-   A[Initial Reasoning] --> B[Execute Action]
-   B --> C{Evaluate Results}
-   C -->|Pass| D[Output Answer]
-   C -->|Fail| E[Generate Reflection]
-   E --> F[Update Knowledge]
-   F --> A
-   ```
+
+<img src="../../docs/images/reflexion.png" width="400" alt="Reflexion Workflow">
 
 ### The workflow follows this pattern:
-1. User provides input (question)
-2. Generate initial reasoning chain
-3. Execute actions and observe results
-4. Evaluate result quality
-5. Generate reflection if not satisfactory
-6. Update knowledge base based on reflection
-7. Repeat until termination conditions are met
+1. User provides input question
+2. React Pro Loop:
+   - Think about the question
+   - Take an action
+   - Search for information
+   - Repeat until satisfied
+3. Generate output and reflect
+4. Either retry with new insights or finish
+5. Provide final answer
 
 ## Prerequisites
 
@@ -56,7 +51,7 @@ export custom_openai_endpoint="your_openai_endpoint"
 
 ## Running the Example
 
-You can run the example in two ways:
+You can run the example in three ways:
 
 1. Using the CLI interface:
    ```bash
@@ -70,6 +65,27 @@ You can run the example in two ways:
    agent = ReflexionAgent.from_config("configs/default.yml")
    result = agent.solve("In which year did Einstein receive the Nobel Prize?")
    ```
+
+3. Running batch testing:
+   ```bash
+   python run_batch_test.py [options]
+   ```
+
+   Available options:
+   ```bash
+   --dataset       Dataset name (default: math500)
+   --dataset_file  Path to dataset file (default: /path/to/math500.jsonl)
+   ```
+
+   Example usage:
+   ```bash
+   python run_batch_test.py --dataset custom_dataset --dataset_file data/custom_questions.jsonl
+   ```
+
+   The script will:
+   - Read questions from the input dataset file
+   - Process each question using the Reflexion workflow
+   - Save results to `{dataset}_results.jsonl`
 
 ## Troubleshooting
 
