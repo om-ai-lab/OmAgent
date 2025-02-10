@@ -1,6 +1,5 @@
 from pathlib import Path
 from typing import List
-
 import json_repair
 from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.utils.registry import registry
@@ -14,10 +13,20 @@ CURRENT_PATH = Path(__file__).parents[0]
     
 @registry.register_worker()
 class StateEvaluator(BaseWorker, BaseLLMBackend):
-    llm: OpenaiGPTLLM
     
+    """A state evaluation component that assesses the quality of thought chains.
+    
+    This component is responsible for:
+    - Evaluating the quality of generated thought chains
+    - Supporting both value-based and voting-based evaluation
+    - Managing evaluation scores for different search strategies
+    - Integrating LLM feedback into the evaluation process
+    """
+    
+    llm: OpenaiGPTLLM
     prompts: List[PromptTemplate] = Field([])
     
+    # Define value mapping for different confidence levels
     value_dict: dict = {
         "sure": 3,
         "likely": 0.5,
@@ -25,14 +34,32 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
     }
     
     def _run(self, examples: str, *args, **kwargs):
+        """Evaluate thought chains and update their scores.
+
+        This method:
+        - Retrieves current thought tree state
+        - Loads appropriate evaluation prompts
+        - Performs either value-based or voting-based evaluation
+        - Updates node scores in the thought tree
+
+        Args:
+            examples (str): Example evaluations for few-shot learning
+            *args: Variable length argument list
+            **kwargs: Arbitrary keyword arguments
+
+        Returns:
+            None: Updates are made to shared memory (self.stm)
+        """
+        
+        # Retrieve current state from shared memory
         thought_tree = self.stm(self.workflow_instance_id)['thought_tree']
         current_depth = self.stm(self.workflow_instance_id)['current_depth']
         current_node_id = self.stm(self.workflow_instance_id)['current_node_id']
-        record = self.stm(self.workflow_instance_id)['record']
         evaluation_type = self.params['evaluation_type']
         
         search_type = self.stm(self.workflow_instance_id)['search_type']
 
+        # Load prompts if not already loaded
         if not self.prompts:
             self.prompts = [
                 PromptTemplate.from_file(
@@ -43,6 +70,7 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
                 ),
             ]
         
+        # Determine nodes to evaluate based on search type
         if search_type == "bfs":
             current_nodes = thought_tree.get_nodes_at_depth(current_depth)
         elif search_type == "dfs":
@@ -50,6 +78,7 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
         else:
             raise ValueError(f"Invalid search type: {search_type}")
         
+        # Prepare few-shot examples if provided
         if examples:
             if evaluation_type == "value":
                 few_shots = "You can learn more about how to evaluate the the thought chain from examples below:\n **Examples**:\n" + examples
@@ -58,7 +87,7 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
         else:
             few_shots = ""
 
-        
+        # Perform value-based evaluation
         if evaluation_type == "value":
             for node in current_nodes:
                 thought_chain = thought_tree.get_current_thought_chain(node.id)
@@ -68,18 +97,17 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
                     "requirements": self.stm(self.workflow_instance_id)['requirements'],
                     "Thought_chain": thought_chain,
                 }
-                chat_complete_res = self.infer(input_list=[payload])
+                # Use N-shot inference if supported
+                if hasattr(self, 'support_n') and self.support_n:
+                    chat_complete_res = self.infer(input_list=[payload])
+                    results = chat_complete_res[0]["choices"]
+                else:
+                    n = self.llm.n
+                    self.llm.n = 1
+                    chat_complete_res = [self.infer(input_list=[payload])[0]["choices"][0] for i in range(n)]
+                    results = chat_complete_res
                 
-                record['prompt_tokens'] += self.token_usage['prompt_tokens']
-                record['completion_tokens'] += self.token_usage['completion_tokens']
-                
-                self.callback.info(
-                    agent_id=self.workflow_instance_id,
-                    progress=f"State Evaluator-value usage",
-                    message=f'\nuse_tokens: {self.token_usage}'
-                )
-                
-                results = chat_complete_res[0]["choices"]
+                # Process each result and update node scores
                 for result in results:
                     output = result["message"].get("content") 
                     response = json_repair.loads(output)
@@ -98,52 +126,44 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
 
                 
         elif evaluation_type == "vote":
-            
+            # Perform voting-based evaluation
             thought_chains = ""
             index_to_node_id = {}
             for index, node in enumerate(current_nodes):
                 index_to_node_id[index+1] = node.id
                 thought_chain = thought_tree.get_current_thought_chain(node.id).strip()
                 thought_chains += f"Thought chain {index+1}: {thought_chain}\n"
-
-            # print(index_to_node_id)
             
+            # Prepare payload for LLM inference
             payload = {
                 "few_shots": few_shots,
                 "problem": self.stm(self.workflow_instance_id)['problem'],
                 "requirements": self.stm(self.workflow_instance_id)['requirements'],
                 "thought_chains": thought_chains,
             }
-            # chat_complete_res = self.infer(input_list=[payload], best_of=1, n=1)
-            chat_complete_res = [self.infer(input_list=[payload], n=1)[0]["choices"][0] for i in range(3)]
-
-
-            print(chat_complete_res)
-            self.callback.info(
-                agent_id=self.workflow_instance_id,
-                progress=f"State Evaluator-vote usage",
-                message=f'\nuse_tokens: {self.token_usage}'
-            )
+            # Use N-shot inference if supported
+            if hasattr(self, 'support_n') and self.support_n:
+                chat_complete_res = self.infer(input_list=[payload])
+                results = chat_complete_res[0]["choices"]
+            else:
+                n = self.llm.n
+                self.llm.n = 1
+                chat_complete_res = [self.infer(input_list=[payload])[0]["choices"][0] for i in range(n)]
+                results = chat_complete_res
             
-            record['prompt_tokens'] += self.token_usage['prompt_tokens']
-            record['completion_tokens'] += self.token_usage['completion_tokens']
-            
-            # results = chat_complete_res[0]["choices"]
-            results = chat_complete_res
-            print("*"*100)
-            print(results)
-            print("*"*100)
+            # Process each result and update node scores
             for result in results:
                 output = result["message"].get("content") 
                 response = json_repair.loads(output)
                 
+                # Log evaluation results
                 self.callback.info(
                     agent_id=self.workflow_instance_id,
                     progress=f"State Evaluator-vote",
-                    message=f"\nthought_chains: {thought_chains}\nresponse: {response}"
+                    message=f"\nthought_chains: \n{thought_chains}\nresponse: \n{response}"
                 )
                 
-                
+                # Process response and update node scores
                 if response.get('choice'):
                     choice = response['choice']
                     if isinstance(choice, str):
@@ -152,11 +172,10 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
                     thought_tree.nodes[choice_id].value += 1
 
 
-                     
+        # Raise error for invalid evaluation type
         else:
             raise ValueError(f"Invalid evaluation type: {evaluation_type}")
 
+        # Update thought tree in shared memory
         self.stm(self.workflow_instance_id)['thought_tree'] = thought_tree
-        self.stm(self.workflow_instance_id)['record'] = record
 
-        # print(record)

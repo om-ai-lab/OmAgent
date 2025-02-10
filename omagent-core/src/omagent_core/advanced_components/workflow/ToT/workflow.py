@@ -1,3 +1,4 @@
+import os
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
 
@@ -8,35 +9,53 @@ from omagent_core.advanced_components.workflow.ToT.agent.search_algorithm.search
 from omagent_core.engine.workflow.task.do_while_task import DoWhileTask
 
 class ToTWorkflow(ConductorWorkflow):
+    """Implementation of Tree of Thoughts (ToT) workflow"""
+    
     def __init__(self):
+        """Initialize ToT workflow"""
         super().__init__(name='tot_workflow')
         
-    def set_tot(self, requirements: str, thought_generator_examples_file_path: str=None, state_evaluator_examples_file_path: str=None):
+    def set_tot(self, requirements: str, thought_generator_examples: str=None, state_evaluator_examples: str=None):
+        """Set basic parameters for ToT workflow
+        Args:
+            requirements: Task requirements
+            thought_generator_examples: Examples for thought generator
+            state_evaluator_examples: Examples for state evaluator
+        """
+        
         self.requirements = requirements
-        if thought_generator_examples_file_path:
-            self.set_generator_examples(thought_generator_examples_file_path)
+        if thought_generator_examples:
+            if os.path.isfile(thought_generator_examples) and thought_generator_examples.endswith('.examples'):
+                with open(thought_generator_examples, 'r') as file:
+                    self.thought_generator_examples = file.read()
+            else:
+                self.thought_generator_examples = thought_generator_examples
         else:
             self.thought_generator_examples = None
-        if state_evaluator_examples_file_path:
-            self.set_evaluator_examples(state_evaluator_examples_file_path)
+        if state_evaluator_examples:
+            if os.path.isfile(state_evaluator_examples) and state_evaluator_examples.endswith('.examples'):
+                with open(state_evaluator_examples, 'r') as file:
+                    self.state_evaluator_examples = file.read()
+            else:
+                self.state_evaluator_examples = state_evaluator_examples
         else:
             self.state_evaluator_examples = None
 
         
-    def set_input(self, query: str, qid: int=0):
+    def set_input(self, query: str, qid: str="test"):
+        """Set input parameters for the workflow
+        Args:
+            query: Input query content
+            qid: Query ID
+        """
         self.query = query
         self.qid = qid
         self._configure_tasks()
         self._configure_workflow()
-        
-    def set_generator_examples(self, examples_file_path: str):
-        with open(examples_file_path, 'r') as file:
-            self.thought_generator_examples = file.read()
-    def set_evaluator_examples(self, examples_file_path: str):
-        with open(examples_file_path, 'r') as file:
-            self.state_evaluator_examples = file.read()
 
     def _configure_tasks(self):
+        """Configure task components in the workflow"""
+        
         self.thought_decomposition_task = simple_task(
             task_def_name=ThoughtDecomposition,
             task_reference_name="thought_decomposition",
@@ -67,14 +86,11 @@ class ToTWorkflow(ConductorWorkflow):
             termination_condition='if ($.search_algorithm["finish"] == true){false;} else {true;} ')
 
     def _configure_workflow(self):
-        
-        # self >> self.thought_decomposition_task
-        # self >> self.thought_decomposition_task  >> self.thought_generator_task 
-        # self >> self.thought_decomposition_task >> self.state_evaluator_task
-        # self >> self.thought_decomposition_task  >> self.thought_generator_task >> self.state_evaluator_task 
-        # self >> self.thought_decomposition_task  >> self.thought_generator_task >> self.state_evaluator_task >> self.search_algorithm_task
+        """Configure the execution order of the workflow"""
+        # self >> self.thought_decomposition_task >> self.thought_generator_task >> self.state_evaluator_task >> self.search_algorithm_task
         self >> self.thought_decomposition_task >> self.tot_loop_task
         self.result = self.search_algorithm_task.output("result")
+        print(self.result)
         
         
         
