@@ -15,8 +15,8 @@ class ThoughtTree(BaseModel):
     next_id: int = 0
 
     def add_node(self, thought: Any, parent_id: Optional[int] = None, value: float = 0.0) -> ThoughtNode:
-        """添加思维节点到树中"""
-        # 计算深度：如果有父节点，则深度为父节点深度+1；否则为0
+        """Add a thought node to the tree"""
+        # Calculate depth: if there's a parent node, depth = parent's depth + 1; otherwise 0
         depth = 0
         if parent_id is not None:
             parent_node = self.nodes.get(parent_id)
@@ -37,13 +37,13 @@ class ThoughtTree(BaseModel):
         return node
 
     def get_nodes_at_depth(self, depth: int, return_ids: bool = False):
-        """获取指定深度的所有节点"""
+        """Get all nodes at specified depth"""
         if return_ids:
             return [node.id for node in self.nodes.values() if node.depth == depth]
         return [node for node in self.nodes.values() if node.depth == depth]
                 
     def get_childrens(self, node_id: int, return_ids: bool = False):
-        """获取指定节点的所有子节点"""
+        """Get all child nodes of the specified node"""
         if node_id in self.nodes:
             if return_ids:
                 return self.nodes[node_id].children
@@ -51,7 +51,7 @@ class ThoughtTree(BaseModel):
         return []
     
     def get_parent(self, node_id: int, return_ids: bool = False):
-        """获取指定节点的父节点"""
+        """Get the parent node of the specified node"""
         if node_id in self.nodes:
             if return_ids:
                 return self.nodes[node_id].parent_id
@@ -59,7 +59,7 @@ class ThoughtTree(BaseModel):
         return None
     
     def prune(self, node_id: int):
-        """剪枝指定节点及其所有子节点"""
+        """Prune the specified node and all its children"""
         if node_id in self.nodes:
             # 从父节点中移除当前节点
             parent_id = self.nodes[node_id].parent_id
@@ -74,7 +74,7 @@ class ThoughtTree(BaseModel):
                 
     def get_top_n_score_nodes(self, node_id: int = None, depth: int = None, sort_region: str = 'children', n: int = 1, return_ids: bool = False):
         """
-        返回指定深度或节点的子节点中最高分数的前n个节点或其ID。
+        Return the top n nodes or their IDs with the highest scores among children of specified depth or node.
         sort_region: 'children' or 'depth'
         """
         if sort_region == 'children':
@@ -109,7 +109,7 @@ class ThoughtTree(BaseModel):
         return result
         
     def get_current_thought_chain(self, node_id: int):
-        """获取指定节点的当前路径的节点内容"""
+        """Get the thought content of nodes in the current path"""
         current_path = self.get_current_path(node_id)
         thought_chain = ""
         for node in current_path:
@@ -117,7 +117,7 @@ class ThoughtTree(BaseModel):
         return thought_chain
 
     def get_current_path_score(self, node_id: int):
-        """获取指定节点的当前路径的节点分数"""
+        """Get the score of nodes in the current path"""
         current_path = self.get_current_path(node_id)
         score = 0
         for node in current_path:
@@ -125,7 +125,7 @@ class ThoughtTree(BaseModel):
         return score
 
     def get_root_node(self, return_ids: bool = False):
-        """获取根节点的 ID"""
+        """Get the root node ID"""
         for node in self.nodes.values():
             if node.parent_id is None:
                 if return_ids:
@@ -134,7 +134,7 @@ class ThoughtTree(BaseModel):
         return None
     
     def thought_tree_to_dict(self):
-        """将思维树转换为字典"""
+        """Convert thought tree to dictionary"""
         return {node.id: node.model_dump() for node in self.nodes.values()}
 
         
