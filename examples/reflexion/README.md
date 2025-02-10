@@ -55,18 +55,15 @@ You can run the example in three ways:
 
 1. Using the CLI interface:
    ```bash
-   python reflect_cli.py
+   python run_cli.py
    ```
 
 2. Using the programmatic interface:
-   ```python
-   from reflexion_agent import ReflexionAgent
-
-   agent = ReflexionAgent.from_config("configs/default.yml")
-   result = agent.solve("In which year did Einstein receive the Nobel Prize?")
+   ```bash
+   python run_programmatic.py
    ```
 
-3. Running batch testing:
+3. Running batch testing with dataset:
    ```bash
    python run_batch_test.py [options]
    ```
@@ -76,16 +73,6 @@ You can run the example in three ways:
    --dataset       Dataset name (default: math500)
    --dataset_file  Path to dataset file (default: /path/to/math500.jsonl)
    ```
-
-   Example usage:
-   ```bash
-   python run_batch_test.py --dataset custom_dataset --dataset_file data/custom_questions.jsonl
-   ```
-
-   The script will:
-   - Read questions from the input dataset file
-   - Process each question using the Reflexion workflow
-   - Save results to `{dataset}_results.jsonl`
 
 ## Troubleshooting
 
