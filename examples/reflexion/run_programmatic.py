@@ -1,10 +1,3 @@
-import os
-os.environ["custom_openai_key"] = "notneeded"
-os.environ["custom_openai_endpoint"] = "http://140.207.201.47:11434/v1"
-os.environ["custom_openai_model_id"] = "qwen2.5:7b"
-os.environ['HTTP_PROXY'] = 'http://10.8.21.200:47890'
-os.environ['HTTPS_PROXY'] = 'http://10.8.21.200:47890'
-
 from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
