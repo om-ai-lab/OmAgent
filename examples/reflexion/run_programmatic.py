@@ -55,5 +55,5 @@ cli_client = DefaultClient(
     interactor=workflow, config_path=config_path, workers=[SimpleInterface()]
 )
 
-query = "法国的首都是哪里"
+query = "What is the capital of France?"
 cli_client.start_processor_with_input({"query": query})

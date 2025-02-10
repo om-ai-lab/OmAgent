@@ -12,7 +12,6 @@ from omagent_core.clients.devices.lite_version.cli import DefaultClient
 from omagent_core.utils.logger import logging
 from omagent_core.advanced_components.workflow.reflexion.workflow import ReflexionWorkflow
 from omagent_core.engine.worker.base import BaseWorker
-import uuid
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Run batch test for Reflexion')
@@ -26,31 +25,31 @@ def parse_args():
 
 @registry.register_worker()
 class SimpleInterface(BaseWorker):
-    def _run(self, query,id, *args, **kwargs):
-        return {"query": query,"id": id}
+    def _run(self, query, id, *args, **kwargs):
+        return {"query": query, "id": id}
 
 def get_missing_questions(original_file, result_file):
-    """找出缺失的问题"""
+    """Find missing questions"""
     try:
-        # 读取原始问题列表
+        # Read the original question list
         original_questions = {}
         with open(original_file, 'r') as f:
             for line in f:
                 data = json.loads(line)
                 original_questions[data['question']] = data['id']
         
-        # 读取已有结果
+        # Read existing results
         existing_questions = set()
         if os.path.exists(result_file):
             with open(result_file, 'r') as f:
                 for line in f:
-                    if line.strip():  # 跳过空行
+                    if line.strip():  # Skip empty lines
                         result = json.loads(line)
                         question = result.get('question', '')
                         if question:
                             existing_questions.add(question)
         
-        # 找出缺失的问题
+        # Find missing questions
         missing_questions = []
         for question, qid in original_questions.items():
             if question not in existing_questions:
@@ -66,19 +65,19 @@ def get_missing_questions(original_file, result_file):
         return []
 
 def process_question(cli_client, question_data, result_file):
-    """处理单个问题"""
+    """Process a single question"""
     query = question_data['question']
     id = question_data['id']
     
     try:
-        # 执行工作流
+        # Execute the workflow
         print(f"Processing question ID {id}: {query}")
         workflow_instance = cli_client.start_processor_with_input({"query": query, "id": id})
         
-        # 获取结果 - 使用 workflow instance id 作为 key
+        # Get result - using the workflow instance id as the key
         result = container.stm[workflow_instance.workflow_instance_id]
         
-        # 格式化结果
+        # Format the result
         result_entry = {
             "id": id,
             "question": query,
@@ -90,7 +89,7 @@ def process_question(cli_client, question_data, result_file):
             "status": "success"
         }
         
-        # 保存结果
+        # Save the result
         with open(result_file, 'a') as outfile:
             json.dump(result_entry, outfile)
             outfile.write('\n')
@@ -104,7 +103,7 @@ def process_question(cli_client, question_data, result_file):
         return False
 
 def save_error_result(result_file, id, query, error_type):
-    """保存错误结果"""
+    """Save error result"""
     error_entry = {
         "id": id,
         "question": query,
@@ -165,7 +164,7 @@ def main():
     
     result_file = CURRENT_PATH.joinpath(f'{args.dataset}_results.jsonl')
     
-    # 获取待处理的问题
+    # Get pending questions for processing
     missing_questions = get_missing_questions(args.dataset_file, result_file)
     
     if not missing_questions:
@@ -175,7 +174,7 @@ def main():
     total_questions = len(missing_questions)
     print(f"Found {total_questions} questions to process")
     
-    # 处理所有问题
+    # Process all questions
     for i, question_data in enumerate(missing_questions, 1):
         print(f"Processing question {i}/{total_questions}")
         
@@ -190,9 +189,4 @@ def main():
     print("Processing completed")
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\nProcess interrupted by user")
-    except Exception as e:
-        print(f"Fatal error: {str(e)}")
+    main()

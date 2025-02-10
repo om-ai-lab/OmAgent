@@ -29,7 +29,6 @@ class Reflect(BaseLLMBackend, BaseWorker):
         
     def _run(self, react_output: str, *args, **kwargs) -> Dict[str, Any]:
         # Get state from STM
-        # state = self.stm(self.workflow_instance_id)
         state = self.stm(self.workflow_instance_id)   
         query = state.get('query', '')
         token_usage = state.get('token_usage', {
