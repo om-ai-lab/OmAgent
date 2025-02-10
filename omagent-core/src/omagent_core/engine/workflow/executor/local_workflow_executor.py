@@ -227,15 +227,16 @@ class WorkflowExecutor:
 
     def start_workflow(self, start_workflow_request: StartWorkflowRequest, workers=None) -> str:
         try:
-            return self.local_executor.start_workflow(
+            exe_output = self.local_executor.start_workflow(
                 workflow_def=start_workflow_request.workflow_def,
                 start_request=start_workflow_request, workers=workers
-            )
+            )            
             self.status.status = "COMPLETED"
+            return exe_output
         except Exception as e:
             self.status.status = "FAILED"
             self.status.error = str(e)
-            
+
 
     def get_workflow(self, workflow_id: str, include_tasks: bool = None) -> Workflow:        
         return self.status
