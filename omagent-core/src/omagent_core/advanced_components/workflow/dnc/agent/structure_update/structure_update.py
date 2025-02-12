@@ -4,7 +4,7 @@ from omagent_core.utils.registry import registry
 
 @registry.register_worker()
 class StructureUpdate(BaseWorker):
-    def _run(self, dnc_structure: dict, last_output: str, *args, **kwargs):
+    def _run(self, dnc_structure: dict, last_output: str=None, *args, **kwargs):
         stm_data = self.stm(self.workflow_instance_id)
         stm_dnc_structure = stm_data.get("dnc_structure", None)
         stm_last_output = stm_data.get("last_output", None)

@@ -5,7 +5,7 @@ from omagent_core.utils.registry import registry
 class ReactOutput(BaseWorker):
     """Simple worker that passes through the final action output for React workflow"""
     
-    def _run(self, action_output: str, workflow_id: str, *args, **kwargs):
+    def _run(self, action_output: str, workflow_id=None, *args, **kwargs):
         """Simply return the action output with any necessary state"""
         
         state = self.stm(workflow_id)

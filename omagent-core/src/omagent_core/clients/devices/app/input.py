@@ -15,13 +15,15 @@ from omagent_core.utils.container import container
 from omagent_core.utils.general import read_image
 from omagent_core.utils.logger import logging
 from omagent_core.utils.registry import registry
-
+import os
 
 @registry.register_component()
 class AppInput(InputBase):
     redis_stream_client: RedisConnector
 
     def read_input(self, workflow_instance_id: str, input_prompt=""):
+        if os.getenv("OMAGENT_MODE") == "lite":
+            workflow_instance_id = "temp"
         stream_name = f"{workflow_instance_id}_input"
         group_name = "omappagent"  # consumer group name
         consumer_name = f"{workflow_instance_id}_agent"  # consumer name
@@ -42,9 +44,11 @@ class AppInput(InputBase):
         except Exception as e:
             logging.debug(f"Consumer group may already exist: {e}")
 
-        logging.info(
-            f"Listening to Redis stream: {stream_name} in group: {group_name} start_id: {start_id}"
-        )
+        if not os.getenv("OMAGENT_MODE") == "lite":
+            logging.info(
+                f"Listening to Redis stream: {stream_name} in group: {group_name} start_id: {start_id}"
+            )
+        
         data_flag = False
         while True:
             try:

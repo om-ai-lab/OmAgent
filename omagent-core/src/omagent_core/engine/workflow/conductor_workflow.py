@@ -3,6 +3,7 @@ from copy import deepcopy
 from typing import Any, Dict, List, Union
 
 from omagent_core.engine.http.models import *
+from omagent_core.engine.workflow.executor.local_workflow_executor import WorkflowExecutor as LiteWorkflowExecutor
 from omagent_core.engine.http.models.start_workflow_request import \
     IdempotencyStrategy
 from omagent_core.engine.orkes.orkes_workflow_client import workflow_client
@@ -17,18 +18,25 @@ from omagent_core.engine.workflow.task.task_type import TaskType
 from omagent_core.engine.workflow.task.timeout_policy import TimeoutPolicy
 from omagent_core.utils.container import container
 from omagent_core.utils.logger import logging
+from omagent_core.utils.registry import registry
 from shortuuid import uuid
 from typing_extensions import Self
-
+import os
+from omagent_core.engine.http.models.workflow_def import to_workflow_def
+from omagent_core.engine.workflow.task.simple_task import simple_task
 
 class ConductorWorkflow:
     SCHEMA_VERSION = 2
 
-    def __init__(self, name: str, version: int = None, description: str = None) -> Self:
-        self._executor = WorkflowExecutor()
+    def __init__(self, name: str, version: int = None, description: str = None, lite_version: bool = False) -> Self:
+        if lite_version or os.getenv("OMAGENT_MODE") == "lite":
+            self._executor = LiteWorkflowExecutor()
+        else:
+            self._executor = WorkflowExecutor()
         self.name = name
         self.version = version
         self.description = description
+        self.lite_version = lite_version
         self._tasks = []
         self._owner_email = "default@omagent.ai"
         self._timeout_policy = None
@@ -43,6 +51,12 @@ class ConductorWorkflow:
         self._workflow_status_listener_sink = None
         if container.conductor_config.debug:
             self.stop_all_running_workflows()
+
+    def initialization(self, worker_config):
+        for config in worker_config:
+            worker_cls = registry.get_worker(config['name'])
+            self.workers[config['name']] = worker_cls(**config)
+        return self.workers
 
     @property
     def name(self) -> str:
@@ -181,6 +195,31 @@ class ConductorWorkflow:
         keys = list(input.keys())
         self.input_template(input)
         return self
+        
+    def load(self, json_file_path: str) -> None:
+        import json
+        from pathlib import Path
+
+        # Load the JSON file
+        json_path = Path(json_file_path)
+        if not json_path.is_file():
+            raise FileNotFoundError(f"The file {json_file_path} does not exist.")
+
+        with open(json_path, 'r') as file:
+            data = json.load(file)
+        workflow_def = to_workflow_def(json_data=data)
+        self.name = workflow_def.name
+        self._tasks = [simple_task(task_def_name=task.name, task_reference_name=task.task_reference_name, inputs=task.input_parameters) for task in workflow_def.tasks]
+        self._input_parameters = workflow_def.input_parameters
+        self._output_parameters = workflow_def.output_parameters
+        self._failure_workflow = workflow_def.failure_workflow
+        self._timeout_seconds = workflow_def.timeout_seconds
+        self._variables = workflow_def.variables
+        self._input_template = workflow_def.input_template
+        self._workflow_status_listener_enabled = workflow_def.workflow_status_listener_enabled
+        self._owner_email = workflow_def.owner_email
+
+    
 
     # Register the workflow definition with the server. If overwrite is set, the definition on the server will be
     # overwritten. When not set, the call fails if there is any change in the workflow definition between the server
@@ -214,7 +253,7 @@ class ConductorWorkflow:
         task_to_domain=None,
         priority=None,
         idempotency_key: str = None,
-        idempotency_strategy: IdempotencyStrategy = IdempotencyStrategy.FAIL,
+        idempotency_strategy: IdempotencyStrategy = IdempotencyStrategy.FAIL, workers=None
     ) -> str:
         """
         Starts the workflow with given inputs and parameters and returns the id of the started workflow
@@ -230,8 +269,9 @@ class ConductorWorkflow:
         start_workflow_request.idempotency_strategy = idempotency_strategy
         start_workflow_request.priority = priority
         start_workflow_request.task_to_domain = task_to_domain
-
-        return self._executor.start_workflow(start_workflow_request)
+        
+        return self._executor.start_workflow(start_workflow_request, workers)
+    
 
     def get_workflow(self, workflow_id: str, include_tasks: bool = None) -> Workflow:
         return self._executor.get_workflow(workflow_id, include_tasks)
@@ -307,7 +347,9 @@ class ConductorWorkflow:
     def __get_workflow_task_list(self) -> List[WorkflowTask]:
         workflow_task_list = []
         for task in self._tasks:
+            print (type(task))
             converted_task = task.to_workflow_task()
+            print (converted_task)
             if isinstance(converted_task, list):
                 for subtask in converted_task:
                     workflow_task_list.append(subtask)
