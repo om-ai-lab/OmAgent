@@ -1,10 +1,13 @@
+import os
+os.environ["OMAGENT_MODE"] = "lite"
+
 # Import required modules and components
 from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.advanced_components.workflow.pot.workflow import PoTWorkflow
 from pathlib import Path
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.programmatic.client import ProgrammaticClient
+from omagent_core.clients.devices.programmatic import ProgrammaticClient
 from omagent_core.utils.logger import logging
 import argparse
 import json

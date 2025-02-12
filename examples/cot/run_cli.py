@@ -5,7 +5,8 @@ from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
 from pathlib import Path
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.cli.client import DefaultClient
+from omagent_core.clients.devices.cli import DefaultClient
+
 from omagent_core.utils.logger import logging
 from agent.input_interface.input_interface import InputInterface
 from omagent_core.advanced_components.workflow.cot.workflow import CoTWorkflow

@@ -1,0 +1,54 @@
+<Instruction> Count the frequency of how many times each country is explicitly named in the input text. Output only the frequency of each country that appears at least once in the following json format; make sure to keep the same spelling and output no additional text:
+{
+    "country1": frequency1,
+    "country2": frequency2,
+    ...
+}
+</Instruction>
+
+<Examples>
+Input:
+Alexandra boarded the first flight of her grand journey, starting from Canada. With a globe-trotting itinerary in hand, she was filled with excitement. Her first stop was Mexico, where she marveled at the Mayan ruins. From there, she explored the rainforests of Brazil and danced the tango in Argentina.
+Output: 
+{
+    "Canada": 1,
+    "Mexico": 1,
+    "Brazil": 1,
+    "Argentina": 1    
+}
+
+Input:
+The adventure led him to the peaks of Peru where he trekked to see the mysteries of Machu Picchu. He then headed to Chile to gaze at the vastness of the Atacama Desert. A quick detour to Uruguay and Paraguay allowed him to experience the vibrancy of the local cultures before returning back to Canada through Peru, Brazil and Mexico.
+Output: 
+{
+    "Peru": 2,
+    "Chile": 1,
+    "Uruguay": 1,
+    "Paraguay": 1,
+    "Canada": 1,
+    "Brazil": 1,
+    "Mexico": 1
+}
+
+Input:
+Journeying westward, she admired the art in Italy and sipped coffee in France. The music of Spain and the history of Greece deepened her love for Europe. The Nordic beauty of Norway, Sweden, Finland, and Denmark took her breath away. She danced in Ireland, explored castles in Scotland, and marveled at the architecture in Germany and Russia. Italy, Norway, Sweden and Germany will always stay her favourite destinations to visit.
+Output:
+{
+    "Italy": 2,
+    "France": 1,
+    "Spain": 1,
+    "Greece": 1,
+    "Norway": 2,
+    "Sweden": 2,
+    "Finland": 1,
+    "Denmark": 1,
+    "Ireland": 1,
+    "Scotland": 1,
+    "Germany": 2,
+    "Russia": 1
+}
+</Examples>
+
+Input:
+{{input}}
+Output:

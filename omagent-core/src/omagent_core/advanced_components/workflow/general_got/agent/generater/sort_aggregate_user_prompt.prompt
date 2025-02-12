@@ -1,0 +1,16 @@
+<Instruction> Merge the following 2 sorted lists of length {{length1}} and {{length2}} respectively, into one sorted list of length {{total_length}} using a merge sort style approach.
+Only output the final merged list without any additional text or thoughts!:</Instruction>
+
+<Approach>
+To merge the two lists in a merge-sort style approach, follow these steps:
+1. Compare the first element of both lists.
+2. Append the smaller element to the merged list and move to the next element in the list from which the smaller element came.
+3. Repeat steps 1 and 2 until one of the lists is empty.
+4. Append the remaining elements of the non-empty list to the merged list.
+</Approach>
+
+Merge the following two lists into one sorted list:
+1: {{input1}}
+2: {{input2}}
+
+Merged list:

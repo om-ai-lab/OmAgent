@@ -247,6 +247,7 @@ class ToolManager(BaseLLMBackend):
             [{"task": task, "related_info": related_info}],
             tools=self.generate_schema(),
         )[0]
+        logging.info(f"ToolManager execute_task chat_complete_res: {chat_complete_res}")
         content = chat_complete_res["choices"][0]["message"].get("content")
         tool_calls = chat_complete_res["choices"][0]["message"].get("tool_calls")
         if not tool_calls:
@@ -318,6 +319,7 @@ class ToolManager(BaseLLMBackend):
             [{"task": task, "related_info": list(related_info.keys())}],
             tools=self.generate_schema(),
         )[0]
+        logging.info(f"ToolManager aexecute_task chat_complete_res: {chat_complete_res}")
         content = chat_complete_res["choices"][0]["message"].get("content")
         tool_calls = chat_complete_res["choices"][0]["message"].get("tool_calls")
         if not tool_calls:

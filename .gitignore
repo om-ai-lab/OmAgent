@@ -156,6 +156,9 @@ video_cache/
 # vscode
 .vscode
 
+# JSON files
+*.json
+
 test_record/
 omagent-test-data/
 

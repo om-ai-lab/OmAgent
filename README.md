@@ -27,6 +27,7 @@ OmAgent is python library for building multimodal language agents with ease. We 
  - A flexible agent architecture that provides graph-based workflow orchestration engine and various memory type enabling contextual reasoning.  
  - Native multimodal interaction support include VLM models, real-time API, computer vision models, mobile connection and etc.   
  - A suite of state-of-the-art unimodal and multimodal agent algorithms that goes beyond simple LLM reasoning, e.g. ReAct, CoT, SC-Cot etc.   
+ - Supports local deployment of models. You can deploy your own models locally by using Ollama[Ollama](./docs/concepts/models/Ollama.md) or [LocalAI](./examples/video_understanding/docs/local-ai.md).
 
 
 ## 🛠️ How To Install
@@ -90,15 +91,19 @@ For more information about the container.yaml configuration, please refer to the
    <img src="docs/images/simpleVQA_webpage.png" width="400"/>
 
 ## 🤖  Example Projects
-### Video QA Agents
-Build a system that can answer any questions about uploaded videos with video understanding agents. See Details [here](examples/video_understanding/README.md).  
+### 1. Video QA Agents
+Build a system that can answer any questions about uploaded videos with video understanding agents. we provide a gradio based application, see details [here](examples/video_understanding/README.md).  
+<p >
+  <img src="docs/images/video_understanding_gradio.png" width="500"/>
+</p>
+
 More about the video understanding agent can be found in [paper](https://arxiv.org/abs/2406.16620).
 <p >
   <img src="docs/images/OmAgent.png" width="500"/>
 </p>
 
 
-### Mobile Personal Assistant
+### 2. Mobile Personal Assistant
 Build your personal mulitmodal assistant just like Google Astral in 2 minutes. See Details [here](docs/tutorials/agent_with_app.md).
 <p >
   <img src="docs/images/readme_app.png" width="200"/>
@@ -106,7 +111,7 @@ Build your personal mulitmodal assistant just like Google Astral in 2 minutes. S
 
 
 ### 3. Agentic Operators
-We define reusable agent agentic workflows, e.g. CoT, ReAct, and etc as **agent operators**. This project compares various recently proposed reasoning agent operators with the same LLM choice and test datasets. How do they perform? See details [here](docs/concepts/agent_operators.md).
+We define reusable agentic workflows, e.g. CoT, ReAct, and etc as **agent operators**. This project compares various recently proposed reasoning agent operators with the same LLM choice and test datasets. How do they perform? See details [here](docs/concepts/agent_operators.md).
 
 | **Algorithm** |  **LLM**  | **Average** | **gsm8k-score** | **gsm8k-cost($)** | **AQuA-score** | **AQuA-cost($)** |
  | :-----------------: | :------------: | :-------------: | :---------------: | :-------------------: | :------------------------------------: | :---: |

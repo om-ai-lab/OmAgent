@@ -30,7 +30,10 @@ class SharedMemSTM(STMBase):
 
     def _get_shm(self, workflow_instance_id, size: int = 1024 * 1024 * 100):
         # Hash the long workflow_instance_id to a shorter fixed-length string
-        shortened_id = hashlib.md5(workflow_instance_id.encode()).hexdigest()[:8]
+        if workflow_instance_id:
+            shortened_id = hashlib.md5(workflow_instance_id.encode()).hexdigest()[:8]
+        else:
+            shortened_id = "omagent_lite_ver."
         try:
             shm = shared_memory.SharedMemory(name=shortened_id)
         except FileNotFoundError:
@@ -204,7 +207,10 @@ class SharedMemSTM(STMBase):
             workflow_instance_id (str): The ID of the workflow instance.
         """
         try:
-            shortened_id = hashlib.md5(workflow_instance_id.encode()).hexdigest()[:8]
+            if workflow_instance_id:
+                shortened_id = hashlib.md5(workflow_instance_id.encode()).hexdigest()[:8]
+            else: 
+                shortened_id = "omagent_lite_ver."
             shm = shared_memory.SharedMemory(name=shortened_id)
             shm.buf[:] = b"\x00" * len(shm.buf)
             shm.close()

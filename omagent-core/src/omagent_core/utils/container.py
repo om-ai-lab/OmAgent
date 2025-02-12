@@ -1,5 +1,7 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Type
+from threading import Thread
+from fakeredis import TcpFakeServer
 
 from omagent_core.engine.configuration.aaas_config import AaasConfig
 import yaml
@@ -8,6 +10,7 @@ from omagent_core.engine.configuration.configuration import (TEMPLATE_CONFIG,
 from omagent_core.engine.configuration.aaas_config import AAAS_TEMPLATE_CONFIG
 from omagent_core.utils.registry import registry
 from pydantic import BaseModel
+import os
 
 
 class Container:
@@ -20,6 +23,15 @@ class Container:
         self._input_name: Optional[str] = None
         self.conductor_config = Configuration()
         self.aaas_config = AaasConfig()
+
+        if os.getenv("OMAGENT_MODE") == "lite":
+            try:
+                server_address = ("127.0.0.1", 6379)
+                server = TcpFakeServer(server_address, server_type="redis")
+                t = Thread(target=server.serve_forever, daemon=True)
+                t.start()
+            except Exception as e:
+                print("Warning: error starting fake redis server:", e)
 
     def register_connector(
         self,
@@ -109,15 +121,22 @@ class Container:
         config: dict = {},
         overwrite: bool = False,
     ):
+        if os.getenv("OMAGENT_MODE") == "lite":
+            name = "SharedMemSTM"
         name = self.register_component(stm, name, config, overwrite)
         self._stm_name = name
 
     @property
     def stm(self) -> BaseModel:
         if self._stm_name is None:
-            raise ValueError(
-                "STM component is not registered. Please use register_stm to register."
-            )
+            if os.getenv("OMAGENT_MODE") == "lite":
+                self.register_stm("SharedMemSTM")
+                self._stm_name = "SharedMemSTM"
+            else:
+                raise ValueError(
+                    "STM component is not registered. Please use register_stm to register."
+                )   
+
         return self.get_component(self._stm_name)
 
     def register_ltm(
@@ -218,6 +237,9 @@ class Container:
         Args:
             config_data: The dict including connectors and components configurations
         """
+        if os.getenv("OMAGENT_MODE") == "lite":
+            print ("skipping from_config")
+            return
 
         def clean_config_dict(config_dict: dict) -> dict:
             """Recursively clean up the configuration dictionary, removing all 'description' and 'env_var' keys"""
@@ -265,6 +287,9 @@ class Container:
         self.check_connection()
 
     def check_connection(self):
+        if os.getenv("OMAGENT_MODE") == "lite":
+            return 
+        
         for name, connector in self._connectors.items():
             try:
                 connector.check_connection()
