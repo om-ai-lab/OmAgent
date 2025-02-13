@@ -324,6 +324,7 @@ class DefaultClient:
     def stop_interactor(self):
         #self._task_handler_interactor.stop_processes()
         print ("stop_interactor")
+        os._exit(0)
 
     def start_processor(self):
         workflow_instance_id = None
