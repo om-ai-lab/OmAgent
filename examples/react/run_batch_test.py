@@ -53,13 +53,13 @@ def run_workflow(args):
 
     # Set current working directory path
     CURRENT_PATH = Path(__file__).parents[0]
-    ROOT_PATH = CURRENT_PATH.parents[1]  # 项目根目录
+    ROOT_PATH = CURRENT_PATH.parents[1] 
 
     # Import registered modules
     registry.import_module(CURRENT_PATH.joinpath('agent'))
 
     # Load container configuration from YAML file
-    container.register_stm("RedisSTM")
+    container.register_stm("SharedMemSTM")
     container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 
     # Initialize workflow
@@ -87,7 +87,7 @@ def run_workflow(args):
     programmatic_client = ProgrammaticClient(
         processor=workflow,
         config_path=config_path,
-        workers=[]  # React workflow 不需要额外的 workers
+        workers=[]  
     )
 
     # Prepare input data
