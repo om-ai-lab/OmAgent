@@ -8,6 +8,22 @@ The algorithm in original paper is designed only for math reasoning, the impleme
 
 ## Running the Example
 
+You can run the example in two modes:
+
+### Lite Mode (Local Execution)
+Set the environment variable before running:
+```bash
+export OMAGENT_MODE="lite"
+```
+This mode runs the workflow locally without requiring a Conductor server.
+
+### Conductor Mode (Distributed Execution)
+Set the environment variable (or don't set it, as this is the default):
+```bash
+export OMAGENT_MODE="conductor"  # or just don't set OMAGENT_MODE
+```
+This mode requires a running Conductor server for workflow orchestration.
+
 For terminal/CLI usage: Input and output are in the terminal window
 
 ```bash

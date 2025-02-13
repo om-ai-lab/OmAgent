@@ -10,6 +10,6 @@ registry.import_module()
 # Register required components
 container.register_callback(callback="AppCallback")
 container.register_input(input="AppInput")
-container.register_stm("RedisSTM")
+container.register_stm("SharedMemSTM")
 # Compile container config
 container.compile_config(CURRENT_PATH)

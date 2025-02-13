@@ -18,7 +18,7 @@ CURRENT_PATH = Path(__file__).parents[0]
 registry.import_module(CURRENT_PATH.joinpath('agent'))
 
 # Load container configuration from YAML file
-container.register_stm("RedisSTM")
+container.register_stm("SharedMemSTM")
 container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 
 # Initialize workflow

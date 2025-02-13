@@ -1,19 +1,10 @@
 from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
-from omagent_core.engine.workflow.task.simple_task import simple_task
 from pathlib import Path
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.lite_version.cli import DefaultClient
 from omagent_core.utils.logger import logging
 from omagent_core.advanced_components.workflow.reflexion.workflow import ReflexionWorkflow
-from agent.input_interface.input_interface import InputInterface
-from omagent_core.engine.worker.base import BaseWorker
-
-
-@registry.register_worker()
-class SimpleInterface(BaseWorker):
-    def _run(self, query, *args, **kwargs):
-        return {"query": query}
+from omagent_core.clients.devices.programmatic import ProgrammaticClient 
 
 
 logging.init_logger("omagent", "omagent", level="INFO")
@@ -26,34 +17,49 @@ registry.import_module(CURRENT_PATH.joinpath('agent'))
 
 # Load container configuration from YAML file
 container.register_stm("SharedMemSTM")
-#container.from_config(CURRENT_PATH.joinpath('container.yaml'))
+container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 
 # Initialize workflow
-workflow = ConductorWorkflow(name='reflexion', lite_version=True)
+workflow = ConductorWorkflow(name='reflexion')
 
-# Configure input task
-input_task = simple_task(
-    task_def_name=SimpleInterface,
-    task_reference_name='input_interface'
-)
 
 # Configure React Pro Reflexion workflow
-react_workflow = ReflexionWorkflow()
-react_workflow.set_input(
-    query=input_task.output('query')
+reflexion_workflow = ReflexionWorkflow()
+reflexion_workflow.set_input(
+    query=workflow.input('query'),
+    id=workflow.input('id')
 )
 
 # Configure workflow execution flow
-workflow >> input_task >> react_workflow
+workflow >> reflexion_workflow
 
 # Register workflow
 workflow.register(overwrite=True)
 
-# Initialize and start CLI client
+# Initialize programmatic client
 config_path = CURRENT_PATH.joinpath('configs')
-cli_client = DefaultClient(
-    interactor=workflow, config_path=config_path, workers=[SimpleInterface()]
+programmatic_client = ProgrammaticClient(
+    processor=workflow,
+    config_path=config_path,
+    workers=[]  # No additional workers needed for React Pro workflow
 )
 
-query = "What is the capital of France?"
-cli_client.start_processor_with_input({"query": query})
+# Prepare input data
+workflow_input_list = [
+    {
+        "query": "When was Albert Einstein born?", 
+        "id": "test_1"
+    }
+]
+
+print(f"\nProcessing query: {workflow_input_list[0]['query']}")
+print(f"Query ID: {workflow_input_list[0]['id']}\n")
+
+res = programmatic_client.start_batch_processor(
+    workflow_input_list=workflow_input_list
+)
+
+programmatic_client.stop_processor()
+
+# Print results
+print(res)

@@ -49,12 +49,8 @@ class COTReasoning(BaseLLMBackend, BaseWorker):
         Returns:
             dict: A dictionary containing the reasoning results.
         """
-        prompt_token = []
-        complete_token = []
         if self.llm.model_id in ["gpt4o","gpt4o-mini","gpt3.5-turbo"]:
             reasoning_result = self.infer(input_list=[{"question": user_question, "examples": examples}], n=num_path)[0]
-            prompt_token.append(reasoning_result["usage"]["prompt_tokens"])
-            complete_token.append(reasoning_result["usage"]["completion_tokens"])
             reason_path = [choice["message"]["content"] for choice in reasoning_result["choices"]]
             message = self.prep_prompt([{"question": user_question, "examples": examples}])
             body = self.llm._msg2req(message[0])
@@ -63,16 +59,12 @@ class COTReasoning(BaseLLMBackend, BaseWorker):
             reason_path = []
             for i in range(num_path):
                 reasoning_result = self.simple_infer(question=user_question,examples=examples)
-                prompt_token.append(reasoning_result["usage"]["prompt_tokens"])
-                complete_token.append(reasoning_result["usage"]["completion_tokens"])
                 reasoning_result = reasoning_result["choices"][0]["message"]["content"]
                 reason_path.append(reasoning_result)
                 if i==1:
                     message = self.prep_prompt([{"question":user_question, "examples": examples}])
                     body = self.llm._msg2req(message[0])
                     self.stm(self.workflow_instance_id)["body"] = body
-        self.stm(self.workflow_instance_id)['prompt_token'] = prompt_token
-        self.stm(self.workflow_instance_id)['completion_token'] = complete_token
         self.stm(self.workflow_instance_id)['reasoning_result'] = reason_path
         self.callback.send_answer(self.workflow_instance_id, msg=",".join(reason_path))
         return {'reasoning_result': reason_path}

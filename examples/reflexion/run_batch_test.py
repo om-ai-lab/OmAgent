@@ -1,14 +1,11 @@
-import os
 import json
 import time
 import argparse
 from pathlib import Path
-
 from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
-from omagent_core.engine.workflow.task.simple_task import simple_task
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.lite_version.cli import DefaultClient
+from omagent_core.clients.devices.programmatic import ProgrammaticClient
 from omagent_core.utils.logger import logging
 from omagent_core.advanced_components.workflow.reflexion.workflow import ReflexionWorkflow
 from omagent_core.engine.worker.base import BaseWorker
@@ -64,32 +61,30 @@ def get_missing_questions(original_file, result_file):
         print(f"Error in get_missing_questions: {str(e)}")
         return []
 
-def process_question(cli_client, question_data, result_file):
+def process_question(programmatic_client, question_data, result_file):
     """Process a single question"""
     query = question_data['question']
     id = question_data['id']
     
     try:
-        # Execute the workflow
         print(f"Processing question ID {id}: {query}")
-        workflow_instance = cli_client.start_processor_with_input({"query": query, "id": id})
         
-        # Get result - using the workflow instance id as the key
-        result = container.stm[workflow_instance.workflow_instance_id]
+        # Process input using ProgrammaticClient
+        workflow_input_list = [{"query": query, "id": id}]
+        result = programmatic_client.start_batch_processor(workflow_input_list=workflow_input_list)
         
         # Format the result
         result_entry = {
             "id": id,
             "question": query,
-            "body": result.get("body", ""),
-            "last_output": result.get("output", {}).get("output", {}).get("output", ""),
+            "body": result[0].get("body", ""),  # Get from result[0]
+            "last_output": result[0].get("output", {}).get("output", {}).get("output", ""),
             "ground_truth": "",
-            "prompt_tokens": result.get("token_usage", {}).get("prompt_tokens", 0),
-            "completion_tokens": result.get("token_usage", {}).get("completion_tokens", 0),
+            "prompt_tokens": result[0].get("token_usage", {}).get("prompt_tokens", 0),
+            "completion_tokens": result[0].get("token_usage", {}).get("completion_tokens", 0),
             "status": "success"
         }
         
-        # Save the result
         with open(result_file, 'a') as outfile:
             json.dump(result_entry, outfile)
             outfile.write('\n')
@@ -123,48 +118,40 @@ def main():
     
     logging.init_logger("omagent", "omagent", level="INFO")
     
-    # Set current working directory path
     CURRENT_PATH = Path(__file__).parents[0]
-    
-    # Import registered modules
     registry.import_module(CURRENT_PATH.joinpath('agent'))
     
-    # Load container configuration
+    # Configure container
     container.register_stm("SharedMemSTM")
+    container.from_config(CURRENT_PATH.joinpath('container.yaml'))
     
     # Initialize workflow
-    workflow = ConductorWorkflow(name='reflexion_workflow_example', lite_version=True)
-    
-    # Configure input task
-    input_task = simple_task(
-        task_def_name=SimpleInterface,
-        task_reference_name='input_interface'
-    )
+    workflow = ConductorWorkflow(name='reflexion')
     
     # Configure Reflexion workflow
-    react_workflow = ReflexionWorkflow()
-    react_workflow.set_input(
-        query=input_task.output('query'),
-        id=input_task.output('id')
+    reflexion_workflow = ReflexionWorkflow()
+    reflexion_workflow.set_input(
+        query=workflow.input('query'),
+        id=workflow.input('id')
     )
     
     # Configure workflow execution flow
-    workflow >> input_task >> react_workflow
+    workflow >> reflexion_workflow
     
     # Register workflow
     workflow.register(overwrite=True)
     
-    # Initialize and start CLI client
-    config_path = CURRENT_PATH.joinpath("configs")
-    cli_client = DefaultClient(
-        interactor=workflow, config_path=config_path, workers=[SimpleInterface()]
+    # Initialize ProgrammaticClient
+    config_path = CURRENT_PATH.joinpath('configs')
+    programmatic_client = ProgrammaticClient(
+        processor=workflow,
+        config_path=config_path,
+        workers=[]
     )
     
     print("Starting processing...")
     
     result_file = CURRENT_PATH.joinpath(f'{args.dataset}_results.jsonl')
-    
-    # Get pending questions for processing
     missing_questions = get_missing_questions(args.dataset_file, result_file)
     
     if not missing_questions:
@@ -174,17 +161,19 @@ def main():
     total_questions = len(missing_questions)
     print(f"Found {total_questions} questions to process")
     
-    # Process all questions
-    for i, question_data in enumerate(missing_questions, 1):
-        print(f"Processing question {i}/{total_questions}")
-        
-        success = process_question(cli_client, question_data, result_file)
-        
-        if not success:
-            print("Cooling down after error...")
-            time.sleep(10)
-        else:
-            time.sleep(2)
+    try:
+        for i, question_data in enumerate(missing_questions, 1):
+            print(f"Processing question {i}/{total_questions}")
+            success = process_question(programmatic_client, question_data, result_file)
+            
+            if not success:
+                print("Cooling down after error...")
+                time.sleep(10)
+            else:
+                time.sleep(2)
+    finally:
+        # Ensure processor is stopped after completion or error
+        programmatic_client.stop_processor()
     
     print("Processing completed")
 

@@ -2,7 +2,7 @@ from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from pathlib import Path
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.programmatic.client import ProgrammaticClient
+from omagent_core.clients.devices.programmatic import ProgrammaticClient
 from omagent_core.utils.logger import logging
 from omagent_core.advanced_components.workflow.react.workflow import ReactWorkflow
 import json
