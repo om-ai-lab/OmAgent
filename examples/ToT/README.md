@@ -29,7 +29,7 @@ This example implements a general ToT workflow that consists of following compon
 
 ## Prerequisites
 
-- Python 3.10+
+- Python 3.11+
 - Required packages installed (see requirements.txt)
 - Access to OpenAI API or compatible endpoint (see configs/llms/*.yml)
 - Redis server running locally or remotely
@@ -65,12 +65,28 @@ The container.yaml file is a configuration file that manages dependencies and se
 
 ## Running the Example
 
-3. Run the general DnC example:
+3. Run the general ToT example:
 
    For terminal/CLI usage:
    ```bash
    python run_cli.py
    ```
+
+   You can now run the ToT workflow in `pro` mode or `lite` mode by changing the `OMAGENT_MODE` environment variable. The default mode is `pro` which use the conductor and redis server to run the workflow. The `lite` mode will run the workflow in the current python process without using the conductor and redis server.
+
+   For pro mode:
+   ```bash
+   export OMAGENT_MODE="pro"
+   python run_cli.py
+   ```
+
+   For lite mode:
+   ```bash
+   export OMAGENT_MODE="lite"
+   python run_cli.py
+   ```
+
+
 
 ## Troubleshooting
 

@@ -1,11 +1,11 @@
-# Import required modules and components
+
 from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.advanced_components.workflow.ToT.workflow import ToTWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
 from pathlib import Path
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.cli.client import DefaultClient
+from omagent_core.clients.devices.cli import DefaultClient
 from omagent_core.utils.logger import logging
 from agent.tot_input.tot_input import ToTInput
 from agent.tot_output.tot_output import ToTOutput
@@ -20,7 +20,7 @@ CURRENT_PATH = Path(__file__).parents[0]
 registry.import_module(project_path=CURRENT_PATH.joinpath('agent'))
 
 # Configure storage and container settings
-container.register_stm("RedisSTM")
+container.register_stm("SharedMemSTM")
 container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 
 # Initialize main workflow
