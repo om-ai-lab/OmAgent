@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Type
 from threading import Thread
-from fakeredis import TcpFakeServer
 
 from omagent_core.engine.configuration.aaas_config import AaasConfig
 import yaml
