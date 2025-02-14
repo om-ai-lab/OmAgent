@@ -1,12 +1,13 @@
 # Import required modules and components
 import os
+os.environ["OMAGENT_MODE"] = "lite"
 from pathlib import Path
 
 from agent.conclude.conclude import Conclude
 from agent.video_preprocessor.video_preprocess import VideoPreprocessor
 from agent.video_qa.qa import VideoQA
 from omagent_core.advanced_components.workflow.dnc.workflow import DnCWorkflow
-from omagent_core.clients.devices.cli.client import DefaultClient
+from omagent_core.clients.devices.cli import DefaultClient
 from omagent_core.engine.automator.task_handler import TaskHandler
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.do_while_task import (DnCLoopTask,
@@ -28,7 +29,7 @@ CURRENT_PATH = root_path = Path(__file__).parents[0]
 registry.import_module(project_path=CURRENT_PATH.joinpath("agent"))
 
 # Load container configuration from YAML file
-container.register_stm("RedisSTM")
+container.register_stm("SharedMemSTM")
 container.register_ltm(ltm="VideoMilvusLTM")
 container.from_config(CURRENT_PATH.joinpath("container.yaml"))
 

@@ -54,6 +54,8 @@ wikipedia = "^1.4.0"
 func_timeout = "^4.3.5"
 sympy = "^1.13.3"
 fakeredis = "^2.26.2"
+gradio = "^5.1.0"
+wikipedia = "^1.4.0"
 
 [build-system]
 requires = ["poetry-core"]
