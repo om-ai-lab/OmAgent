@@ -252,7 +252,7 @@ class Container:
 
         if isinstance(config_data, str | Path):
             if not Path(config_data).exists():
-                if os.getenv("OMAGENT_MODE") == "lite"
+                if os.getenv("OMAGENT_MODE") == "lite":
                     return 
                 else:
                     raise FileNotFoundError(f"Config file not found: {config_data}")
