@@ -24,15 +24,6 @@ class Container:
         self.conductor_config = Configuration()
         self.aaas_config = AaasConfig()
 
-        if os.getenv("OMAGENT_MODE") == "lite":
-            try:
-                server_address = ("127.0.0.1", 6379)
-                server = TcpFakeServer(server_address, server_type="redis")
-                t = Thread(target=server.serve_forever, daemon=True)
-                t.start()
-            except Exception as e:
-                print("Warning: error starting fake redis server:", e)
-
     def register_connector(
         self,
         connector: Type[BaseModel],
