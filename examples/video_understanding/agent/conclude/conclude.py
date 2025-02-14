@@ -9,7 +9,7 @@ from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.models.llms.prompt import PromptTemplate
 from omagent_core.utils.logger import logging
 from omagent_core.utils.registry import registry
-from openai import Stream
+from collections.abc import Iterator
 from pydantic import Field
 
 CURRENT_PATH = root_path = Path(__file__).parents[0]
@@ -63,22 +63,20 @@ class Conclude(BaseLLMBackend, BaseWorker):
                 list(self.stm(self.workflow_instance_id).get("image_cache", {}).keys())
             ),
         )
-        if isinstance(chat_complete_res, Stream):
+        if isinstance(chat_complete_res, Iterator):
             last_output = "Answer: "
             self.callback.send_incomplete(
                 agent_id=self.workflow_instance_id, msg="Answer: "
             )
             for chunk in chat_complete_res:
-                if chunk.choices[0].delta.content is not None:
+                if len(chunk.choices) > 0:
+                    current_msg = chunk.choices[0].delta.content if chunk.choices[0].delta.content is not None else ''
                     self.callback.send_incomplete(
                         agent_id=self.workflow_instance_id,
-                        msg=f"{chunk.choices[0].delta.content}",
+                        msg=f"{current_msg}",
                     )
-                    last_output += chunk.choices[0].delta.content
-                else:
-                    self.callback.send_block(agent_id=self.workflow_instance_id, msg="")
-                    last_output += ""
-                    break
+                    last_output += current_msg
+            self.callback.send_answer(agent_id=self.workflow_instance_id, msg="")
         else:
             last_output = chat_complete_res["choices"][0]["message"]["content"]
             self.callback.send_answer(

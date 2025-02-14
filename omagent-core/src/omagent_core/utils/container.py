@@ -228,10 +228,6 @@ class Container:
         Args:
             config_data: The dict including connectors and components configurations
         """
-        if os.getenv("OMAGENT_MODE") == "lite":
-            print ("skipping from_config")
-            return
-
         def clean_config_dict(config_dict: dict) -> dict:
             """Recursively clean up the configuration dictionary, removing all 'description' and 'env_var' keys"""
             cleaned = {}
@@ -247,7 +243,10 @@ class Container:
 
         if isinstance(config_data, str | Path):
             if not Path(config_data).exists():
-                raise FileNotFoundError(f"Config file not found: {config_data}")
+                if os.getenv("OMAGENT_MODE") == "lite":
+                    return 
+                else:
+                    raise FileNotFoundError(f"Config file not found: {config_data}")
             config_data = yaml.load(open(config_data, "r"), Loader=yaml.FullLoader)
         config_data = clean_config_dict(config_data)
 
