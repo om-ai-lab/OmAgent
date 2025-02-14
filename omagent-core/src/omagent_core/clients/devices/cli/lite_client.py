@@ -20,7 +20,8 @@ from omagent_core.utils.build import build_from_file
 from omagent_core.utils.container import container
 from omagent_core.utils.logger import logging
 from omagent_core.utils.registry import registry
-import os 
+import os
+import sys
 import queue
 
 
@@ -193,7 +194,7 @@ class DefaultClient:
 
                 except Exception as e:
                     logging.error(f"Error in main loop: {e}")
-                    os._exit(0)
+                    sys.exit(1)
             self.stop_interactor()
             
 
@@ -206,7 +207,7 @@ class DefaultClient:
     def stop_interactor(self):
         #self._task_handler_interactor.stop_processes()
         print ("stop_interactor")
-        os._exit(0)
+        sys.exit(0)
 
 
     def start_processor(self):
