@@ -14,11 +14,10 @@ from omagent_core.engine.workflow.task.set_variable_task import SetVariableTask
 from omagent_core.utils.logger import logging
 from omagent_core.engine.workflow.task.do_while_task import DoWhileTask
 
-from omagent_core.clients.devices.programmatic.client import ProgrammaticClient
+from omagent_core.clients.devices.programmatic import ProgrammaticClient
 
 from agent.input_interface.input_interface import InputInterfaceGot
 from omagent_core.advanced_components.workflow.general_got.workflow import GoTWorkflow
-
 
 # Initialize logging
 logging.init_logger("omagent", "omagent", level="INFO")

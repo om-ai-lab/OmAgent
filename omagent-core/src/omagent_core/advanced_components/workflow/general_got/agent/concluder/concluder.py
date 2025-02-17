@@ -56,6 +56,8 @@ class TaskConcluder(BaseLLMBackend, BaseWorker):
             response = self.stm(self.workflow_instance_id)['response']
             #return {'got_structure': self.stm(self.workflow_instance_id)['task_tree'].model_dump()}
             token_usage = self.stm(self.workflow_instance_id)['token_usage']
+            self.callback.info(agent_id=self.workflow_instance_id, progress='The result is:', message=response)
+            self.callback.info(agent_id=self.workflow_instance_id, progress='Token usage', message=token_usage)
             return {'Final output': response, 'token_usage': token_usage}
         except:
             query = self.stm(self.workflow_instance_id)['query']

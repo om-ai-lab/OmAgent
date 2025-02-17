@@ -207,7 +207,7 @@ Input Set 2: {}""".format(set1, str(node.current_task_input))
             elif self.parse_method == "set_intersection_parse_refine_answer":
                 self.parsing_function = set_intersection_parse_refine_answer
             else:
-                self.callback.info(agent_id=self.workflow_instance_id, progress='Refine', message="No parsing function found, we not parse the result".format(special_task))
+                self.callback.info(agent_id=self.workflow_instance_id, progress='Refine', message="No parsing function found, we will not parse the result".format(special_task))
             
             # Process each node for refinement
             for node in current_nodes:
