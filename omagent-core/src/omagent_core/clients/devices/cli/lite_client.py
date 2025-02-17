@@ -1,4 +1,5 @@
 from pathlib import Path
+import uuid
 
 from omagent_core.services.connectors.redis import RedisConnector
 from omagent_core.utils.container import container
@@ -48,22 +49,26 @@ class DefaultClient:
         self._input_prompt = input_prompt
         self._task_to_domain = {}
         worker_config = build_from_file(self._config_path)
+        self.workflow_instance_id = str(uuid.uuid4())
         self.initialization(workers, worker_config)
 
     def initialization(self, workers, worker_config):        
         self.workers = {}
         for worker in workers:
+            worker.workflow_instance_id = self.workflow_instance_id
             self.workers[type(worker).__name__] = worker            
         
         for config in worker_config:
-            worker_cls = registry.get_worker(config['name'])        
-            self.workers[config['name']] = worker_cls(**config)                    
+            worker_cls = registry.get_worker(config['name'])    
+            worker = worker_cls(**config)
+            worker.workflow_instance_id = self.workflow_instance_id
+            self.workers[config['name']] = worker
 
     def start_interactor(self):
         import threading
         from time import sleep
 
-        workflow_instance_id = "temp"
+        workflow_instance_id = self.workflow_instance_id
         exception_queue = queue.Queue()  # add exception queue
 
         try:
@@ -72,11 +77,9 @@ class DefaultClient:
             # ---------------------------------------------------
             def run_workflow():
                 try:
-                    nonlocal workflow_instance_id
-                    wid = self._interactor.start_workflow_with_input(
+                    self._interactor.start_workflow_with_input(
                         workflow_input={}, workers=self.workers
                     )
-                    workflow_instance_id = wid
                 except Exception as e:
                     exception_queue.put(e)  # add exception to queue
                     logging.error(f"Error starting workflow: {e}")
@@ -84,7 +87,7 @@ class DefaultClient:
             workflow_thread = threading.Thread(target=run_workflow, daemon=True)
             workflow_thread.start()
             # Wait until workflow_instance_id is set by the thread
-            #while workflow_instance_id is None:
+            # while workflow_instance_id is None:
             #    sleep(0.1)
 
             stream_name = f"{workflow_instance_id}_output"
