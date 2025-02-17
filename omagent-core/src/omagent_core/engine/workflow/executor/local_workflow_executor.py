@@ -1,8 +1,6 @@
-import uuid
 from typing import Dict
 import logging
 from omagent_core.utils.registry import registry
-import uuid
 import logging
 from omagent_core.engine.http.models import *
 import json
@@ -37,7 +35,6 @@ class LocalWorkflowExecutor:
 
 
     def start_workflow(self, workflow_def, start_request, workers) -> str:
-        workflow_id = str(uuid.uuid4())        
         print ("start_request:", start_request.input)
         self.task_outputs["workflow"] = {"input": start_request.input}        
         output = {}
