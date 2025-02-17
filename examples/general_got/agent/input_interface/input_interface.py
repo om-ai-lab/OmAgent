@@ -19,25 +19,27 @@ class InputInterfaceGot(BaseWorker):
 
     def _run(self, *args, **kwargs):
         # # Read user input through configured input interface
-        user_input_task = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt=f'Welcome to use OmAgent GoT Algorithm, please input the task you want to conduct. Choices: {list(SUPPORT_TASK.keys())}. Please press enter if there is no specific task. Please be noted that the task is desgined only for got examples in the origin got paper.')
+        # user_input_task = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt=f'Welcome to use OmAgent GoT Algorithm, please input the task you want to conduct. Choices: {list(SUPPORT_TASK.keys())}. Please press enter if there is no specific task. Please be noted that the task is desgined only for got examples in the origin got paper.')
         
-        task =  user_input_task['messages'][-1]['content'][0]['data']
-        if task not in SUPPORT_TASK:
-            task = ''
+        # task =  user_input_task['messages'][-1]['content'][0]['data']
+        # if task not in SUPPORT_TASK:
+        #     task = ''
 
-        user_input_query = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt=SUPPORT_TASK[task] if task != '' else "Please input your request.")
-        query = user_input_query['messages'][-1]['content'][0]['data']
+        # user_input_query = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt=SUPPORT_TASK[task] if task != '' else "Please input your request.")
+        # query = user_input_query['messages'][-1]['content'][0]['data']
 
-        meta_input = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt="Please input meta information. If there is no meta information, please press space and then enter.")
-        meta = meta_input['messages'][-1]['content'][0]['data']
-        if meta is not None and meta != '' and meta != ' ':
-            try:    
-                meta = json_repair.loads(meta)
-            except Exception:
-                raise ValueError("Meta information should be json. {} is not valid. Please checkout the meta information.".format(meta))
-                meta = None
-        else:
-            meta = None
-        
+        # meta_input = self.input.read_input(workflow_instance_id=self.workflow_instance_id, input_prompt="Please input meta information. If there is no meta information, please press space and then enter.")
+        # meta = meta_input['messages'][-1]['content'][0]['data']
+        # if meta is not None and meta != '' and meta != ' ':
+        #     try:    
+        #         meta = json_repair.loads(meta)
+        #     except Exception:
+        #         raise ValueError("Meta information should be json. {} is not valid. Please checkout the meta information.".format(meta))
+        #         meta = None
+        # else:
+        #     meta = None
+        query = "Find intersection of two sets: Set A [1,2,3,4,5,6,7,8,9,10,11,12`] and Set B [2,4,6,8,10,12,14,16]"
+        task = None
+        meta = None
         return {'query': query, 'task': task, 'meta': meta}
 
