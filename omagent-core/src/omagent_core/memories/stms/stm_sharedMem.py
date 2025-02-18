@@ -2,6 +2,7 @@ import hashlib
 import pickle
 from multiprocessing import shared_memory
 from typing import Any
+import atexit
 
 import numpy as np
 from omagent_core.memories.stms.stm_base import STMBase, WorkflowInstanceProxy
@@ -10,6 +11,19 @@ from omagent_core.utils.registry import registry
 
 @registry.register_component()
 class SharedMemSTM(STMBase):
+    def __init__(self, id):
+        super().__init__()
+        self.id = id
+        self.workflow_instance_ids = set()
+        atexit.register(self.cleanup)
+
+    def __del__(self):
+        self.cleanup()
+
+    def cleanup(self):
+        for workflow_instance_id in list(self.workflow_instance_ids):
+            self.clear(workflow_instance_id)
+
     def __call__(self, workflow_instance_id: str):
         """
         Return a WorkflowInstanceProxy for the given workflow instance ID.
@@ -20,6 +34,7 @@ class SharedMemSTM(STMBase):
         Returns:
             WorkflowInstanceProxy: A proxy object for accessing the workflow instance data.
         """
+        self.workflow_instance_ids.add(workflow_instance_id)
         return WorkflowInstanceProxy(self, workflow_instance_id)
 
     def _create_shm(self, workflow_instance_id: str, size: int = 1024 * 1024 * 100):
