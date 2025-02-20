@@ -3,6 +3,7 @@ import pickle
 from multiprocessing import shared_memory
 from typing import Any
 import atexit
+import os
 
 import numpy as np
 from omagent_core.memories.stms.stm_base import STMBase, WorkflowInstanceProxy
@@ -14,28 +15,73 @@ class SharedMemSTM(STMBase):
     def __init__(self, id=None):
         super().__init__()
         self.id = id
-        self.workflow_instance_ids = set()
-        atexit.register(self.cleanup)
+        self.main_pid = os.getpid()
+        self._cleaned_up = False
+        
+        # Use shared memory to store workflow_instance_ids
+        if os.getpid() == self.main_pid:
+            try:
+                self._ids_shm = shared_memory.SharedMemory(name='workflow_ids', size=1024*1024)
+            except FileNotFoundError:
+                self._ids_shm = shared_memory.SharedMemory(create=True, name='workflow_ids', size=1024*1024)
+                self._save_ids(set())
+        else:
+            try:
+                self._ids_shm = shared_memory.SharedMemory(name='workflow_ids')
+            except FileNotFoundError:
+                # if not found, create a new one
+                self._ids_shm = shared_memory.SharedMemory(create=True, name='workflow_ids', size=1024*1024)
+                self._save_ids(set())
 
-    def __del__(self):
-        self.cleanup()
+        if os.getpid() == self.main_pid:
+            atexit.register(self.cleanup)
 
-    def cleanup(self):
-        for workflow_instance_id in list(self.workflow_instance_ids):
-            self.clear(workflow_instance_id)
+    def _save_ids(self, ids_set):
+        """Save ids set to shared memory"""
+        pickled_data = pickle.dumps(ids_set)
+        self._ids_shm.buf[:len(pickled_data)] = pickled_data
+
+    def _load_ids(self):
+        """Load ids set from shared memory"""
+        try:
+            return pickle.loads(bytes(self._ids_shm.buf).strip(b'\x00'))
+        except (pickle.UnpicklingError, EOFError):
+            return set()
+
+    def _add_workflow_id(self, workflow_id):
+        """Add workflow id to shared set"""
+        ids = self._load_ids()
+        ids.add(workflow_id)
+        self._save_ids(ids)
 
     def __call__(self, workflow_instance_id: str):
-        """
-        Return a WorkflowInstanceProxy for the given workflow instance ID.
-
-        Args:
-            workflow_instance_id (str): The ID of the workflow instance.
-
-        Returns:
-            WorkflowInstanceProxy: A proxy object for accessing the workflow instance data.
-        """
-        self.workflow_instance_ids.add(workflow_instance_id)
+        self._add_workflow_id(workflow_instance_id)
         return WorkflowInstanceProxy(self, workflow_instance_id)
+    
+    def cleanup(self):
+        if os.getpid() == self.main_pid and not self._cleaned_up:
+            try:
+                workflow_ids = self._load_ids()
+                for workflow_instance_id in list(workflow_ids):
+                    try:
+                        self.clear(workflow_instance_id)
+                    except Exception as e:
+                        print(f"Error cleaning up {workflow_instance_id}: {e}")
+            finally:
+                self._cleaned_up = True
+                # clear workflow_ids shared memory
+                if hasattr(self, '_ids_shm'):
+                    self._ids_shm.close()
+                    if os.getpid() == self.main_pid:
+                        try:
+                            self._ids_shm.unlink()
+                        except Exception:
+                            pass
+
+    def __del__(self):
+        if not self._cleaned_up:
+            self.cleanup()
+    
 
     def _create_shm(self, workflow_instance_id: str, size: int = 1024 * 1024 * 100):
         """Create a new shared memory block"""
@@ -53,6 +99,7 @@ class SharedMemSTM(STMBase):
             shm = shared_memory.SharedMemory(name=shortened_id)
         except FileNotFoundError:
             shm = shared_memory.SharedMemory(create=True, size=size, name=shortened_id)
+            self._add_workflow_id(workflow_instance_id)
         return shm
 
     def __getitem__(self, key: tuple | str) -> Any:
@@ -99,6 +146,7 @@ class SharedMemSTM(STMBase):
             value (Any): The value to associate with the key.
         """
         workflow_instance_id, key = key
+        self._add_workflow_id(workflow_instance_id)
         shm = self._get_shm(workflow_instance_id)
         try:
             data = pickle.loads(bytes(shm.buf).strip(b"\x00"))
