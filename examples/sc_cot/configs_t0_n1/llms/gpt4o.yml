@@ -1,0 +1,8 @@
+name: OpenaiGPTLLM
+model_id: ${env| custom_model_id, model_id} # gpt-4o-mini
+api_key: ${env| custom_openai_key, openai_api_key}
+endpoint: ${env| custom_openai_endpoint, https://api.openai.com/v1}
+temperature: 0
+vision: true
+# response_format: json_object
+use_default_sys_prompt: False
