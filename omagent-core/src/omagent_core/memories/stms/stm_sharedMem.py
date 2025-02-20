@@ -11,7 +11,7 @@ from omagent_core.utils.registry import registry
 
 @registry.register_component()
 class SharedMemSTM(STMBase):
-    def __init__(self, id):
+    def __init__(self, id=None):
         super().__init__()
         self.id = id
         self.workflow_instance_ids = set()
