@@ -1,0 +1,87 @@
+conductor_config:
+  name: Configuration
+  base_url:
+    value: http://140.207.201.5:8084
+    description: The Conductor Server API endpoint
+    env_var: CONDUCTOR_SERVER_URL
+  auth_key:
+    value: null
+    description: The authorization key
+    env_var: AUTH_KEY
+  auth_secret:
+    value: null
+    description: The authorization secret
+    env_var: CONDUCTOR_AUTH_SECRET
+  auth_token_ttl_min:
+    value: 45
+    description: The authorization token refresh interval in minutes.
+    env_var: AUTH_TOKEN_TTL_MIN
+  debug:
+    value: false
+    description: Debug mode
+    env_var: DEBUG
+connectors:
+  redis_stream_client:
+    name: RedisConnector
+    host:
+      value: 140.207.201.5
+      env_var: HOST
+    port:
+      value: 6383
+      env_var: PORT
+    password:
+      value: null
+      env_var: PASSWORD
+    username:
+      value: null
+      env_var: USERNAME
+    db:
+      value: 0
+      env_var: DB
+  redis_stm_client:
+    name: RedisConnector
+    host:
+      value: 140.207.201.5
+      env_var: HOST
+    port:
+      value: 6383
+      env_var: PORT
+    password:
+      value: null
+      env_var: PASSWORD
+    username:
+      value: null
+      env_var: USERNAME
+    db:
+      value: 0
+      env_var: DB
+components:
+  AppCallback:
+    name: AppCallback
+    bot_id:
+      value: ''
+      env_var: BOT_ID
+    start_time:
+      value: 2024-12-12_13:03:22
+      env_var: START_TIME
+    folder_name:
+      value: ./running_logs/2024-12-12_13:03:22
+      env_var: FOLDER_NAME
+  AppInput:
+    name: AppInput
+  DefaultCallback:
+    name: DefaultCallback
+    bot_id:
+      value: ''
+      env_var: BOT_ID
+    start_time:
+      value: 2024-12-12_13:03:22
+      env_var: START_TIME
+    folder_name:
+      value: ./running_logs/2024-12-12_13:03:22
+      env_var: FOLDER_NAME
+    incomplete_flag:
+      value: false
+      env_var: INCOMPLETE_FLAG
+  RedisSTM:
+    name: RedisSTM
