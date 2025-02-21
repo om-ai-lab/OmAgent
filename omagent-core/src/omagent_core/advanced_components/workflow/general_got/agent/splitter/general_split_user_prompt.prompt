@@ -1,0 +1,12 @@
+Please split the following task into multiple simple subtasks that can be processed independently:
+
+Task: {{input}}
+
+Requirements:
+1. Split into as many subtasks as needed to ensure each subtask is simple enough
+2. Each subtask must be simple enough to be processed directly without further splitting
+3. Each subtask should be similar in nature
+4. Include all necessary input data in each subtask
+5. Return the split result in the specified JSON format
+
+The subtasks should be simple enough to process directly and their results must be mergeable to accomplish the original task.

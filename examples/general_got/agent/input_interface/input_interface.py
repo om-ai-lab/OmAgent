@@ -38,6 +38,5 @@ class InputInterfaceGot(BaseWorker):
                 meta = None
         else:
             meta = None
-        
         return {'query': query, 'task': task, 'meta': meta}
 
