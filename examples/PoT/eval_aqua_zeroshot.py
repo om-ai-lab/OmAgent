@@ -53,6 +53,7 @@ def main():
     # Setup logging and paths
     logging.init_logger("omagent", "omagent", level="INFO")
     CURRENT_PATH = Path(__file__).parents[0]
+    container.register_stm("SharedMemSTM")
 
     # Initialize agent modules and configuration
     registry.import_module(project_path=CURRENT_PATH.joinpath('agent'))
@@ -87,7 +88,7 @@ def main():
     for r, w in zip(res, workflow_input_list):
         output_json.append({
             "id": w['id'],
-            "question": w['query'],
+            "question": w['query']+'\nOptions: '+str(question['options']),
             "last_output": r['last_output'],
             "prompt_tokens": r['prompt_tokens'],
             "completion_tokens": r['completion_tokens']
@@ -104,7 +105,7 @@ def main():
     # Save results to output file
     if not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
-    with open(f'{args.output_path}/{dataset_name}_{model_id}_POT_output.json', 'w') as f:
+    with open(f'{args.output_path}/{dataset_name}_{model_id.replace("/","-")}_POT_output.json', 'w') as f:
         json.dump(final_output, f, indent=4)
 
     # Cleanup

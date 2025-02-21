@@ -1,3 +1,6 @@
+import os
+os.environ["OMAGENT_MODE"] = "lite"
+
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
 from omagent_core.utils.container import container
@@ -7,7 +10,7 @@ logging.init_logger("omagent", "omagent", level="INFO")
 
 from pathlib import Path
 
-from omagent_core.clients.devices.cli.client import DefaultClient
+from omagent_core.clients.devices.cli import DefaultClient
 
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -27,8 +30,8 @@ from examples.step3_outfit_with_loop.agent.outfit_decider.outfit_decider import 
 from examples.step3_outfit_with_loop.agent.outfit_qa.outfit_qa import OutfitQA
 
 # Register storage components
-container.register_stm(stm="RedisSTM")
-container.register_ltm(ltm="MilvusLTM")
+container.register_stm("SharedMemSTM")
+container.register_ltm("MilvusLTM")
 
 # Load container configuration
 container.from_config(CURRENT_PATH.joinpath("container.yaml"))

@@ -11,7 +11,7 @@ import func_timeout
 import numpy as np
 import math
 import statistics
-from sympy import symbols
+from sympy import symbols, solve, And, sqrt, Symbol
 import itertools
 
 # Get absolute path to the directory containing this file
@@ -68,7 +68,7 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
             3.14
         """
         try:
-            if ans is None:
+            if ans != 0 and ans is None:
                 return None
             elif type(ans) == dict:
                 # For dictionaries, extract the first value
@@ -208,6 +208,10 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
             - Handles special cases for numpy arrays and sympy expressions
             - Preserves relational expressions as strings
         """
+        if ans is None:
+            return None
+        if isinstance(ans, (int, float)) and math.isinf(ans):
+            return None
         if 'relational' in str(type(ans)):
             # Preserve relational expressions as strings
             return str(ans)
@@ -216,12 +220,18 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
                 # Handle scalar numpy value
                 ans = round(float(ans), 2)
             else:
-                # Handle array numpy value - take first element
-                ans = round(float(ans[0]), 2)
+                # Handle array numpy value - check array length
+                if len(ans) == 1:
+                    ans = round(float(ans[0]), 2)
+                else:
+                    # If array has multiple values, convert all elements
+                    ans = [round(float(x), 2) for x in ans]
             if convert_to_str:
                 return str(ans)
             else:
                 return ans
+        elif ans == 0:
+            return ans
         elif not ans:
             return None
         else:
@@ -276,7 +286,7 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
         """
         logging.info("input query: {}".format(query))
         if query == '' or query is None:
-            return {'last_output': None, 'total_tokens': 0}
+            return {'last_output': None, 'completion_tokens': 0, 'prompt_tokens': 0}
 
         # Select appropriate prompt template based on whether examples are provided
         if examples is None:
@@ -300,7 +310,7 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
         result = chat_complete_res["choices"][0]["message"]["content"]
         print('---------------------\n')
         print(result)
-       
+    
         result = self.extract_code_blocks(result, is_fewshot = examples != None)
         
         # For zero-shot cases, add imports and answer extraction
@@ -314,15 +324,15 @@ class PoTExecutor(BaseWorker, BaseLLMBackend):
         
         # Execute code safely and process result
         ans = self.safe_execute(result)
+        logging.info("Result of execution: {}".format(ans))
+        logging.info(chat_complete_res['usage'])
 
         if options is None:
             prediction = self.floatify_ans(self.simplify_ans(ans, False))
         else:
             prediction = self.floatify_ans(self.simplify_ans(ans, True))
-        logging.info("Result of execution: {}".format(prediction))
-        logging.info(chat_complete_res['usage'])
-
+        logging.info("Refined result: {}".format(prediction))
         completion_tokens = chat_complete_res['usage']['completion_tokens']
         prompt_tokens = chat_complete_res['usage']['prompt_tokens']
         
-        return {'last_output': prediction, 'completion_tokens': completion_tokens, 'prompt_tokens': prompt_tokens}
+        return {'last_output': str(prediction), 'completion_tokens': completion_tokens, 'prompt_tokens': prompt_tokens}

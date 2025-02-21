@@ -1,4 +1,7 @@
 # Import required modules and components
+import os
+os.environ["OMAGENT_MODE"] = "lite"
+
 from pathlib import Path
 import os
 os.environ["OMAGENT_MODE"] = "lite"

@@ -19,7 +19,7 @@ CURRENT_PATH = root_path = Path(__file__).parents[0]
 # Import registered modules
 registry.import_module(project_path=CURRENT_PATH.joinpath("agent"))
 
-container.register_stm("RedisSTM")
+container.register_stm("SharedMemSTM")
 # Load container configuration from YAML file
 container.from_config(CURRENT_PATH.joinpath("container.yaml"))
 
