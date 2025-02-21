@@ -205,7 +205,10 @@ class OpenaiGPTLLM(BaseLLM):
                 return [c.model_dump(exclude_none=True) for c in msg]
             elif isinstance(msg, Content) and msg.type == "text":
                 return msg.text
+            elif isinstance(msg, Content) and msg.type == "image_url":
+                return [msg.model_dump(exclude_none=True)]
             else:
+                print(f'msg: {msg}')
                 raise ValueError("Invalid message type")
 
         messages = [

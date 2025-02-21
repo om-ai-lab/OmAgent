@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Type
 from threading import Thread
-from fakeredis import TcpFakeServer
 
 from omagent_core.engine.configuration.aaas_config import AaasConfig
 import yaml
@@ -23,15 +22,6 @@ class Container:
         self._input_name: Optional[str] = None
         self.conductor_config = Configuration()
         self.aaas_config = AaasConfig()
-
-        if os.getenv("OMAGENT_MODE") == "lite":
-            try:
-                server_address = ("127.0.0.1", 6379)
-                server = TcpFakeServer(server_address, server_type="redis")
-                t = Thread(target=server.serve_forever, daemon=True)
-                t.start()
-            except Exception as e:
-                print("Warning: error starting fake redis server:", e)
 
     def register_connector(
         self,
@@ -237,10 +227,6 @@ class Container:
         Args:
             config_data: The dict including connectors and components configurations
         """
-        if os.getenv("OMAGENT_MODE") == "lite":
-            print ("skipping from_config")
-            return
-
         def clean_config_dict(config_dict: dict) -> dict:
             """Recursively clean up the configuration dictionary, removing all 'description' and 'env_var' keys"""
             cleaned = {}
@@ -256,7 +242,10 @@ class Container:
 
         if isinstance(config_data, str | Path):
             if not Path(config_data).exists():
-                raise FileNotFoundError(f"Config file not found: {config_data}")
+                if os.getenv("OMAGENT_MODE") == "lite":
+                    return 
+                else:
+                    raise FileNotFoundError(f"Config file not found: {config_data}")
             config_data = yaml.load(open(config_data, "r"), Loader=yaml.FullLoader)
         config_data = clean_config_dict(config_data)
 

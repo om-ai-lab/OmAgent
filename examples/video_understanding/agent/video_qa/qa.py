@@ -33,7 +33,7 @@ class VideoQA(BaseWorker, BaseLLMBackend):
     )
     text_encoder: OpenaiTextEmbeddingV3
 
-    def _run(self, video_md5: str, video_path: str, instance_id: str, *args, **kwargs):
+    def _run(self, video_md5: str, *args, **kwargs):
         self.stm(self.workflow_instance_id)["image_cache"] = {}
         self.stm(self.workflow_instance_id)["former_results"] = {}
         question = self.input.read_input(

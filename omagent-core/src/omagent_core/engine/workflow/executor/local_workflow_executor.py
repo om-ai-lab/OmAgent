@@ -1,11 +1,10 @@
-import uuid
 from typing import Dict
 import logging
 from omagent_core.utils.registry import registry
-import uuid
 import logging
 from omagent_core.engine.http.models import *
 import json
+import inspect
 
 
 class LocalWorkflowExecutor:
@@ -36,7 +35,6 @@ class LocalWorkflowExecutor:
 
 
     def start_workflow(self, workflow_def, start_request, workers) -> str:
-        workflow_id = str(uuid.uuid4())        
         print ("start_request:", start_request.input)
         self.task_outputs["workflow"] = {"input": start_request.input}        
         output = {}
@@ -65,10 +63,20 @@ class LocalWorkflowExecutor:
             
             worker = worker_class()            
             """
-            inputs = self.evaluate_input_parameters(task)      
-            print (inputs)      
+            inputs = self.evaluate_input_parameters(task)
+            print(inputs)
+            signature = inspect.signature(worker._run)
+            signature_params = dict(signature.parameters)
+            checked_inputs = {}
+            for signature_param_key, signature_param_value in signature_params.items():
+                if signature_param_key in ['args', 'kwargs']:
+                    continue
+                if signature_param_key not in inputs:
+                    checked_inputs[signature_param_key] = None
+                else:
+                    checked_inputs[signature_param_key] = inputs[signature_param_key]
             # Execute task
-            result = worker._run(**inputs)
+            result = worker._run(**checked_inputs)
             # Store output
             task_ref_key = 'taskReferenceName' if 'taskReferenceName' in task else 'task_reference_name'
 
@@ -236,6 +244,7 @@ class WorkflowExecutor:
         except Exception as e:
             self.status.status = "FAILED"
             self.status.error = str(e)
+            raise e
 
 
     def get_workflow(self, workflow_id: str, include_tasks: bool = None) -> Workflow:        

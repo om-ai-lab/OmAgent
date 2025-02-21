@@ -1,4 +1,5 @@
 from pathlib import Path
+import uuid
 
 from omagent_core.services.connectors.redis import RedisConnector
 from omagent_core.utils.container import container
@@ -20,7 +21,9 @@ from omagent_core.utils.build import build_from_file
 from omagent_core.utils.container import container
 from omagent_core.utils.logger import logging
 from omagent_core.utils.registry import registry
-import os 
+import os
+import sys
+import queue
 
 
 registry.import_module()
@@ -46,38 +49,45 @@ class DefaultClient:
         self._input_prompt = input_prompt
         self._task_to_domain = {}
         worker_config = build_from_file(self._config_path)
+        self.workflow_instance_id = str(uuid.uuid4())
         self.initialization(workers, worker_config)
 
     def initialization(self, workers, worker_config):        
         self.workers = {}
         for worker in workers:
+            worker.workflow_instance_id = self.workflow_instance_id
             self.workers[type(worker).__name__] = worker            
         
         for config in worker_config:
-            worker_cls = registry.get_worker(config['name'])        
-            self.workers[config['name']] = worker_cls(**config)                    
+            worker_cls = registry.get_worker(config['name'])    
+            worker = worker_cls(**config)
+            worker.workflow_instance_id = self.workflow_instance_id
+            self.workers[config['name']] = worker
 
     def start_interactor(self):
         import threading
         from time import sleep
 
-        workflow_instance_id = "temp"
+        workflow_instance_id = self.workflow_instance_id
+        exception_queue = queue.Queue()  # add exception queue
+
         try:
             absolute_path = Path(self._config_path).resolve()
             worker_config = build_from_file(self._config_path)
             # ---------------------------------------------------
             def run_workflow():
-                nonlocal workflow_instance_id
-                wid = self._interactor.start_workflow_with_input(
-                    workflow_input={}, workers=self.workers
-                )
-                # To ensure we can track the workflow instance id here
-                workflow_instance_id = wid
-
+                try:
+                    self._interactor.start_workflow_with_input(
+                        workflow_input={}, workers=self.workers
+                    )
+                except Exception as e:
+                    exception_queue.put(e)  # add exception to queue
+                    logging.error(f"Error starting workflow: {e}")
+                    raise e
             workflow_thread = threading.Thread(target=run_workflow, daemon=True)
             workflow_thread.start()
             # Wait until workflow_instance_id is set by the thread
-            #while workflow_instance_id is None:
+            # while workflow_instance_id is None:
             #    sleep(0.1)
 
             stream_name = f"{workflow_instance_id}_output"
@@ -102,6 +112,11 @@ class DefaultClient:
 
             while True:
                 try:
+                    # check exception queue
+                    if not exception_queue.empty():
+                        exc = exception_queue.get()
+                        raise RuntimeError(f"Workflow thread failed: {exc}") from exc
+
                     status = self._interactor.get_workflow(workflow_id=workflow_instance_id).status
                     if status in terminal_status:
                         break
@@ -181,140 +196,11 @@ class DefaultClient:
                     sleep(poll_interval)
 
                 except Exception as e:
-                    logging.error(f"Error while listening to stream: {e}")
-                    sleep(poll_interval)  # Wait before retrying
-            print ("stop_interactor")
+                    logging.error(f"Error in main loop: {e}")
+                    sys.exit(1)
             self.stop_interactor()
+            
 
-        except KeyboardInterrupt:
-            logging.info("\nDetected Ctrl+C, stopping workflow...")
-            if workflow_instance_id is not None:
-                self._interactor._executor.terminate(workflow_id=workflow_instance_id)
-            raise
-
-    def start_interactor2(self):
-        workflow_instance_id = None
-        try:
-            absolute_path = Path(self._config_path).resolve()
-            worker_config = build_from_file(self._config_path)
-            self._task_handler_interactor = TaskHandler(
-                worker_config=worker_config, workers=self._workers, task_to_domain=self._task_to_domain
-            )
-            self._task_handler_interactor.start_processes()
-            workflow_instance_id = self._interactor.start_workflow_with_input(
-                workflow_input={}, task_to_domain=self._task_to_domain
-            )
-
-            stream_name = f"{workflow_instance_id}_output"
-            consumer_name = f"{workflow_instance_id}_agent"  # consumer name
-            group_name = "omappagent"  # replace with your consumer group name
-            poll_interval = 1
-
-            if self._input_prompt:
-                self.first_input(
-                    workflow_instance_id=workflow_instance_id,
-                    input_prompt=self._input_prompt,
-                )
-
-            try:
-                container.get_connector("redis_stream_client")._client.xgroup_create(
-                    stream_name, group_name, id="0", mkstream=True
-                )
-            except Exception as e:
-                logging.debug(f"Consumer group may already exist: {e}")
-
-            while True:
-                try:
-                    status = self._interactor.get_workflow(
-                        workflow_id=workflow_instance_id
-                    ).status
-                    if status in terminal_status:
-                        break
-                    data_flag = False
-                    content = None
-                    # logging.info(f"Checking workflow status: {workflow_instance_id}")
-                    workflow_status = workflow_client.get_workflow_status(
-                        workflow_instance_id
-                    )
-                    if workflow_status.status not in running_status:
-                        logging.info(
-                            f"Workflow {workflow_instance_id} is not running, exiting..."
-                        )
-                        break
-
-                    # read new messages from consumer group
-                    messages = container.get_connector(
-                        "redis_stream_client"
-                    )._client.xreadgroup(
-                        group_name, consumer_name, {stream_name: ">"}, count=1
-                    )
-                    # Convert byte data to string
-                    messages = [
-                        (
-                            stream,
-                            [
-                                (
-                                    message_id,
-                                    {
-                                        k.decode("utf-8"): v.decode("utf-8")
-                                        for k, v in message.items()
-                                    },
-                                )
-                                for message_id, message in message_list
-                            ],
-                        )
-                        for stream, message_list in messages
-                    ]
-                    # logging.info(f"Messages: {messages}")
-
-                    for stream, message_list in messages:
-                        for message_id, message in message_list:
-                            data_flag, content = self.process_message(message)
-                            # confirm message has been processed
-                            container.get_connector("redis_stream_client")._client.xack(
-                                stream_name, group_name, message_id
-                            )
-                    if data_flag:
-                        contents = []
-                        while True:
-                            print(
-                                f"{Fore.GREEN}{content}(Waiting for input. Your input can only be text or image path each time, you can press Enter once to input multiple times. Press Enter twice to finish the entire input.):{Style.RESET_ALL}"
-                            )
-                            user_input_lines = []
-                            while True:
-                                line = input(f"{Fore.GREEN}>>>{Style.RESET_ALL}")
-                                if line == "":
-                                    break
-                                user_input_lines.append(line)
-                            logging.info(f"User input lines: {user_input_lines}")
-
-                            for user_input in user_input_lines:
-                                if self.is_url(user_input) or self.is_file(user_input):
-                                    contents.append(
-                                        {"type": "image_url", "data": user_input}
-                                    )
-                                else:
-                                    contents.append(
-                                        {"type": "text", "data": user_input}
-                                    )
-                            if len(contents) > 0:
-                                break
-                        result = {
-                            "agent_id": workflow_instance_id,
-                            "messages": [{"role": "user", "content": contents}],
-                            "kwargs": {},
-                        }
-                        container.get_connector("redis_stream_client")._client.xadd(
-                            f"{workflow_instance_id}_input",
-                            {"payload": json.dumps(result, ensure_ascii=False)},
-                        )
-                    # Sleep for the specified interval before checking for new messages again
-                    # logging.info(f"Sleeping for {poll_interval} seconds, waiting for {stream_name} ...")
-                    sleep(poll_interval)
-                except Exception as e:
-                    logging.error(f"Error while listening to stream: {e}")
-                    sleep(poll_interval)  # Wait before retrying
-            self.stop_interactor()
         except KeyboardInterrupt:
             logging.info("\nDetected Ctrl+C, stopping workflow...")
             if workflow_instance_id is not None:
@@ -324,7 +210,8 @@ class DefaultClient:
     def stop_interactor(self):
         #self._task_handler_interactor.stop_processes()
         print ("stop_interactor")
-        os._exit(0)
+        sys.exit(0)
+
 
     def start_processor(self):
         workflow_instance_id = None
