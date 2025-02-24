@@ -28,6 +28,7 @@ OmAgent is python library for building multimodal language agents with ease. We 
  - Native multimodal interaction support include VLM models, real-time API, computer vision models, mobile connection and etc.   
  - A suite of state-of-the-art unimodal and multimodal agent algorithms that goes beyond simple LLM reasoning, e.g. ReAct, CoT, SC-Cot etc.   
  - Supports local deployment of models. You can deploy your own models locally by using Ollama[Ollama](./docs/concepts/models/Ollama.md) or [LocalAI](./examples/video_understanding/docs/local-ai.md).
+ - Fully distributed architecture, supports custom scaling. Also supports Lite mode, eliminating the need for middleware deployment.
 
 
 ## 🛠️ How To Install
@@ -41,11 +42,20 @@ OmAgent is python library for building multimodal language agents with ease. We 
   ```bash
   pip install -e omagent-core
   ```
-- Set Up Conductor Server (Docker-Compose) Docker-compose includes conductor-server, Elasticsearch, and Redis.
+- [Optional] Set Up Conductor Server (Docker-Compose) Docker-compose includes conductor-server, Elasticsearch, and Redis.
   ```bash
   cd docker
   docker-compose up -d
   ```
+  OmAgent now support **Lite mode**, which does not rely on the middleware servers. You can start the agent in lite mode by setting the environment variable `OMAGENT_MODE` to `lite`.
+  ```bash
+  export OMAGENT_MODE=lite
+  ```
+  in code, you can set the mode by:
+  ```python
+  os.environ["OMAGENT_MODE"] = "lite"
+  ```
+  **All examples now default to Lite mode.**
 
 ## 🚀 Quick Start 
 ### Configuration
@@ -57,9 +67,7 @@ The container.yaml file is a configuration file that manages dependencies and se
    cd examples/step1_simpleVQA
    python compile_container.py
    ```
-   This will create a container.yaml file with default settings under `examples/step1_simpleVQA`.
-
-
+   This will create a container.yaml file with default settings under `examples/step1_simpleVQA`. For more information about the container.yaml configuration, please refer to the [container module](./docs/concepts/container.md)
 
 2. Configure your LLM settings in `configs/llms/gpt.yml`:
 
@@ -69,14 +77,6 @@ The container.yaml file is a configuration file that manages dependencies and se
    export custom_openai_endpoint="your_openai_endpoint"
    ```
    You can use a locally deployed Ollama to call your own language model. The tutorial is [here](docs/concepts/models/Ollama.md).
-
-3. Update settings in the generated `container.yaml`:
-      - Configure Redis connection settings, including host, port, credentials, and both `redis_stream_client` and `redis_stm_client` sections.
-   - Update the Conductor server URL under conductor_config section
-   - Adjust any other component settings as needed
-
-
-For more information about the container.yaml configuration, please refer to the [container module](./docs/concepts/container.md)
 
 ### Run the demo
 
