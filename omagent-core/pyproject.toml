@@ -1,7 +1,7 @@
 
 [tool.poetry]
 name = "omagent_core"
-version = "0.2.3"
+version = "0.2.4"
 description = "Core package for OmAgent"
 authors = ["OM AI Lab <OmAIglobal2024@gmail.com>"]
 readme = "README.md"
