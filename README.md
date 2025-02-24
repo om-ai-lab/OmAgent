@@ -42,20 +42,6 @@ OmAgent is python library for building multimodal language agents with ease. We 
   ```bash
   pip install -e omagent-core
   ```
-- [Optional] Set Up Conductor Server (Docker-Compose) Docker-compose includes conductor-server, Elasticsearch, and Redis.
-  ```bash
-  cd docker
-  docker-compose up -d
-  ```
-  OmAgent now support **Lite mode**, which does not rely on the middleware servers. You can start the agent in lite mode by setting the environment variable `OMAGENT_MODE` to `lite`.
-  ```bash
-  export OMAGENT_MODE=lite
-  ```
-  in code, you can set the mode by:
-  ```python
-  os.environ["OMAGENT_MODE"] = "lite"
-  ```
-  **All examples now default to Lite mode.**
 
 ## 🚀 Quick Start 
 ### Configuration
