@@ -1,8 +1,7 @@
 from pathlib import Path
 from typing import List
 
-from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import \
-    TaskTree
+from omagent_core.advanced_components.workflow.dnc.schemas.dnc_structure import TaskTree
 from omagent_core.engine.worker.base import BaseWorker
 from omagent_core.memories.ltms.ltm import LTM
 from omagent_core.models.llms.base import BaseLLMBackend
@@ -53,25 +52,85 @@ class Conclude(BaseLLMBackend, BaseWorker):
             img_placeholders=self.stm(self.workflow_instance_id).get("image_cache"),
         )
         if isinstance(chat_complete_res, Iterator):
-            last_output = "Answer: "
-            self.callback.send_incomplete(
-                agent_id=self.workflow_instance_id, msg="Answer: "
-            )
-            for chunk in chat_complete_res:
-                if len(chunk.choices) > 0:
-                    current_msg = chunk.choices[0].delta.content if chunk.choices[0].delta.content is not None else ''
-                    self.callback.send_incomplete(
-                        agent_id=self.workflow_instance_id,
-                        msg=f"{current_msg}",
-                    )
-                    last_output += current_msg
-            self.callback.send_answer(agent_id=self.workflow_instance_id, msg="")
+            # Invoke the DeepSeek model via API to stream the reasoning process and results.
+            if hasattr(next(chat_complete_res).choices[0].delta, "reasoning_content"):
+                last_output = "Reasoning: \n"
+                self.callback.send_incomplete(
+                    agent_id=self.workflow_instance_id, msg="Reasoning: \n"
+                )
+                flag = False
+                for chunk in chat_complete_res:
+                    if len(chunk.choices) > 0:
+                        if not flag and chunk.choices[0].delta.content is not None:
+                            last_output += "\nAnswer: "
+                            self.callback.send_incomplete(
+                                agent_id=self.workflow_instance_id,
+                                msg="\nAnswer: ",
+                            )
+                            flag = True
+                        current_msg = (
+                            chunk.choices[0].delta.content
+                            if chunk.choices[0].delta.content is not None
+                            else (
+                                chunk.choices[0].delta.reasoning_content
+                                if chunk.choices[0].delta.reasoning_content is not None
+                                else ""
+                            )
+                        )
+                        self.callback.send_incomplete(
+                            agent_id=self.workflow_instance_id,
+                            msg=f"{current_msg}",
+                        )
+                        last_output += current_msg
+                self.callback.send_answer(agent_id=self.workflow_instance_id, msg="")
+            # Invoke the DeepSeek model via ollama API to stream the reasoning process and results.
+            elif "deepseek" in self.llm.model_id:
+                last_output = "Reasoning: \n "
+                self.callback.send_incomplete(
+                    agent_id=self.workflow_instance_id, msg="Reasoning: \n"
+                )
+                for chunk in chat_complete_res:
+                    if len(chunk.choices) > 0:
+                        current_msg = (
+                            chunk.choices[0].delta.content
+                            if chunk.choices[0].delta.content is not None
+                            else ""
+                        )
+                        if current_msg == "</think>":
+                            current_msg = "\nAnswer:"
+                        self.callback.send_incomplete(
+                            agent_id=self.workflow_instance_id,
+                            msg=f"{current_msg}",
+                        )
+                        last_output += current_msg
+                self.callback.send_answer(agent_id=self.workflow_instance_id, msg="")
+            # Invoke models that typically do not have a reasoning process, and stream the results.
+            else:
+                last_output = "Answer: "
+                self.callback.send_incomplete(
+                    agent_id=self.workflow_instance_id, msg="Answer: "
+                )
+                for chunk in chat_complete_res:
+                    if len(chunk.choices) > 0:
+                        current_msg = (
+                            chunk.choices[0].delta.content
+                            if chunk.choices[0].delta.content is not None
+                            else ""
+                        )
+                        self.callback.send_incomplete(
+                            agent_id=self.workflow_instance_id,
+                            msg=f"{current_msg}",
+                        )
+                        last_output += current_msg
+                self.callback.send_answer(agent_id=self.workflow_instance_id, msg="")
         else:
             last_output = chat_complete_res["choices"][0]["message"]["content"]
             self.callback.send_answer(
                 agent_id=self.workflow_instance_id,
                 msg=f'Answer: {chat_complete_res["choices"][0]["message"]["content"]}',
             )
-        self.callback.send_answer(agent_id=self.workflow_instance_id, msg=f"Token usage: {self.token_usage}")
+        self.callback.send_answer(
+            agent_id=self.workflow_instance_id, msg=f"Token usage: {self.token_usage}"
+        )
         self.stm(self.workflow_instance_id).clear()
         return {"last_output": last_output}
