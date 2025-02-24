@@ -15,7 +15,7 @@ from omagent_core.utils.container import container
 from omagent_core.utils.general import read_image
 from omagent_core.utils.logger import logging
 from omagent_core.utils.registry import registry
-
+import os
 
 @registry.register_component()
 class AppInput(InputBase):
@@ -42,9 +42,11 @@ class AppInput(InputBase):
         except Exception as e:
             logging.debug(f"Consumer group may already exist: {e}")
 
-        logging.info(
-            f"Listening to Redis stream: {stream_name} in group: {group_name} start_id: {start_id}"
-        )
+        if not os.getenv("OMAGENT_MODE") == "lite":
+            logging.info(
+                f"Listening to Redis stream: {stream_name} in group: {group_name} start_id: {start_id}"
+            )
+        
         data_flag = False
         while True:
             try:

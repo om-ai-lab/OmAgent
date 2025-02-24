@@ -1,5 +1,7 @@
+import os
+os.environ["OMAGENT_MODE"] = "lite"
 # Import required modules from omagent_core
-from omagent_core.clients.devices.cli.client import \
+from omagent_core.clients.devices.cli import \
     DefaultClient  # For CLI client interface
 from omagent_core.engine.workflow.conductor_workflow import \
     ConductorWorkflow  # For workflow management
@@ -30,7 +32,7 @@ from examples.step1_simpleVQA.agent.input_interface.input_interface import \
 
 # Load container configuration from YAML file
 # This configures dependencies like Redis connections and API endpoints
-container.register_stm("RedisSTM")
+container.register_stm("SharedMemSTM")
 container.from_config(CURRENT_PATH.joinpath("container.yaml"))
 
 

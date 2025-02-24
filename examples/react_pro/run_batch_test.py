@@ -2,7 +2,7 @@ from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from pathlib import Path
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.programmatic.client import ProgrammaticClient
+from omagent_core.clients.devices.programmatic import ProgrammaticClient
 from omagent_core.utils.logger import logging
 from omagent_core.advanced_components.workflow.react_pro.workflow import ReactProWorkflow
 import json
@@ -59,7 +59,7 @@ def run_workflow(args):
     registry.import_module(CURRENT_PATH.joinpath('agent'))
 
     # Load container configuration from YAML file
-    container.register_stm("RedisSTM")
+    container.register_stm("SharedMemSTM")
     container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 
     # Initialize workflow

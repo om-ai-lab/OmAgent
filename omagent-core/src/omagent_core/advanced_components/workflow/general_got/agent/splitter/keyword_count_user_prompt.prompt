@@ -1,0 +1,24 @@
+<Instruction> Split the following input text into individual sentences.
+Output each sentence in the following format without any additional text or thoughts:
+{
+    "Sentence 1": "Some sentence text ...",
+    "Sentence 2": "Some sentence text ...",
+    "Sentence 3": "Some sentence text ...",
+    ...
+} </Instruction>
+
+<Example>
+Input:
+Journeying westward, she admired the art in Italy and sipped coffee in France. The music of Spain and the history of Greece deepened her love for Europe. The Nordic beauty of Norway, Sweden, Finland, and Denmark took her breath away. She danced in Ireland, explored castles in Scotland, and marveled at the architecture in Germany and Russia. Italy, Norway, Sweden and Germany will always stay her favourite destinations to visit.
+Output: 
+{
+    "Sentence 1": "Journeying westward, she admired the art in Italy and sipped coffee in France. ",
+    "Sentence 2": "The music of Spain and the history of Greece deepened her love for Europe. "
+    "Sentence 3": "The Nordic beauty of Norway, Sweden, Finland, and Denmark took her breath away.",
+    "Sentence 4": "She danced in Ireland, explored castles in Scotland, and marveled at the architecture in Germany and Russia.",
+    "Sentence 5": "Italy, Norway, Sweden and Germany will always stay her favourite destinations to visit."
+}
+</Example>
+
+Input:
+{{input}}

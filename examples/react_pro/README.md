@@ -57,6 +57,22 @@ The container.yaml file manages dependencies and settings for different componen
 
 ## Running the Example
 
+You can run the example in two modes:
+
+### Lite Mode (Local Execution)
+Set the environment variable before running:
+```bash
+export OMAGENT_MODE="lite"
+```
+This mode runs the workflow locally without requiring a Conductor server.
+
+### Conductor Mode (Distributed Execution)
+Set the environment variable (or don't set it, as this is the default):
+```bash
+export OMAGENT_MODE="conductor"  # or just don't set OMAGENT_MODE
+```
+This mode requires a running Conductor server for workflow orchestration.
+
 You can run the example in three ways:
 
 1. Using the CLI interface:

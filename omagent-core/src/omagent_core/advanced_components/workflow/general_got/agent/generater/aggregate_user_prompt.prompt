@@ -1,0 +1,23 @@
+Please combine the following two subtask results:
+
+Input 1:
+{{input1}}
+
+Input 2:
+{{input2}}
+
+Return a JSON object that:
+1. Maintains the same task type
+2. Combines the results appropriately
+3. Provides a clear description of the combined outcome
+
+The output should be in this format:
+{
+    "task": "task_type",
+    "result": "description of combined results"
+}
+
+Note: For set intersection tasks, make sure to:
+- Combine the subsets properly
+- Include all found common elements
+- Maintain clarity about which subsets were processed 

@@ -1,10 +1,13 @@
+import os
+os.environ["OMAGENT_MODE"] = "lite"
+
 # Import required modules and components
 from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.advanced_components.workflow.pot.workflow import PoTWorkflow
 from pathlib import Path
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.programmatic.client import ProgrammaticClient
+from omagent_core.clients.devices.programmatic import ProgrammaticClient
 from omagent_core.utils.logger import logging
 import argparse
 import json
@@ -114,6 +117,7 @@ ans = num_of_Olivia_money - num_of_bagels * cost_of_each_bagel
     # Setup logging and paths
     logging.init_logger("omagent", "omagent", level="INFO")
     CURRENT_PATH = Path(__file__).parents[0]
+    container.register_stm("SharedMemSTM")
 
     # Initialize agent modules and configuration
     registry.import_module(project_path=CURRENT_PATH.joinpath('agent'))
@@ -164,7 +168,7 @@ ans = num_of_Olivia_money - num_of_bagels * cost_of_each_bagel
     # Save results to output file
     if not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
-    with open(f'{args.output_path}/{dataset_name}_{model_id}_POT_output.json', 'w') as f:
+    with open(f'{args.output_path}/{dataset_name}_{model_id.replace("/","-")}_POT_output.json', 'w') as f:
         json.dump(final_output, f, indent=4)
 
     # Cleanup

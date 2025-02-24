@@ -62,7 +62,7 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
                 md5_hash.update(byte_block)
         return md5_hash.hexdigest()
 
-    def _run(self, video_path: str, *args, **kwargs):
+    def _run(self, test: str, *args, **kwargs):
         """
         Process video files by:
         1. Calculating MD5 hash of input video for caching
@@ -250,7 +250,5 @@ class VideoPreprocessor(BaseLLMBackend, BaseWorker):
             with open(cache_path, "wb") as f:
                 pickle.dump(video.scenes, f)
         return {
-            "video_md5": video_md5,
-            "video_path": video_path,
-            "instance_id": self.workflow_instance_id,
+            "video_md5": video_md5
         }

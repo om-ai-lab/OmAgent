@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Type
+from threading import Thread
 
 from omagent_core.engine.configuration.aaas_config import AaasConfig
 import yaml
@@ -8,6 +9,7 @@ from omagent_core.engine.configuration.configuration import (TEMPLATE_CONFIG,
 from omagent_core.engine.configuration.aaas_config import AAAS_TEMPLATE_CONFIG
 from omagent_core.utils.registry import registry
 from pydantic import BaseModel
+import os
 
 
 class Container:
@@ -109,15 +111,22 @@ class Container:
         config: dict = {},
         overwrite: bool = False,
     ):
+        if os.getenv("OMAGENT_MODE") == "lite":
+            name = "SharedMemSTM"
         name = self.register_component(stm, name, config, overwrite)
         self._stm_name = name
 
     @property
     def stm(self) -> BaseModel:
         if self._stm_name is None:
-            raise ValueError(
-                "STM component is not registered. Please use register_stm to register."
-            )
+            if os.getenv("OMAGENT_MODE") == "lite":
+                self.register_stm("SharedMemSTM")
+                self._stm_name = "SharedMemSTM"
+            else:
+                raise ValueError(
+                    "STM component is not registered. Please use register_stm to register."
+                )   
+
         return self.get_component(self._stm_name)
 
     def register_ltm(
@@ -218,7 +227,6 @@ class Container:
         Args:
             config_data: The dict including connectors and components configurations
         """
-
         def clean_config_dict(config_dict: dict) -> dict:
             """Recursively clean up the configuration dictionary, removing all 'description' and 'env_var' keys"""
             cleaned = {}
@@ -234,7 +242,10 @@ class Container:
 
         if isinstance(config_data, str | Path):
             if not Path(config_data).exists():
-                raise FileNotFoundError(f"Config file not found: {config_data}")
+                if os.getenv("OMAGENT_MODE") == "lite":
+                    return 
+                else:
+                    raise FileNotFoundError(f"Config file not found: {config_data}")
             config_data = yaml.load(open(config_data, "r"), Loader=yaml.FullLoader)
         config_data = clean_config_dict(config_data)
 
@@ -265,6 +276,9 @@ class Container:
         self.check_connection()
 
     def check_connection(self):
+        if os.getenv("OMAGENT_MODE") == "lite":
+            return 
+        
         for name, connector in self._connectors.items():
             try:
                 connector.check_connection()

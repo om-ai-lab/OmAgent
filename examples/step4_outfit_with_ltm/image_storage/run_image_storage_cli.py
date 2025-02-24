@@ -1,4 +1,7 @@
 # Import core dependencies
+import os
+os.environ["OMAGENT_MODE"] = "lite"
+
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
 from omagent_core.utils.container import container
@@ -18,11 +21,11 @@ registry.import_module(project_path=CURRENT_PATH.joinpath("agent"))
 
 from omagent_core.clients.devices.app.image_index import ImageIndexListener
 # Import client components
-from omagent_core.clients.devices.cli.client import DefaultClient
+from omagent_core.clients.devices.cli import DefaultClient
 
 # Configure storage systems
-container.register_stm(stm="RedisSTM")
-container.register_ltm(ltm="MilvusLTM")
+container.register_stm("SharedMemSTM")
+container.register_ltm("MilvusLTM")
 container.from_config(CURRENT_PATH.joinpath("container.yaml"))
 
 # Create image storage workflow
