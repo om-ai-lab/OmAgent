@@ -5,6 +5,8 @@ from typing import Any, Dict, List, Union, Optional
 
 import geocoder
 from openai import AsyncOpenAI, OpenAI
+from openai._types import NOT_GIVEN, NotGiven
+
 from pydantic import Field
 
 from omagent_core.utils.registry import registry
@@ -57,8 +59,8 @@ class OpenaiGPTLLM(BaseLLM):
         default=None,
         description="The top logprobs of LLM, logprobs must be set to true if this parameter is used",
     )
-    stop: Union[str, List[str], None] = Field(
-        default=None,
+    stop: Union[str, List[str], NotGiven] = Field(
+        default=NOT_GIVEN,
         description="Specifies stop sequences that will halt text generation, can be string or list of strings",
     )
     stream_options: Optional[dict] = Field(
