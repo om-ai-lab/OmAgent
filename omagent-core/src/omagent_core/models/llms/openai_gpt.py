@@ -108,12 +108,10 @@ class OpenaiGPTLLM(BaseLLM):
         if self.api_key is None or self.api_key == "":
             raise ValueError("api_key is required")
 
-        messages = self._msg2req(records)
-
         if self.vision:
             res = self.client.chat.completions.create(
                 model=self.model_id,
-                messages=messages,
+                messages=records,
                 temperature=kwargs.get("temperature", self.temperature),
                 max_tokens=kwargs.get("max_tokens", self.max_tokens),
                 stream=kwargs.get("stream", self.stream),
@@ -131,7 +129,7 @@ class OpenaiGPTLLM(BaseLLM):
         else:
             res = self.client.chat.completions.create(
                 model=self.model_id,
-                messages=messages,
+                messages=records,
                 temperature=kwargs.get("temperature", self.temperature),
                 max_tokens=kwargs.get("max_tokens", self.max_tokens),
                 response_format=kwargs.get("response_format", self.response_format),
@@ -159,12 +157,10 @@ class OpenaiGPTLLM(BaseLLM):
         if self.api_key is None or self.api_key == "":
             raise ValueError("api_key is required")
 
-        messages = self._msg2req(records)
-
         if self.vision:
             res = await self.aclient.chat.completions.create(
                 model=self.model_id,
-                messages=messages,
+                messages=records,
                 temperature=kwargs.get("temperature", self.temperature),
                 max_tokens=kwargs.get("max_tokens", self.max_tokens),
                 n=kwargs.get("n", self.n),
@@ -181,7 +177,7 @@ class OpenaiGPTLLM(BaseLLM):
         else:
             res = await self.aclient.chat.completions.create(
                 model=self.model_id,
-                messages=messages,
+                messages=records,
                 temperature=kwargs.get("temperature", self.temperature),
                 max_tokens=kwargs.get("max_tokens", self.max_tokens),
                 response_format=kwargs.get("response_format", self.response_format),
@@ -198,46 +194,6 @@ class OpenaiGPTLLM(BaseLLM):
                 stream_options=kwargs.get("stream_options", self.stream_options),
             )
         return res.model_dump()
-
-    def _msg2req(self, records: List[Message]) -> dict:
-        def get_content(msg: List[Content] | Content) -> List[dict] | str:
-            if isinstance(msg, list):
-                return [c.model_dump(exclude_none=True) for c in msg]
-            elif isinstance(msg, Content) and msg.type == "text":
-                return msg.text
-            elif isinstance(msg, Content) and msg.type == "image_url":
-                return [msg.model_dump(exclude_none=True)]
-            else:
-                print(f'msg: {msg}')
-                raise ValueError("Invalid message type")
-
-        messages = [
-            {"role": message.role, "content": get_content(message.content)}
-            for message in records
-        ]
-        if self.vision:
-            processed_messages = []
-            for message in messages:
-                if message["role"] == "user":
-                    if isinstance(message["content"], str):
-                        message["content"] = [
-                            {"type": "text", "text": message["content"]}
-                        ]
-            merged_dict = {}
-            for message in messages:
-                if message["role"] == "user":
-                    merged_dict["role"] = message["role"]
-                    if "content" in merged_dict:
-                        merged_dict["content"] += message["content"]
-                    else:
-                        merged_dict["content"] = message["content"]
-                else:
-                    processed_messages.append(message)
-            processed_messages.append(merged_dict)
-            messages = processed_messages
-        if self.use_default_sys_prompt:
-            messages = [self._generate_default_sys_prompt()] + messages
-        return messages
 
     def _generate_default_sys_prompt(self) -> Dict:
         loc = self._get_location()
