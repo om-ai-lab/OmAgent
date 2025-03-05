@@ -17,9 +17,9 @@ ARGSCHEMA = {
 class Calculator(BaseTool):
     args_schema: ArgSchema = ArgSchema(**ARGSCHEMA)
     description: str = (
-        "Calculator tool for executing all mathematical calculation. Please output a mathematical formula. \
+        "Calculator tool for executing simple mathematical calculation. Please output a mathematical formula. \
     Addition, subtraction, multiplication, and division are represented by +, -, *, and /, respectively. \
-    Exponentiation is denoted by **, and square root is implemented using sqrt(). Parentheses can be used normally. \
+    Exponentiation is denoted by **, and square root is implemented using sqrt(). Other functions are not allowed to be used. \
     Only the constants pi and e are available, representing the mathematical constant pi and Euler's number, respectively."
     )
 
