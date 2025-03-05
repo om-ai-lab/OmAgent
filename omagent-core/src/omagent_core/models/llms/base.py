@@ -206,15 +206,61 @@ class BaseLLMBackend(BotBase, ABC):
         stm_token_usage = self.stm(self.workflow_instance_id).get('token_usage', defaultdict(int))
         
         def process_stream(self, stream_output):
-            for chunk in stream_output:
-                if chunk.usage is not None:
-                    for key, value in chunk.usage.dict().items():
-                        if key in ["prompt_tokens", "completion_tokens", 'total_tokens']:
-                            if value is not None:
-                                stm_token_usage[key] += value
-                    self.stm(self.workflow_instance_id)['token_usage'] = stm_token_usage
-            
-                yield chunk
+
+            # local deepseek
+            if hasattr(next(stream_output).choices[0].delta, "reasoning_content"):
+                reasoning_flag = False
+                answering_flag = False
+                for chunk in stream_output:
+                    # output reasoning
+                    if chunk.choices[0].delta.reasoning_content is not None:
+                        if not reasoning_flag:
+                            chunk.choices[0].delta.content = "Reasoning:" + chunk.choices[0].delta.reasoning_content
+                            reasoning_flag = True
+                        else:
+                            chunk.choices[0].delta.content = chunk.choices[0].delta.reasoning_content
+                    # output Answering
+                    elif not answering_flag:
+                        chunk.choices[0].delta.content = "Answer:" + chunk.choices[0].delta.content
+                        answering_flag = True
+                    if chunk.usage is not None:
+                        for key, value in chunk.usage.dict().items():
+                            if key in ["prompt_tokens", "completion_tokens", 'total_tokens']:
+                                if value is not None:
+                                    stm_token_usage[key] += value
+                        self.stm(self.workflow_instance_id)['token_usage'] = stm_token_usage
+                    yield chunk
+
+            # ollama deepseek
+            elif "deepseek" in self.llm.model_id:
+                reasoning_flag = False
+                answering_flag = False
+                for chunk in stream_output:
+                    if not reasoning_flag:
+                        chunk.choices[0].delta.content = "Reasoning:" + chunk.choices[0].delta.content
+                        reasoning_flag = True
+                    elif not answering_flag:
+                        if chunk.choices[0].delta.content == "</think>":
+                            chunk.choices[0].delta.content = "Answer:"
+                        answering_flag = True
+                    if chunk.usage is not None:
+                        for key, value in chunk.usage.dict().items():
+                            if key in ["prompt_tokens", "completion_tokens", 'total_tokens']:
+                                if value is not None:
+                                    stm_token_usage[key] += value
+                        self.stm(self.workflow_instance_id)['token_usage'] = stm_token_usage
+                    yield chunk
+
+            # models without reasoning
+            else:
+                for chunk in stream_output:
+                    if chunk.usage is not None:
+                        for key, value in chunk.usage.dict().items():
+                            if key in ["prompt_tokens", "completion_tokens", 'total_tokens']:
+                                if value is not None:
+                                    stm_token_usage[key] += value
+                        self.stm(self.workflow_instance_id)['token_usage'] = stm_token_usage
+                    yield chunk
         
         for prompt in prompts:
             output = self.llm.generate(prompt, **kwargs)
