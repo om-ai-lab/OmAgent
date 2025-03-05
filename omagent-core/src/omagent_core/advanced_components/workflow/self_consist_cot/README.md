@@ -1,14 +1,12 @@
 # Self-Consistent Chain-of-Thought (CoT) Workflow
 
-A workflow component that implements self-consistent chain-of-thought reasoning for complex problem-solving tasks. This component generates multiple reasoning paths and aggregates them to produce a more reliable final answer.
+A workflow component that implements self-consistent chain-of-thought reasoning for complex problem-solving tasks. This component generates multiple reasoning paths and aggregates them to produce a more reliable final answer through majority voting.
 
 ## Overview
 
-The Self-Consistent CoT workflow consists of three main stages:
+The Self-Consistent CoT workflow consists of a single main component that handles the entire process:
 
-1. **CoT Reasoning**: Generates multiple reasoning paths for the given question
-2. **CoT Extract**: Extracts final answers from each reasoning path
-3. **CoT Conclusion**: Analyzes extracted answers to produce a final consensus answer
+1. **SCCoTReasoning**: Generates multiple reasoning paths and extracts the most common answer as the final result
 
 ## Inputs, Outputs and Configs
 
@@ -16,95 +14,40 @@ The Self-Consistent CoT workflow consists of three main stages:
 The inputs that the Self-Consistent CoT workflow requires are as follows:
 | Name     | Type | Required | Description |
 | -------- | ----- | ----- | ---- |
-| user_question | str | true | The question or task to be solved |
-| path_num | int | false | Number of reasoning paths to generate (default: 5) |
+| id | int | false | The identifier for the task (defaults to 0) |
+| query | str | true | The question or task to be solved |
 
 ### Outputs:
-The outputs that the Self-Consistent CoT operator returns are as follows:
+The outputs that the Self-Consistent CoT workflow returns are as follows:
 | Name     | Type | Description |
 | -------- | ----- | ---- |
-| final_answer | str | The final concluded answer from COTConclusion |
+| id | int | The task identifier |
 | question | str | The original input question |
+| last_output | str | The final concluded answer (most common answer from all runs) |
 | prompt_tokens | int | Number of prompt tokens used |
 | completion_tokens | int | Number of completion tokens used |
-| body | str | The response body from COTConclusion |
+| body | str | The response body (empty in current implementation) |
 
 ### Configs:
-The config of the Self-Consistent CoT workflow is as follows, you can simply copy and paste the following config into your project as a self_consist_cot_workflow.yml file.
+The config of the Self-Consistent CoT workflow should be defined in a YAML file. Here's an example configuration from sc_cot_workflow.yml:
 ```yml
-- name: COTReasoning
-  llm: ${sub|json_res}
-  tool_manager: ${sub|all_tools}
+- name: SCCoTReasoning
+  llm: ${sub|gpt4o}
   output_parser: 
     name: StrParser
-- name: COTExtract
-  llm: ${sub|json_res}
-  tool_manager: ${sub|all_tools}
-  output_parser: 
-    name: StrParser
-- name: COTConclusion
-  llm: ${sub|text_res}
-  tool_manager: ${sub|all_tools}
-  output_parser: 
-    name: StrParser
+  num: 5
+  use_n: True
+  example: |
+    [Example template with math problems]
 ```
 
-## Components
+#### Configuration Parameters:
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| name | str | The name of the reasoning component, must be "SCCoTReasoning" |
+| llm | str | The language model to use, specified as a substitution variable (e.g., ${sub\|gpt4o}) |
+| output_parser.name | str | The parser to process LLM outputs, "StrParser" is used for string output parsing |
+| num | int | Number of reasoning attempts to generate (default: 5) |
+| use_n | bool | When True, uses LLM's n parameter for parallel generation; when False, generates sequentially |
+| example | str | Template containing example problems and their solutions to guide the model's reasoning format |
 
-### COTReasoning
-
-Generates multiple independent reasoning paths for the given question. Each path shows step-by-step reasoning leading to an answer.
-
-### COTExtract
-
-Extracts final answers from each reasoning path, focusing on the conclusion rather than the intermediate steps.
-
-### COTConclusion
-
-Analyzes all extracted answers to determine the most consistent and reliable final answer.
-
-## Usage
-
-```python
-from omagent_core.advanced_components.workflow.self_consist_cot.workflow import SelfConsistentWorkflow
-
-# Initialize the workflow
-workflow = SelfConsistentWorkflow()
-
-# Set input parameters
-workflow.set_input(
-    user_question="Your question here",  # The question to be answered
-    path_num=5                          # Number of reasoning paths to generate
-)
-```
-
-## Example
-
-Here's a simple example using the GSM8K math dataset:
-
-```python
-# Question: "Janet's ducks lay 16 eggs per day. She eats three for breakfast every morning and 
-# bakes muffins for her friends every day with four. She sells the remainder at the farmers' 
-# market daily for $2 per fresh duck egg. How much money does she make per day at the farmers' market?"
-
-workflow = SelfConsistentWorkflow()
-workflow.set_input(user_question=question, path_num=5)
-```
-
-The workflow will:
-1. Generate 5 different reasoning paths
-2. Extract answers from each path
-3. Analyze the answers to produce a final consensus
-
-## Performance
-
-The self-consistent approach helps improve accuracy by:
-- Generating multiple independent reasoning attempts
-- Cross-validating answers across different paths
-- Reducing the impact of individual reasoning errors
-
-## Dependencies
-
-- OpenAI GPT models for reasoning
-- Redis for state management
-- OmAgent core components

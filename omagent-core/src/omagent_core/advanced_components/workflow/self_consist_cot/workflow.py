@@ -1,30 +1,51 @@
-from omagent_core.engine.workflow.task.simple_task import simple_task
+from typing import List
+
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
+from omagent_core.engine.workflow.task.simple_task import simple_task
+
+from omagent_core.advanced_components.workflow.self_consist_cot.agent.self_consist_cot_reasoning.self_consist_cot_reasoning import SCCoTReasoning
 
 
+class SCCoTWorkflow( ConductorWorkflow ):
 
-class SelfConsistentWorkflow(ConductorWorkflow):
+    def __init__( self ):
+        super().__init__( name='sc_cot_workflow' )
 
-    def __init__(self):
-        super().__init__(
-                name='self_consistent_workflow')
-    
-    def set_input(self,  user_question: str, num_path: int,examples: str = None):
-        self.user_question = user_question
-        self.num_path = num_path
-        self.examples = examples
+    def set_input( self, query: str, id: int = 0 ):
+        """
+        Sets the input parameters for the workflow.
+        Args:
+            query (str): The query string to be processed.
+            cot_method (str, optional): The method to be used for chain-of-thought (CoT) processing. Defaults to 'few_shot'.
+            cot_examples (List[dict], optional): A list of examples for CoT processing. Defaults to None.
+            id (int, optional): An identifier for the workflow instance. Defaults to 0.
+        Returns:
+            None
+        """
+
+        self.id = id
+        self.query = query
+
         self._configure_tasks()
         self._configure_workflow()
 
-    def _configure_tasks(self):
+    def _configure_tasks( self ):
+        # reasoning task for reasoning process
+        self.reasoning_task = simple_task(
+            task_def_name=SCCoTReasoning,
+            task_reference_name='SCCoT_Reasoning',
+            inputs={
+                'id': self.id,
+                'query': self.query
+            }
+        )
 
-        self.reasoning_task = simple_task(task_def_name='COTReasoning', task_reference_name='cot_reasoning', inputs={'user_question': self.user_question,'num_path':self.num_path,'examples':self.examples})
-        self.extract_task = simple_task(task_def_name='COTExtract', task_reference_name='cot_extract', inputs={'reasoning_result': self.reasoning_task.output('reasoning_result')})
-        self.conclude_task = simple_task(task_def_name='COTConclusion', task_reference_name='cot_conclude', inputs={'final_answer': self.extract_task.output('final_answer'),"question":self.user_question})
+    def _configure_workflow( self ):
+        # configure workflow execution flow
+        self >> self.reasoning_task
 
-
-    def _configure_workflow(self):
-        
-        self   >> self.reasoning_task  >>  self.extract_task >> self.conclude_task
-        
-    
+        self.id = self.reasoning_task.output( 'id' )
+        self.question = self.reasoning_task.output( 'question' )
+        self.last_output = self.reasoning_task.output( 'last_output' )
+        self.prompt_tokens = self.reasoning_task.output( 'prompt_tokens' )
+        self.completion_tokens = self.reasoning_task.output( 'completion_tokens' )
