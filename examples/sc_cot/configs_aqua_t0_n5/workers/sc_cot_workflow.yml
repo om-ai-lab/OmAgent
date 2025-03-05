@@ -1,0 +1,15 @@
+- name: SCCoTReasoning
+  llm: ${sub|gpt4o}
+  output_parser: 
+    name: StrParser
+  num: 5
+  use_n: False
+  example: |
+    Problem:
+    {{query}}
+
+    Solution:
+    [Your step-by-step solution here]
+
+    Final Answer:
+    \boxed{your answer}

@@ -1,5 +1,6 @@
 import json
 import os
+import glob
 from collections import OrderedDict
 
 def deduplicate_and_convert(input_file):
@@ -31,11 +32,16 @@ def deduplicate_and_convert(input_file):
             json.dump(result, f)
             f.write('\n')
     
+    # 从文件名中提取模型ID和数据集信息
+    filename_parts = base_name.split('_')
+    dataset = filename_parts[0] if len(filename_parts) > 0 else "unknown"
+    model_id = "_".join(filename_parts[1:]).replace('.jsonl', '') if len(filename_parts) > 1 else "unknown"
+    
     # 构建完整的 JSON 结构并写入
     print(f"Converting to JSON format: {json_output}...")
     final_data = {
-        "dataset": "math500",
-        "model_id": "qwen2:0.5b",
+        "dataset": dataset,
+        "model_id": model_id,
         "alg": "COT",
         "model_result": list(results_dict.values())
     }
@@ -62,12 +68,18 @@ def deduplicate_and_convert(input_file):
     #     print(" ".join(f"{id:4}" for id in chunk))
 
 if __name__ == "__main__":
-    # 处理所有相关的 jsonl 文件
-    model_ids = ["math500_results_2", "math500_results_3","math500_results_4", "math500_results_5"] #"qwen2:0.5b", "qwen2.5:7b", "gpt-4o"
-    for model_id in model_ids:
-        input_file = f"examples/sc_cot/Output/{model_id}.jsonl"
-        if os.path.exists(input_file):
+    # 目标目录
+    target_dir = "examples/sc_cot/Output"
+    
+    # 获取目录下所有的jsonl文件
+    jsonl_files = glob.glob(os.path.join(target_dir, "*.jsonl"))
+    
+    if not jsonl_files:
+        print(f"No JSONL files found in {target_dir}")
+    else:
+        print(f"Found {len(jsonl_files)} JSONL files in {target_dir}")
+        
+        # 处理每个文件
+        for input_file in jsonl_files:
             print(f"\nProcessing {input_file}...")
-            deduplicate_and_convert(input_file)
-        else:
-            print(f"File not found: {input_file}") 
+            deduplicate_and_convert(input_file) 

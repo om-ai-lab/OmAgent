@@ -1,16 +1,14 @@
 import os
-os.environ['custom_openai_endpoint'] = 'http://10.8.25.27:11434/v1'
-os.environ['custom_openai_key'] = 'sk-4zr6uGzVbNfIiq7U513aCc94Af614792938cE9AdB7D0E295'
-os.environ['custom_model_id'] = 'qwen2.5:7b'
-os.environ['batch_size'] = "1"
-os.environ['timeout'] = "300"
-os.environ['cot_method'] = "few_shot"
-os.environ['dataset_name'] = "math500"
-os.environ['dataset_path'] = "/data23/ljc/project/wang_ze/OmAgent/examples/sc_cot/data/math500_test_converted.jsonl"
-os.environ['output_path'] = "/data23/ljc/project/wang_ze/OmAgent/examples/sc_cot/Output"
-os.environ['output_name'] = "math500_results_6"
-os.environ['container_yaml'] = "container_6.yaml"
-os.environ['config_dir'] = "configs_t1"
+os.environ['custom_openai_endpoint'] = ''
+os.environ['custom_openai_key'] = ''
+os.environ['custom_model_id'] = ''
+os.environ['batch_size'] = ''
+os.environ['timeout'] = ''
+os.environ['dataset_name'] = ''
+os.environ['dataset_path'] = ''
+os.environ['output_path'] = ''
+os.environ['container_yaml'] = ''
+os.environ['config_dir'] = ''
 
 import json
 import time
@@ -73,18 +71,6 @@ def start_programmatic_client(workflow, CURRENT_PATH):
     return ProgrammaticClient(processor=workflow, config_path=config_path, workers=[])
 
 
-def prepare_data( file_path, cot_examples, cot_method, start=1 ):
-    data = read_jsonl( file_path )
-    #data = data
-    return [
-        {
-            "id": d['id'],
-            "query": d[ 'question' ],
-            #"query": "Convert the point $(0,3)$ in rectangular coordinates to polar coordinates.  Enter your answer in the form $(r,\\theta),$ where $r > 0$ and $0 \\le \\theta < 2 \\pi.$",
-        } for idx, d in enumerate( data, start=start )
-    ]
-
-
 def setup_environ(model_id):
     os.environ['custom_model_id'] = model_id
     print(f"Model ID: {model_id}")
@@ -96,7 +82,7 @@ def arguments():
             self.dataset_name = os.environ['dataset_name']
             self.dataset_path = os.environ['dataset_path']
             self.output_path = os.environ['output_path']
-            self.output_name = os.environ['output_name']
+            self.output_name = os.environ['dataset_name'] + "_" + os.environ['custom_model_id'].replace('/', '_') + "_" + "t1"
     
     args = Args()
     print(f"Environment variables loaded as arguments: {vars(args)}")

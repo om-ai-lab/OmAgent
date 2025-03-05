@@ -29,7 +29,7 @@ run_command() {
 }
 
 # 为每个会话执行对应的命令
-for i in {2..5}; do
+for i in {2..34}; do
     session="ljc_${i}"
     echo "==============================================="
     echo "开始处理会话 $session"
