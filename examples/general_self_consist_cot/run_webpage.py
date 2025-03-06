@@ -10,18 +10,14 @@ load_dotenv()
 from omagent_core.utils.registry import registry
 from omagent_core.clients.devices.webpage.client import WebpageClient
 from omagent_core.utils.logger import logging
-from agent.input_interface.input_interface import COTInputInterface  
-from omagent_core.advanced_components.workflow.self_consist_cot.workflow import SelfConsistentWorkflow 
-import yaml
+from agent.input_interface.input_interface import InputInterface
+from omagent_core.advanced_components.workflow.self_consist_cot.workflow import SCCoTWorkflow
 logging.init_logger("omagent", "omagent", level="INFO")
 
 # Set current working directory path
 CURRENT_PATH = root_path = Path(__file__).parents[0]
 
 config_path = CURRENT_PATH.joinpath('configs')
-
-with open(config_path.joinpath('path_config.yaml'), 'r') as f:
-    path_config = yaml.safe_load(f)
 
 # Import registered modules
 registry.import_module(CURRENT_PATH.joinpath('agent'))
@@ -35,10 +31,10 @@ workflow = ConductorWorkflow(name='general_self_consist_cot')
 
 # Configure workflow tasks
 # 1. Input interface for user interaction
-client_input_task = simple_task(task_def_name=COTInputInterface, task_reference_name='input_interface')  
+client_input_task = simple_task(task_def_name=InputInterface, task_reference_name='input_interface')  
 
-self_consist_cot_workflow = SelfConsistentWorkflow()
-self_consist_cot_workflow.set_input(user_question=client_input_task.output('user_question'),num_path=path_config['num_path'])
+self_consist_cot_workflow = SCCoTWorkflow()
+self_consist_cot_workflow.set_input(query=client_input_task.output('query'))
 
 workflow >> client_input_task >> self_consist_cot_workflow 
 
@@ -46,5 +42,5 @@ workflow >> client_input_task >> self_consist_cot_workflow
 workflow.register(overwrite=True)
 
 # Initialize and start app client with workflow configuration
-webpage_client = WebpageClient(interactor=workflow, config_path=config_path, workers=[COTInputInterface()])
+webpage_client = WebpageClient(interactor=workflow, config_path=config_path, workers=[InputInterface()])
 webpage_client.start_interactor()
