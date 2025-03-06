@@ -1,15 +1,4 @@
 import os
-os.environ['custom_openai_endpoint'] = 'http://140.207.201.47:11450/v1'
-os.environ['custom_openai_key'] = 'sk-4zr6uGzVbNfIiq7U513aCc94Af614792938cE9AdB7D0E295'
-os.environ['custom_model_id'] = 'qwen2.5:7b'
-os.environ['batch_size'] = "1"
-os.environ['timeout'] = "1000"
-os.environ['dataset_name'] = "math500"
-os.environ['dataset_path'] = "/data23/ljc/project/omagent_lite开发/OmAgent/examples/general_self_consist_cot/data/math500_test_converted.jsonl"
-os.environ['output_path'] = "/data23/ljc/project/omagent_lite开发/OmAgent/examples/general_self_consist_cot/Output"
-os.environ['container_yaml'] = "container.yaml"
-os.environ['config_dir'] = "configs"
-os.environ["OMAGENT_MODE"] = "lite"
 import json
 import time
 import signal
