@@ -41,6 +41,17 @@ class FreeAvoid(BaseTool):
     network_interface_name: Optional[str]
 
     def __init__(self, **data: Any) -> None:
+        """
+        Initialize a FreeAvoid instance with communication channel and client.
+        
+        This method initializes the base class with any provided keyword arguments,
+        sets up the communication channel via ChannelFactoryInitialize using the instance's
+        network interface, and configures a SportClient with a 10-second timeout before
+        finalizing its initialization.
+          
+        Args:
+            **data: Additional keyword arguments for tool configuration.
+        """
         super().__init__(**data)
         ChannelFactoryInitialize(0, self.network_interface_name)
         self.sport_client = SportClient()  
@@ -50,6 +61,12 @@ class FreeAvoid(BaseTool):
     @field_validator("network_interface_name")
     @classmethod
     def network_interface_name_validator(cls, network_interface_name: Union[str, None]) -> Union[str, None]:
+        """
+        Validates that a network interface name is provided.
+        
+        Checks that the given network interface name is not None. Raises a ValueError if no name is provided,
+        otherwise returns the network interface name.
+        """
         if network_interface_name == None:
             raise ValueError("network interface name is not provided.")
         return network_interface_name
@@ -59,7 +76,15 @@ class FreeAvoid(BaseTool):
         switch: bool = True
     ) -> Dict[str, Any]:
         """
-        Control the Unitree Go2 robot to free avoid.
+        Executes the free avoid command on the Unitree Go2 robot.
+        
+        This method sends a command to control the robot's free avoid behavior using the sport_client. The provided switch flag determines whether to enable (True) or disable (False) free avoid. On success, it returns a dictionary with a success code and message; if an exception occurs, it logs the error and returns a failure dictionary.
+        
+        Args:
+            switch (bool): True to enable free avoid, False to disable it.
+        
+        Returns:
+            dict: A dictionary containing a status code and message indicating the outcome.
         """
 
         try:
