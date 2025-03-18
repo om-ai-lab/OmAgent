@@ -36,6 +36,13 @@ class StandUp(BaseTool):
     network_interface_name: Optional[str]
 
     def __init__(self, **data: Any) -> None:
+        """
+        Initialize the StandUp tool.
+        
+        Initializes the base tool with the provided data, configures the channel factory
+        with the designated network interface, and sets up a sport client with a timeout
+        of 10 seconds for robot communication.
+        """
         super().__init__(**data)
         ChannelFactoryInitialize(0, self.network_interface_name)
         self.sport_client = SportClient()  
@@ -45,6 +52,15 @@ class StandUp(BaseTool):
     @field_validator("network_interface_name")
     @classmethod
     def network_interface_name_validator(cls, network_interface_name: Union[str, None]) -> Union[str, None]:
+        """
+        Validate that a network interface name is provided.
+        
+        Raises:
+            ValueError: If network_interface_name is None.
+        
+        Returns:
+            str: The validated network interface name.
+        """
         if network_interface_name == None:
             raise ValueError("network interface name is not provided.")
         return network_interface_name
@@ -53,7 +69,12 @@ class StandUp(BaseTool):
         self
     ) -> Dict[str, Any]:
         """
-        Control the Go2 to stand up.
+        Commands the Unitree Go2 robot to stand up.
+        
+        Sends the stand-up command through the sport_client and returns a dictionary indicating
+        the result. On success, it returns a dictionary with a code of 0 and a message "success".
+        If an error occurs, the error is logged and the method returns a dictionary with a code
+        of 500 and a message "failed".
         """
 
         try:

@@ -36,6 +36,12 @@ class StopMove(BaseTool):
     network_interface_name: Optional[str]
 
     def __init__(self, **data: Any) -> None:
+        """
+        Initializes the StopMove tool instance.
+        
+        Calls the parent initializer with provided data, configures the network channel using the
+        specified network interface, and sets up the SportClient with a 10-second timeout.
+        """
         super().__init__(**data)
         ChannelFactoryInitialize(0, self.network_interface_name)
         self.sport_client = SportClient()  
@@ -45,6 +51,15 @@ class StopMove(BaseTool):
     @field_validator("network_interface_name")
     @classmethod
     def network_interface_name_validator(cls, network_interface_name: Union[str, None]) -> Union[str, None]:
+        """
+        Validate that a network interface name is provided.
+        
+        Raises:
+            ValueError: If the network interface name is None.
+        
+        Returns:
+            str: The validated network interface name.
+        """
         if network_interface_name == None:
             raise ValueError("network interface name is not provided.")
         return network_interface_name
@@ -53,7 +68,11 @@ class StopMove(BaseTool):
         self,
     ) -> Dict[str, Any]:
         """
-        Control the Go2 to stop move.
+        Stops the robot's movement.
+        
+        Attempts to issue a stop command via the sport client. If successful, returns a
+        dictionary with a status code of 0 and a "success" message. If an error occurs,
+        logs the error and returns a dictionary with a status code of 500 and a "failed" message.
         """
 
         try:

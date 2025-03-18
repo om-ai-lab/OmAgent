@@ -36,6 +36,16 @@ class StandDown(BaseTool):
     network_interface_name: Optional[str]
 
     def __init__(self, **data: Any) -> None:
+        """
+        Initializes the StandDown tool and configures its SportClient.
+        
+        Sets up the base tool using provided keyword arguments, initializes the network
+        channel with the specified interface, and prepares a SportClient with a 10-second
+        timeout for communication.
+        
+        Args:
+            **data: Arbitrary keyword arguments for tool configuration.
+        """
         super().__init__(**data)
         ChannelFactoryInitialize(0, self.network_interface_name)
         self.sport_client = SportClient()  
@@ -45,6 +55,15 @@ class StandDown(BaseTool):
     @field_validator("network_interface_name")
     @classmethod
     def network_interface_name_validator(cls, network_interface_name: Union[str, None]) -> Union[str, None]:
+        """
+        Ensures a network interface name is provided.
+        
+        Raises:
+            ValueError: If no network interface name is provided.
+        
+        Returns:
+            str: The provided network interface name.
+        """
         if network_interface_name == None:
             raise ValueError("network interface name is not provided.")
         return network_interface_name
@@ -53,7 +72,11 @@ class StandDown(BaseTool):
         self
     ) -> Dict[str, Any]:
         """
-        Control the Go2 to stand down.
+        Attempts to command the Unitree Go2 robot to stand down.
+        
+        Returns:
+            Dict[str, Any]: A dictionary with the operation's status where "code" is 0 for success 
+            and 500 for failure, and "msg" indicates "success" or "failed" accordingly.
         """
 
         try:

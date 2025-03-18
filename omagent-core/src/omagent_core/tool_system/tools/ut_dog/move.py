@@ -51,6 +51,13 @@ class Move(BaseTool):
     network_interface_name: Optional[str]
 
     def __init__(self, **data: Any) -> None:
+        """
+        Initializes the Move instance and configures its SportClient.
+        
+        Passes keyword arguments to the base class, initializes the communication channel
+        using the specified network interface, and sets up a SportClient with a 10-second
+        timeout before establishing its connection.
+        """
         super().__init__(**data)
         ChannelFactoryInitialize(0, self.network_interface_name)
         self.sport_client = SportClient()  
@@ -60,6 +67,17 @@ class Move(BaseTool):
     @field_validator("network_interface_name")
     @classmethod
     def network_interface_name_validator(cls, network_interface_name: Union[str, None]) -> Union[str, None]:
+        """
+        Validate that a network interface name is provided.
+        
+        Ensures that a network interface name is supplied. Raises a ValueError if the value is None.
+        
+        Raises:
+            ValueError: If network_interface_name is None.
+        
+        Returns:
+            The provided network interface name.
+        """
         if network_interface_name == None:
             raise ValueError("network interface name is not provided.")
         return network_interface_name
@@ -71,7 +89,21 @@ class Move(BaseTool):
         vyaw: float = 0
     ) -> Dict[str, Any]:
         """
-        Control the Go2 to move.
+        Sends a movement command to the Unitree Go2 robot.
+        
+        This method uses the sport client to move the robot with the specified
+        velocities along the x and y axes and a specified yaw rotation. If the
+        movement command executes successfully, it returns a success response;
+        otherwise, it logs the error and returns a failure response.
+        
+        Parameters:
+            vx (float): Movement along the x-axis. Defaults to 0.
+            vy (float): Movement along the y-axis. Defaults to 0.
+            vyaw (float): Rotation around the z-axis. Defaults to 0.
+        
+        Returns:
+            dict: A response dictionary with keys 'code' and 'msg', where 'code' is 0 for
+                  success and 500 for failure.
         """
 
         try:
