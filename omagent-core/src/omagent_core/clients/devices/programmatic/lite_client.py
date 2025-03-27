@@ -1,4 +1,5 @@
-
+from pathlib import Path
+import uuid
 from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.utils.build import build_from_file
@@ -28,16 +29,21 @@ class ProgrammaticClient:
         self._workers = workers
         self._input_prompt = input_prompt        
         worker_config = build_from_file(self._config_path)
+        self.workflow_instance_id = str(uuid.uuid4())
         self.initialization(workers, worker_config)
 
     def initialization(self, workers, worker_config):        
         self.workers = {}
         for worker in workers:
+            worker.workflow_instance_id = self.workflow_instance_id
             self.workers[type(worker).__name__] = worker            
         
         for config in worker_config:
-            worker_cls = registry.get_worker(config['name'])        
-            self.workers[config['name']] = worker_cls(**config)                    
+            worker_cls = registry.get_worker(config['name'])   
+            worker = worker_cls(**config)
+            worker.workflow_instance_id = self.workflow_instance_id
+            self.workers[config['name']] = worker
+            # self.workers[config['name']] = worker_cls(**config)                    
 
     def start_processor_with_input(self, workflow_input: dict):                          
         self._interactor.start_workflow_with_input(workflow_input=workflow_input, workers=self.workers)

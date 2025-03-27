@@ -164,6 +164,7 @@ class SearchAlgorithm(BaseWorker, BaseLLMBackend):
         record['completion_tokens'] = self.token_usage['completion_tokens']
         record['total_tokens'] = self.token_usage['total_tokens']
         record['thought_tree'] = thought_tree
+        self.stm(self.workflow_instance_id)['record'] = record
                 
         print('-'*100)
         print(record)

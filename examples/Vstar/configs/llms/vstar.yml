@@ -1,0 +1,2 @@
+name: VStarLLM
+endpoint: ${env| custom_vstar_endpoint, https://vstar.om-ai.com}

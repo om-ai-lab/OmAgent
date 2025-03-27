@@ -1,0 +1,15 @@
+- name: VisualCueGeneration
+  llm: ${sub|gpt}
+
+- name: ZoomEyePreprocess
+
+- name: ZoomEyeSearch
+  llm: ${sub|gpt}
+  
+- name: ZoomEyeSearchCheck
+
+- name: ZoomEyeLoopCheck
+
+- name: ZoomEyeOutput
+  llm: ${sub|gpt}
+
