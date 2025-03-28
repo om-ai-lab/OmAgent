@@ -1,0 +1,16 @@
+- name: VQA_LLM_Preprocess
+
+- name: VstarLoopCheck
+
+- name: VQA_LLM
+  llm: ${sub|vstar}
+
+- name: VstarSearchPreprocess
+
+- name: VstarSearch
+  llm: ${sub|vstar}
+
+- name: VstarSearchCheck
+
+- name: VQA_LLM_Post
+  llm: ${sub|vstar}
