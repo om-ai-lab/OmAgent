@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import pickle
 import time
 from pathlib import Path
@@ -42,7 +43,7 @@ class WebpageVideoPreprocessor(BaseLLMBackend, BaseWorker):
     kernel_size: Optional[int] = None
     show_progress: bool = True
     
-    use_cache: bool = False
+    use_cache: bool = True
     cache_dir: str = "./video_cache"
     
     @field_validator("stt", mode="before")
@@ -87,7 +88,7 @@ class WebpageVideoPreprocessor(BaseLLMBackend, BaseWorker):
         
         cache_path = (
             Path(self.cache_dir)
-            .joinpath(video_path.replace("/", "-"))
+            .joinpath(Path(video_path).name.replace("/", "-"))
             .joinpath("video_cache.pkl")
         )
         # Load video from cache if available
@@ -174,7 +175,8 @@ class WebpageVideoPreprocessor(BaseLLMBackend, BaseWorker):
                 pickle.dump(video.scenes, f)
         
         # Process video if not loaded from cache
-        if not self.stm(self.workflow_instance_id).get("video", None):
+        # if not self.stm(self.workflow_instance_id).get("video", None):
+        if not cache_path.exists():
             video = VideoScenes.load(
                 video_path=video_path,
                 threshold=self.scene_detect_threshold,

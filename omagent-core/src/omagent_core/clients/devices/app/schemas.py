@@ -77,3 +77,6 @@ class MessageType(str, Enum):
     TEXT = "text"
     IMAGE_URL = "image_url"
     IMAGE_BASE64 = "image_base64"
+    VIDEO_URL = "video_url"
+    VIDEO_PATH = "video_path"
+    
