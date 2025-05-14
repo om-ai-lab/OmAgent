@@ -27,6 +27,8 @@ OmAgent is python library for building multimodal language agents with ease. We 
  - A flexible agent architecture that provides graph-based workflow orchestration engine and various memory type enabling contextual reasoning.  
  - Native multimodal interaction support include VLM models, real-time API, computer vision models, mobile connection and etc.   
  - A suite of state-of-the-art unimodal and multimodal agent algorithms that goes beyond simple LLM reasoning, e.g. ReAct, CoT, SC-Cot etc.   
+ - Supports local deployment of models. You can deploy your own models locally by using Ollama[Ollama](./docs/concepts/models/Ollama.md) or [LocalAI](./examples/video_understanding/docs/local-ai.md).
+ - Fully distributed architecture, supports custom scaling. Also supports Lite mode, eliminating the need for middleware deployment.
 
 
 ## 🛠️ How To Install
@@ -40,11 +42,6 @@ OmAgent is python library for building multimodal language agents with ease. We 
   ```bash
   pip install -e omagent-core
   ```
-- Set Up Conductor Server (Docker-Compose) Docker-compose includes conductor-server, Elasticsearch, and Redis.
-  ```bash
-  cd docker
-  docker-compose up -d
-  ```
 
 ## 🚀 Quick Start 
 ### Configuration
@@ -56,9 +53,7 @@ The container.yaml file is a configuration file that manages dependencies and se
    cd examples/step1_simpleVQA
    python compile_container.py
    ```
-   This will create a container.yaml file with default settings under `examples/step1_simpleVQA`.
-
-
+   This will create a container.yaml file with default settings under `examples/step1_simpleVQA`. For more information about the container.yaml configuration, please refer to the [container module](./docs/concepts/container.md)
 
 2. Configure your LLM settings in `configs/llms/gpt.yml`:
 
@@ -68,14 +63,6 @@ The container.yaml file is a configuration file that manages dependencies and se
    export custom_openai_endpoint="your_openai_endpoint"
    ```
    You can use a locally deployed Ollama to call your own language model. The tutorial is [here](docs/concepts/models/Ollama.md).
-
-3. Update settings in the generated `container.yaml`:
-      - Configure Redis connection settings, including host, port, credentials, and both `redis_stream_client` and `redis_stm_client` sections.
-   - Update the Conductor server URL under conductor_config section
-   - Adjust any other component settings as needed
-
-
-For more information about the container.yaml configuration, please refer to the [container module](./docs/concepts/container.md)
 
 ### Run the demo
 
@@ -91,7 +78,11 @@ For more information about the container.yaml configuration, please refer to the
 
 ## 🤖  Example Projects
 ### 1. Video QA Agents
-Build a system that can answer any questions about uploaded videos with video understanding agents. See Details [here](examples/video_understanding/README.md).  
+Build a system that can answer any questions about uploaded videos with video understanding agents. we provide a gradio based application, see details [here](examples/video_understanding/README.md).  
+<p >
+  <img src="docs/images/video_understanding_gradio.png" width="500"/>
+</p>
+
 More about the video understanding agent can be found in [paper](https://arxiv.org/abs/2406.16620).
 <p >
   <img src="docs/images/OmAgent.png" width="500"/>

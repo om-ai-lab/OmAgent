@@ -1,0 +1,68 @@
+examples:1
+Problem: Find the domain of the expression $\\frac{\\sqrt{x-2}}{\\sqrt{5-x}}$.
+Requirements: Please solve the math problem step by step and give the reasoning process. Give one step of reasoning each time, and use propositional connectives(because..., so...) to form sentences to reflect the single-step reasoning content. When the problem can be answered finally, please start with "Final Answer: ".
+Previous thought chain:
+(In this step, the previous thought chain is empty, so it is the first step to solve the problem. You need to give the first step of reasoning.)
+Output:{"thoughts":["Because the expressions inside each square root must be non-negative, so $x-2 \\ge 0$ and $5 - x \\ge 0$"]}
+
+(In this step, the previous thought chain is not empty, so you need to give the next step of reasoning.)
+Previous thought chain: 
+Because the expressions inside each square root must be non-negative, so $x-2 \\ge 0$ and $5 - x \\ge 0$
+Output:{"thoughts":["Because $x-2 \\ge 0$ and $5 - x \\ge 0$, so $x \\ge 2$ and $x \\le 5$"]}
+
+Previous thought chain: 
+Because the expressions inside each square root must be non-negative, so $x-2 \\ge 0$ and $5 - x \\ge 0$.
+Because $x-2 \\ge 0$ and $5 - x \\ge 0$, so $x \\ge 2$ and $x \\le 5$
+Output:{"thoughts":["Because $x \\ge 2$, $x \\le 5$ and the denominator cannot be equal to zero, so $x<5$ and $x \\ge 2$"]}
+
+Previous thought chain: 
+Because the expressions inside each square root must be non-negative, so $x-2 \\ge 0$ and $5 - x \\ge 0$.
+Because $x-2 \\ge 0$ and $5 - x \\ge 0$, so $x \\ge 2$ and $x \\le 5$. 
+Because $x \\ge 2$, $x \\le 5$ and the denominator cannot be equal to zero, so $x<5$ and $x \\ge 2$
+Output:{"thoughts":["Final Answer: The domain of the expression is $\\boxed{[2,5)}$"]}
+
+examples:2
+Problem: If $\\det \\mathbf{A} = 2$ and $\\det \\mathbf{B} = 12,$ then find $\\det (\\mathbf{A} \\mathbf{B}).$
+Requirements: (the same as examples1)
+Previous thought chain:
+Output:{"thoughts":["Because $\\\det \\mathbf{A} = 2$ and $\\\det \\mathbf{B} = 12$, so $\\\det (\\mathbf{A} \\mathbf{B}) = (\\det \\mathbf{A})(\\\det \\mathbf{B}) = (2)(12) = \\boxed{24}$"]}
+
+Previous thought chain:
+Because $\\\det \\mathbf{A} = 2$ and $\\\det \\mathbf{B} = 12$, so $\\\det (\\mathbf{A} \\mathbf{B}) = (\\det \\mathbf{A})(\\\det \\mathbf{B}) = (2)(12) = \\boxed{24}$
+Output:{"thoughts":["Final Answer: The final answer is $24$."]}
+
+examples:3
+Problem: Terrell usually lifts two 20-pound weights 12 times. If he uses two 15-pound weights instead, how many times must Terrell lift them in order to lift the same total weight?
+Requirements: (the same as examples1)
+Previous thought chain:
+Output:{"thoughts":["Because Terrell lifts two 20-pound weights 12 times, so he lifts a total of $2\\cdot 12\\cdot20=480$ pounds of weight."]}
+
+Previous thought chain:
+Because Terrell lifts two 20-pound weights 12 times, so he lifts a total of $2\\cdot 12\\cdot20=480$ pounds of weight.
+Output:{"thoughts":["Because the total weight Terrell lifts is 480 pounds, and he uses two 15-pound weights instead, so he needs to lift them $480/30=16$ times."]}
+
+Previous thought chain:
+Because Terrell lifts two 20-pound weights 12 times, so he lifts a total of $2\\cdot 12\\cdot20=480$ pounds of weight.
+Because the total weight Terrell lifts is 480 pounds, and he uses two 15-pound weights instead, so he needs to lift them $480/30=16$ times.
+Output:{"thoughts":["Final Answer: The final answer is $16$."]}
+
+examples:4
+Problem:
+If the system of equations
+\\begin{align*}
+6x-4y&=a,\\
+6y-9x &=b.
+\\end{align*}
+has a solution $(x, y)$ where $x$ and $y$ are both nonzero, find $\\frac{a}{b},$ assuming $b$ is nonzero.
+Requirements: (the same as examples1)
+Previous thought chain:
+Output:{"thoughts":["Because $6x-4y=a$, so if we multiply it by $-\\\frac{3}{2}$, we get $-\\\frac{3}{2}a=6y-9x$"]}
+
+Previous thought chain:
+Because $6x-4y=a$, so if we multiply it by $-\\\frac{3}{2}$, we get $-\\\frac{3}{2}a=6y-9x$
+Output:{"thoughts":["Because $-\\\frac{3}{2}a=6y-9x$ and $6y-9x=b$, so $-\\\frac{3}{2}a=b\\Rightarrow\\frac{a}{b}=\\\boxed{-\\\frac{2}{3}}$"]}
+
+Previous thought chain:
+Because $6x-4y=a$, so if we multiply it by $-\\\frac{3}{2}$, we get $-\\\frac{3}{2}a=6y-9x$
+Because $-\\\frac{3}{2}a=6y-9x$ and $6y-9x=b$, so $-\\\frac{3}{2}a=b\\Rightarrow\\frac{a}{b}=\\\boxed{-\\\frac{2}{3}}$
+Output:{"thoughts":["Final Answer: The final answer is $-\\\frac{2}{3}$."]}

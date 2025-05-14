@@ -1,0 +1,25 @@
+Given a question and some sub-questions, determine whether the last sub-question is useful to answer the question. Output 'Yes' or 'No', and a reason.
+
+Question 1: Four years ago, Kody was only half as old as Mohamed. If Mohamed is currently twice as 30 years old, how old is Kody?
+Question 1.1: How old is Mohamed?
+Question 1.2: How old was Mohamed four years ago?
+New question 1.3: How old was Kody four years ago?
+Is the new question useful? Yes. We need the answer to calculate how old is Kody now.
+
+Question 2: Traci and Harris are baking cakes together. Traci has brought flour from her own house and Harris has 400g of flour in his house. Each cake needs 100g of flour and Traci and Harris have created 9 cakes each. How much flour, in grams, did Traci bring from her own house?
+New question 2.1: How many cakes did Traci bring from her own house?
+Is the new question useful? No. The new question is not related to the original question.
+
+Question 3: A quantity surveyor is figuring the construction costs for a couple that wishes to build a house. The costs are as follows: land costs $50 per square meter, bricks cost $100 per 1000 bricks and roof tiles cost $10 per roof tile. If the house they wish to build requires 2000 square meters, 10000 bricks, and 500 roof tiles, how much construction costs are required for this project?
+Question 3.1: How much does the land cost?
+Question 3.2: How much do the bricks cost?
+New question 3.3: How much do the roof tiles cost?
+Is the new question useful? Yes. We need the answer to calculate the total construction costs.
+
+Question 4: Wallace’s water heater is twice the size of Catherine’s water heater. If the capacity of Wallace’s water heater is 40 gallons and it’s 3/4 full, calculate the total number of gallons of water they both have if Catherine’s water heater is also full with water to 3/4 of its capacity.
+Question 4.1: How much water is in Wallace’s water heater?
+New question 4.2: How much water do they have in total?
+Is the new question useful? No. It is too hard to answer the new question based on the current information.
+
+{{input}}
+Is the new question useful?

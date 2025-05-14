@@ -1,0 +1,6 @@
+Extract the final answer from the following response:
+
+Original Task: {{query}}
+Input: {{response}}
+
+Return only the final answer as a plain string, without any additional context or explanations. 

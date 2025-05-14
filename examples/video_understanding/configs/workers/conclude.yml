@@ -1,4 +1,4 @@
 name: Conclude
-llm: ${sub|text_res_stream}
+llm: ${sub|text_res}
 output_parser: 
   name: StrParser

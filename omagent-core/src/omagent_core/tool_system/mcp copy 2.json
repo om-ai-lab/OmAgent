@@ -1,0 +1,36 @@
+{
+    "mcpServers": {
+      "mcp-hfspace": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@llmindset/mcp-hfspace",
+        "--work-dir=./",
+        "shuttleai/shuttle-jaguar",
+        "styletts2/styletts2",
+        "omlab/VLM-R1-OVD"
+      ]
+    }
+    ,
+    "youtube-transcript": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@sinco-lab/mcp-youtube-transcript"
+      ]
+    }
+    ,
+    "desktop-commander": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@smithery/cli@latest",
+          "run",
+          "@wonderwhy-er/desktop-commander",
+          "--key",
+          "d5e18890-a040-4814-8877-85948425e883"
+        ]
+      }
+    }
+  }
+  

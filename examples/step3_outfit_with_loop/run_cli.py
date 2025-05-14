@@ -1,4 +1,7 @@
 # Import core modules for workflow management and configuration
+import os
+os.environ["OMAGENT_MODE"] = "lite"
+
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
 from omagent_core.utils.container import container
@@ -8,7 +11,7 @@ logging.init_logger("omagent", "omagent", level="INFO")
 
 from pathlib import Path
 
-from omagent_core.clients.devices.cli.client import DefaultClient
+from omagent_core.clients.devices.cli import DefaultClient
 # Import registry and CLI client modules
 from omagent_core.utils.registry import registry
 
@@ -32,7 +35,7 @@ from examples.step2_outfit_with_switch.agent.outfit_recommendation.outfit_recomm
     OutfitRecommendation
 
 # Configure Redis storage and load container settings
-container.register_stm("RedisSTM")
+container.register_stm("SharedMemSTM")
 container.from_config(CURRENT_PATH.joinpath("container.yaml"))
 
 

@@ -10,7 +10,7 @@ from typing_extensions import Self, Union
 
 def get_task_interface_list_as_workflow_task_list(*tasks: Self) -> List[WorkflowTask]:
     converted_tasks = []
-    for task in tasks:
+    for task in tasks:        
         converted_tasks.append(task.to_workflow_task())
     return converted_tasks
 

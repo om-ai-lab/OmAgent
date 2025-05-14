@@ -1,0 +1,13 @@
+if there is an error on workflow, please fix the workflow and return the corrected workflow. If there is an error on code, please fix the code and return the corrected code.
+It should be entire code or json. When generating json, please generate only json without any other comments.
+Workflow: {{workflow}}
+Error message: {{error_message}}
+Traceback: {{traceback}}
+Code: {{code}}
+Example input: {{example_input}}
+
+Output: Please return the corrected code and path with json format. 
+Please make sure the json is valid json and list. 
+```json
+[{"file_path": "path/to/file.py", "code": "corrected_code"}, {"file_path": "path/to/file2.py", "code": "corrected_code2"},....]
+```

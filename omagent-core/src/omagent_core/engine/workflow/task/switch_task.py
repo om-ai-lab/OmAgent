@@ -7,7 +7,7 @@ from omagent_core.engine.workflow.task.task import (
     TaskInterface, get_task_interface_list_as_workflow_task_list)
 from omagent_core.engine.workflow.task.task_type import TaskType
 from typing_extensions import Self
-
+import os
 
 class EvaluatorType(str, Enum):
     JAVASCRIPT = ("javascript",)
@@ -42,6 +42,7 @@ class SwitchTask(TaskInterface):
             self._default_case = [deepcopy(tasks)]
         return self
 
+
     def to_workflow_task(self) -> WorkflowTask:
         workflow = super().to_workflow_task()
         if self._use_javascript:
@@ -54,13 +55,14 @@ class SwitchTask(TaskInterface):
         workflow.decision_cases = {}
         for case_value, tasks in self._decision_cases.items():
             workflow.decision_cases[case_value] = (
-                get_task_interface_list_as_workflow_task_list(
-                    *tasks,
-                )
+                    get_task_interface_list_as_workflow_task_list(
+                        *tasks,
+                    )
             )
         if self._default_case is None:
             self._default_case = []
+
         workflow.default_case = get_task_interface_list_as_workflow_task_list(
-            *self._default_case
-        )
+                *self._default_case
+            )
         return workflow

@@ -1,0 +1,17 @@
+- name: ThoughtDecomposition
+  params:
+    max_depth: 6
+    max_steps: 6
+    search_type: bfs
+    b: 1
+- name: ThoughtGenerator
+  llm: ${sub|thought_generator}
+  # support_n: true
+- name: StateEvaluator
+  llm: ${sub|state_evaluator}
+  # support_n: true
+  params:
+    evaluation_type: vote
+- name: SearchAlgorithm
+  llm: ${sub|json_res}
+  use_llm_completion: true

@@ -50,9 +50,7 @@ class Conclude(BaseLLMBackend, BaseWorker):
         chat_complete_res = self.simple_infer(
             task=task.get_root().task,
             result=str(last_output),
-            img_placeholders="".join(
-                list(self.stm(self.workflow_instance_id).get("image_cache", {}).keys())
-            ),
+            img_placeholders=self.stm(self.workflow_instance_id).get("image_cache"),
         )
         if isinstance(chat_complete_res, Iterator):
             last_output = "Answer: "

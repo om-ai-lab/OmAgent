@@ -49,9 +49,16 @@ class TaskScore(BaseLLMBackend, BaseWorker):
         - keyword_count_num_errors: Scoring for keyword counting tasks
         - set_intersection_num_errors: Scoring for set intersection tasks
         """
-        query = self.stm(self.workflow_instance_id)['query']
-        task_tree = self.stm(self.workflow_instance_id)['task_tree']
-        special_task = self.stm(self.workflow_instance_id)['special_task']
+        
+        # if not split, we will not generate task and response directly. So check if response is None. If not, we will skip the got process and move to the final refine phrase.
+        try:
+            response = self.stm(self.workflow_instance_id)['response']
+            self.callback.info(agent_id=self.workflow_instance_id, progress="Score eval is not processed as we did't use got process", message="")
+            return {'got_structure': self.stm(self.workflow_instance_id)['task_tree'].model_dump()}
+        except:
+            query = self.stm(self.workflow_instance_id)['query']
+            task_tree = self.stm(self.workflow_instance_id)['task_tree']
+            special_task = self.stm(self.workflow_instance_id)['special_task']
     
         self.scoring_function = None
         if special_task in ["sort", "set_intersection", "keyword_count"]:
@@ -67,13 +74,12 @@ class TaskScore(BaseLLMBackend, BaseWorker):
         elif self.eval_method == "set_intersection_num_errors":
             self.scoring_function = set_intersection_num_errors
         else:
-            raise ValueError("Eval method must be provided".format(self.eval_method))
+            self.scoring_function = None
+            self.callback.info(agent_id=self.workflow_instance_id, progress='Scoring', message="No scoring function found. LLM will score the nodes.".format(self.eval_method))
 
         if self.scoring_function is not None:
-            self.callback.info(agent_id=self.workflow_instance_id, progress='Scoring', message="Using function {} to score nodes".format(self.scoring_function))
-        else:
-            raise ValueError("Eval method must be provided".format(self.eval_method))
-        
+            self.callback.info(agent_id=self.workflow_instance_id, progress='Scoring', message="Using function {} to score nodes".format(self.eval_method))
+
         # Get executable leaf nodes
         current_nodes = []
         for id in task_tree.leaves:
@@ -90,9 +96,26 @@ class TaskScore(BaseLLMBackend, BaseWorker):
                 inputs = json_repair.loads(query)
                 set1, _ = inputs['set1'], inputs['set2']
                 node_score = self.scoring_function(set1, node.model_dump())
-            else:
+            elif self.eval_method == "sort_num_errors":
                 node_score = self.scoring_function(node.model_dump())
-                
+            else:
+                # use llm to score the node
+                self.callback.info(agent_id=self.workflow_instance_id, progress="Scoring", message="Using LLM to score the node")
+                node_score = self.simple_infer(query = query, current_task_input = node.current_task_input)['choices'][0]['message']['content']
+                try:
+                    node_score = json_repair.loads(node_score)
+                    self.callback.info(agent_id=self.workflow_instance_id, progress="Scoring", message="Score: {}".format(node_score))
+                    node_score = node_score['score']
+                except:
+                    node_score = 300
+                    self.callback.info(agent_id=self.workflow_instance_id, progress="Scoring", message="Invalid score format {}. Score set to 300".format(node_score))
+                try:
+                    node_score = float(node_score)
+                except:
+                    node_score = 300
+                    self.callback.info(agent_id=self.workflow_instance_id, progress="Scoring", message="Invalid score format {}. Score set to 300".format(node_score))
+
+
             self.callback.info(agent_id=self.workflow_instance_id, progress="Original input: {}, Eval score for {}".format(node.original_task_input, node.current_task_input), message=node_score)
             node.score = node_score
             node.executed = True

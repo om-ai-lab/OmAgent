@@ -72,7 +72,7 @@ class ChoiceExtractor(BaseWorker, BaseLLMBackend):
             answer =  {'last_output': None, 'completion_tokens': 0, 'prompt_tokens': 0}
         
         if options is None:
-            answer = {'last_output': prediction, 'completion_tokens': completion_tokens, 'prompt_tokens': prompt_tokens}
+            answer = {'last_output': str(prediction), 'completion_tokens': completion_tokens, 'prompt_tokens': prompt_tokens}
         else:
             chat_complete_res = self.simple_infer(question=query, options=options, prediction=prediction)
 
@@ -86,7 +86,7 @@ class ChoiceExtractor(BaseWorker, BaseLLMBackend):
             completion_tokens += chat_complete_res['usage']['completion_tokens']
             prompt_tokens += chat_complete_res['usage']['prompt_tokens']
 
-            answer = {'last_output': result, 'completion_tokens': completion_tokens, 'prompt_tokens': prompt_tokens}
-
+            answer = {'last_output': str(result), 'completion_tokens': completion_tokens, 'prompt_tokens': prompt_tokens}
+        logging.info("Answer: {}".format(answer))
         self.callback.send_answer(self.workflow_instance_id, msg=answer, filter_special_symbols=False)
         return answer

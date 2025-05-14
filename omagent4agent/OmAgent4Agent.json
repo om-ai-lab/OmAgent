@@ -1,0 +1,44 @@
+{
+    "name": "OmAgent4Agent",
+    "tasks": [
+        {
+            "name": "InputInterface",
+            "taskReferenceName": "input_task",
+            "inputParameters": {},
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        },
+        {
+            "name": "Planner",
+            "taskReferenceName": "planner",
+            "inputParameters": {
+                "initial_description": "${input_task.output.initial_description}"
+            },
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        },
+        {
+            "name": "WorkflowManager",
+            "taskReferenceName": "workflow_manager",
+            "inputParameters": {},
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        },
+        {
+            "name": "WorkerManager",
+            "taskReferenceName": "worker_manager",
+            "inputParameters": {},
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        }
+    ],
+    "inputParameters": [],
+    "outputParameters": {},
+    "failureWorkflow": "",
+    "schemaVersion": 2,
+    "workflowStatusListenerEnabled": false,
+    "ownerEmail": "default@omagent.ai",
+    "timeoutSeconds": 60,
+    "variables": {},
+    "inputTemplate": {}
+}

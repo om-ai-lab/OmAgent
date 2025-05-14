@@ -1,0 +1,12 @@
+llm: ${sub|text_res}
+tools:
+    - Calculator
+    - CodeInterpreter
+    - ReadFileContent
+    - WriteFileContent
+    - ShellTool
+    - name: Rewinder
+      llm: ${sub|text_res}
+    - name: WebSearch
+      bing_api_key: ${env|bing_api_key, microsoft_bing_api_key}
+      llm: ${sub|text_res}

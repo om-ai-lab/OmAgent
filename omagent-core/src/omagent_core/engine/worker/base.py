@@ -160,6 +160,7 @@ class BaseWorker(BotBase, ABC):
             logger.error(
                 f"Error executing task {task.task_def_name} with id {task.task_id}.  error = {traceback.format_exc()}"
             )
+            self.callback.error(self.workflow_instance_id, error_code=500, error_info=f"ERROR:The '{task.task_def_name}' task execution failed.")
 
             task_result.logs = [
                 TaskExecLog(

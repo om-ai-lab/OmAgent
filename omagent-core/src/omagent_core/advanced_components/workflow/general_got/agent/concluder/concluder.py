@@ -26,16 +26,16 @@ CURRENT_PATH = Path(__file__).parents[0]
 
 @registry.register_worker()
 class TaskConcluder(BaseLLMBackend, BaseWorker):
-    # prompts: List[PromptTemplate] = Field(
-    #     default=[
-    #         PromptTemplate.from_file(
-    #             CURRENT_PATH.joinpath("sys_prompt.prompt"), role="system"
-    #         ),
-    #         PromptTemplate.from_file(
-    #             CURRENT_PATH.joinpath("user_prompt.prompt"), role="user"
-    #         ),
-    #     ]
-    # )
+    prompts: List[PromptTemplate] = Field(
+        default=[
+            PromptTemplate.from_file(
+                CURRENT_PATH.joinpath("response_parser_sys_prompt.prompt"), role="system"
+            ),
+            PromptTemplate.from_file(
+                CURRENT_PATH.joinpath("response_parser_user_prompt.prompt"), role="user"
+            ),
+        ]
+    )
 
     def _run(self, *args, **kwargs):
         """
@@ -50,8 +50,18 @@ class TaskConcluder(BaseLLMBackend, BaseWorker):
         Returns:
             dict: Contains the final output and token usage information
         """
-        query = self.stm(self.workflow_instance_id)['query']
-        task_tree = self.stm(self.workflow_instance_id)['task_tree']
+
+        # if not split, we will not generate task and response directly. So check if response is None. If not, we will skip the got process and move to the final refine phrase.
+        try:
+            response = self.stm(self.workflow_instance_id)['response']
+            #return {'got_structure': self.stm(self.workflow_instance_id)['task_tree'].model_dump()}
+            token_usage = self.stm(self.workflow_instance_id)['token_usage']
+            self.callback.info(agent_id=self.workflow_instance_id, progress='The result is:', message=response)
+            self.callback.info(agent_id=self.workflow_instance_id, progress='Token usage', message=token_usage)
+            return {'Final output': response, 'token_usage': token_usage}
+        except:
+            query = self.stm(self.workflow_instance_id)['query']
+            task_tree = self.stm(self.workflow_instance_id)['task_tree']
 
         current_nodes = []
         for id in task_tree.leaves:
@@ -61,13 +71,18 @@ class TaskConcluder(BaseLLMBackend, BaseWorker):
                 current_nodes.append(node)
         
         assert len(current_nodes) == 1, "There should be only one node in the last phrase"
-        node = current_nodes[0]
+
+        # Parse the final answer if not special task
+        if self.stm(self.workflow_instance_id)['special_task'] is None:
+            answer = self.simple_infer(input=query, response=node.current_task_input)
+            answer = json_repair.loads(answer['choices'][0]['message']['content'])
+            node.current_task_input = answer
+
         self.callback.info(agent_id=self.workflow_instance_id, progress='Concluder conduct result', message=node.current_task_input)
         print("*"*50)
-        print(node.original_task_input)
-
+        self.callback.info(agent_id=self.workflow_instance_id, progress='The task is:', message=query)
         print("*"*50)
-        print(node.current_task_input)
+        self.callback.info(agent_id=self.workflow_instance_id, progress='The result is:', message=node.current_task_input)
 
         if self.stm(self.workflow_instance_id)['special_task'] == "sort":
             print(sorted(json_repair.loads(str(node.original_task_input))))

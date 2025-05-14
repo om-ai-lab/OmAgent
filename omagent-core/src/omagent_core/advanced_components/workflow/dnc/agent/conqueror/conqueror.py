@@ -18,6 +18,7 @@ from omagent_core.utils.registry import registry
 from pydantic import Field
 from tenacity import (retry, retry_if_exception_message, stop_after_attempt,
                       stop_after_delay)
+from omagent_core.utils.logger import logging
 
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -96,13 +97,12 @@ class TaskConqueror(BaseLLMBackend, BaseWorker):
             ),
             "former_results": self.stm(self.workflow_instance_id)["former_results"],
             "extra_info": self.stm(self.workflow_instance_id).get("extra"),
-            "img_placeholders": "".join(
-                list(self.stm(self.workflow_instance_id).get("image_cache", {}).keys())
-            ),
+            "img_placeholders": self.stm(self.workflow_instance_id).get("image_cache"),
         }
 
         # Call LLM to get next actions or task completion results
         chat_complete_res = self.infer(input_list=[payload])
+        logging.info(f"Conqueror chat_complete_res: {chat_complete_res}")
         content = chat_complete_res[0]["choices"][0]["message"].get("content")
         content = json_repair.loads(content)
 

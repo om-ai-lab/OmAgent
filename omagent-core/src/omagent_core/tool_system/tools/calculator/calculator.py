@@ -1,13 +1,14 @@
-import os
-import subprocess
+import numexpr
+import re
+import math
 
-from ....utils.registry import registry
-from ...base import ArgSchema, BaseTool
+from omagent_core.utils.registry import registry
+from omagent_core.tool_system.base import ArgSchema, BaseTool
 
 ARGSCHEMA = {
-    "code": {
+    "formula": {
         "type": "string",
-        "description": "Python code block to be executed of mathematical calculation derivation.",
+        "description": "Mathematical formula to be executed.",
     }
 }
 
@@ -16,35 +17,31 @@ ARGSCHEMA = {
 class Calculator(BaseTool):
     args_schema: ArgSchema = ArgSchema(**ARGSCHEMA)
     description: str = (
-        "Calculator tool for executing all mathematical calculation. Final result must be wrapped by print function and output to stdout."
+        "Calculator tool for executing simple mathematical calculation. Please output a mathematical formula. \
+    Addition, subtraction, multiplication, and division are represented by +, -, *, and /, respectively. \
+    Exponentiation is denoted by **, and square root is implemented using sqrt(). Other functions are not allowed to be used. \
+    Only the constants pi and e are available, representing the mathematical constant pi and Euler's number, respectively."
     )
 
-    def _run(self, code: str = None, filename: str = "calculator_code.py") -> dict:
-        if code:
-            with open(filename, "w") as f:
-                f.write(code)
-        command = f"python {filename}"
+    def _run(self, formula: str = None) -> dict:
         try:
-            exec_proc = subprocess.Popen(
-                command,
-                shell=True,
-                stderr=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stdin=subprocess.PIPE,
-                cwd=".",
+            # Define local variables, allowing only pi and e
+            local_dict = {"pi": math.pi, "e": math.e}
+
+            # Evaluate the expression using numexpr.evaluate
+            output = str(
+                numexpr.evaluate(
+                    formula.strip(),
+                    global_dict={},  # Restrict access to global variables
+                    local_dict=local_dict,  # Add common mathematical constants
+                )
             )
-            stdout, stderr = exec_proc.communicate(timeout=30)
-
+            print("Successfully used calculator for computation")
         except Exception as e:
-            raise ValueError(e)
+            raise ValueError(
+                f'Failed to evaluate "{formula}". Raised error: {repr(e)}.'
+                " Please try again with a valid numerical expression"
+            )
 
-        if stderr:
-            raise ValueError(f"{code}\nExecute error:\n {stderr.decode()}")
-        result = {
-            "ReturnCode": exec_proc.returncode,
-            "Error": stderr.decode() if stderr else None,
-            "Output": stdout.decode() if stdout else None,
-            "absolute_filename": os.path.abspath(filename),
-        }
-
-        return result
+        # Remove square brackets from the output
+        return re.sub(r"^\[|\]$", "", output)

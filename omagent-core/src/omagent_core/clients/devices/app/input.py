@@ -22,8 +22,6 @@ class AppInput(InputBase):
     redis_stream_client: RedisConnector
 
     def read_input(self, workflow_instance_id: str, input_prompt=""):
-        if os.getenv("OMAGENT_MODE") == "lite":
-            workflow_instance_id = "temp"
         stream_name = f"{workflow_instance_id}_input"
         group_name = "omappagent"  # consumer group name
         consumer_name = f"{workflow_instance_id}_agent"  # consumer name

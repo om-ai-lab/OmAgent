@@ -1,0 +1,8 @@
+Now, it's your turn to choose the best thought based on the following problem, requirements and previous thoughts.
+
+{{few_shots}}
+
+Problem: {{problem}}
+Requirements: {{requirements}}
+Thought chains: 
+{{thought_chains}}

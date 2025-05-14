@@ -1,0 +1,9 @@
+Please analyze if the following task can be split into multiple subtasks:
+
+Task: {{input}}
+
+Remember to:
+1. Consider if the task has parallel processing potential
+2. Check if it can be broken down into similar subtasks
+3. Verify if subtask results can be merged
+4. Return your analysis in the specified JSON format

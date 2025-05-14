@@ -1,8 +1,12 @@
 # Import required modules and components
-from pathlib import Path
+import os
+os.environ["OMAGENT_MODE"] = "lite"
 
+from pathlib import Path
+import os
+os.environ["OMAGENT_MODE"] = "lite"
 from agent.input_interface.input_interface import InputInterface
-from omagent_core.clients.devices.cli.client import DefaultClient
+from omagent_core.clients.devices.cli import DefaultClient
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
 from omagent_core.utils.container import container
@@ -18,7 +22,7 @@ CURRENT_PATH = Path(__file__).parents[0]
 # Import registered modules
 registry.import_module(project_path=CURRENT_PATH.joinpath("agent"))
 
-container.register_stm("RedisSTM")
+container.register_stm("SharedMemSTM")
 # Load container configuration from YAML file
 container.from_config(CURRENT_PATH.joinpath("container.yaml"))
 

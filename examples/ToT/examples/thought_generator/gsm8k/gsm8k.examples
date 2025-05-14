@@ -1,0 +1,82 @@
+example1:
+Problem: There are 15 trees in the grove. Grove workers will plant trees in the grove today. After they are done, there will be 21 trees. How many trees did the grove workers plant today?
+Requirements: Solve the problem by reasoning step by step. If the problem is complex please decompose it into sub-problems and solve them one by one, each thought should be a sub-problem and answer. When the whole problem is answerable, you should give the final thought to solve the problem starting with "Now we can answer the question:," and ending with "The answer is"
+Previous thought chain:
+(In this example, the previous thought chain is empty, so it is the first step to solve the problem. However, the problem is simple and there is only one next thought, so you can directly solve it and only generate one thought.)
+Output: {"thoughts": ["Now we can answer the question: There are 15 trees originally. Then there were 21 trees after some more were planted. So there must have been 21 - 15 = 6 trees planted. The answer is 6."]}
+
+example2:
+Problem: If there are 3 cars in the parking lot and 2 more cars arrive, how many cars are in the parking lot?
+Requirements: Solve the problem by reasoning step by step. If the problem is complex please decompose it into sub-problems and solve them one by one, each thought should be a sub-problem and answer. When the whole problem is answerable, you should give the final thought to solve the problem starting with "Now we can answer the question:," and ending with "The answer is"
+Previous thought chain:
+(In this example, cause it is simple enough, so the same as example1, you can directly solve it and only generate one thought.)
+Output: {"thoughts": ["Now we can answer the question: There are originally 3 cars. 2 more cars arrive. 3 + 2 = 5. The answer is 5."]}
+
+example3:
+Problem: Leah had 32 chocolates and her sister had 42. If they ate 35, how many pieces do they have left in total?
+Requirements: Solve the problem by reasoning step by step. If the problem is complex please decompose it into sub-problems and solve them one by one, each thought should be a sub-problem and answer. When the whole problem is answerable, you should give the final thought to solve the problem starting with "Now we can answer the question:," and ending with "The answer is"
+Previous thought chain:
+(In this example, the problem is complex, so you need to decompose it into sub-problems and solve them one by one. The first sub-problem is to find out how many chocolates Leah and her sister have in total, so the first thought you generate should be about this sub-problem, and there is only one solution about the fisrt step, so you can generate only one thought and follw the requirement about the final step.)
+Output: {"thoughts": ["sub-question 1: How many chocolates does Leah and his sister have in total?\nAnswer 1: Leah has 32 chocolates and her sister has 42 chocolates. 32 + 42 = 74. The answer is 74."]}
+
+Previous thought chain: sub-question 1: How many chocolates does Leah and his sister have in total?\nAnswer 1: Leah has 32 chocolates and her sister has 42 chocolates. 32 + 42 = 74. The answer is 74.
+(In next step, when the previous thought chain is not empty, you should generate the thoughts based on the problem, the requirements and the previous thought chain. The second sub-problem is to find out how many chocolates they have left after they ate 35, and there is only one solution left, so you can generate only one thought.)
+Output: {"thoughts": ["Now we can answer the question: They had 74 chocolates and ate 35. 74 - 35 = 39. The answer is 39."]}
+
+example4:
+Problem: Jason had 20 lollipops. He gave Denny some lollipops. Now Jason has 12 lollipops. How many lollipops did Jason give to Denny?
+Requirements: (the same as other examples shown in 1,2,3)
+Previous thought chain:
+(It is simple enough, and there is only one solution, so you can generate the final thought directly.)
+Output: {"thoughts": ["Now we can answer the question: Jason had 20 lollipops and now he has 12. So he must have given 20 - 12 = 8 lollipops to Denny. The answer is 8."]}
+
+example5:
+Problem: Shawn has five toys. For Christmas, he got two toys each from his mom and dad. How many toys does he have now?
+Requirements: (the same as other examples shown in 1,2,3)
+(In this example, the problem is complex, so you need to decompose it into sub-problems and solve them one by one. The first sub-problem is to find out how many toys Shawn has from his mom and dad, the second sub-problem is to find out how many toys Shawn has now, and answer in the format of "The answer is" and ending with "The answer is".)
+In first step you will receive like below:
+Previous thought chain:
+Output: {"thoughts": ["sub-question 1: How many toys does Shawn have from his mom and dad?\nAnswer 1: Shawn has 2 toys from his mom and 2 toys from his dad. 2 + 2 = 4. The answer is 4."]}
+
+In second step you will receive like below:
+Previous thought chain: sub-question 1: How many toys does Shawn have from his mom and dad?\nAnswer 1: Shawn has 2 toys from his mom and 2 toys from his dad. 2 + 2 = 4. The answer is 4.
+Output: {"thoughts": ["Now we can answer the question: Shawn has 5 original toys and now he has 4 more toys. 5 + 4 = 9. The answer is 9."]}
+
+example6:
+Problem: There were nine computers in the server room. Five more computers were installed each day, from monday to thursday. How many computers are now in the server room?
+Requirements: (the same as other examples shown in 1,2,3)
+(It is a complex problem, so you need to decompose it into sub-problems and solve them one by one.)
+In first step you will receive like below:
+Previous thought chain:
+Output: {"thoughts": ["sub-question 1: How many days are there from monday to thursday?\nAnswer 1: There are 4 days from monday to thursday. The answer is 4."]}
+
+In second step you will receive like below:
+Previous thought chain: sub-question 1: How many days are there from monday to thursday?\nAnswer 1: There are 4 days from monday to thursday. The answer is 4.
+Output: {"thoughts": ["sub-question 2: How many computers were installed in total?\nAnswer 2: There are 4 days and 5 computers were installed each day. 4 * 5 = 20. The answer is 20."]}
+
+In third step you will receive like below:
+Previous thought chain: sub-question 1: How many days are there from monday to thursday?\nAnswer 1: There are 4 days from monday to thursday. The answer is 4.\nsub-question 2: How many computers were installed in total?\nAnswer 2: There are 4 days and 5 computers were installed each day. 4 * 5 = 20. The answer is 20.
+Output: {"thoughts": ["Now we can answer the question: There were 9 computers originally and 20 more were installed. 9 + 20 = 29. The answer is 29."]}
+
+example7:
+Problem: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?
+Requirements: (the same as other examples shown in 1,2,3)
+(It is a complex problem, so you need to decompose it into sub-problems and solve them one by one. However, there are two ways in first step to solve the problem, one is calculate how many golf balls Michael lost in total, the other is calculate how many golf balls Michael had at the end of tuesday. So this two thought are allowed in first step.)
+In first step you will receive like below:
+Previous thought chain:
+Output: {"thoughts": ["sub-question 1: How many golf balls did Michael lose in total?\nAnswer 1: Michael lost 23 golf balls on tuesday and 2 more on wednesday. 23 + 2 = 25. The answer is 25.", "sub-question 1: How many golf balls did Michael have at the end of tuesday?\nAnswer 1: Michael had 58 golf balls and lost 23 on tuesday. 58 - 23 = 35. The answer is 35."]}
+
+In second step you will receive like below:
+Previous thought chain: sub-question 1: How many golf balls did Michael lose in total?\nAnswer 1: Michael lost 23 golf balls on tuesday and 2 more on wednesday. 23 + 2 = 25. The answer is 25.
+Output: {"thoughts": ["Now we can answer the question: Michael had 58 golf balls and lost 25. 58 - 25 = 33. The answer is 33."]}
+
+example8:
+Problem: Olivia has $23. She bought five bagels for $3 each. How much money does she have left?
+Requirements: (the same as other examples shown in 1,2,3)
+In first step you will receive like below:
+Previous thought chain:
+Output: {"thoughts": ["sub-question 1: How much money did Olivia spend on bagels?\nAnswer 1: Olivia bought 5 bagels for $3 each. 5 * 3 = 15. The answer is 15.", "sub-question 1: How much money did Olivia have left?\nAnswer 1: Olivia had $23 and spent $15 on bagels. 23 - 15 = 8. The answer is 8."]}
+
+In second step you will receive like below:
+Previous thought chain: sub-question 1: How much money did Olivia spend on bagels?\nAnswer 1: Olivia bought 5 bagels for $3 each. 5 * 3 = 15. The answer is 15.\nsub-question 1: How much money did Olivia have left?\nAnswer 1: Olivia had $23 and spent $15 on bagels. 23 - 15 = 8. The answer is 8.
+Output: {"thoughts": ["Now we can answer the question: Olivia had $23 and spent $15 on bagels. 23 - 15 = 8. The answer is 8."]}

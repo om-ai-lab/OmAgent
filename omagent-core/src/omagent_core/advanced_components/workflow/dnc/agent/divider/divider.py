@@ -14,6 +14,7 @@ from omagent_core.utils.registry import registry
 from pydantic import Field
 from tenacity import (retry, retry_if_exception_message, stop_after_attempt,
                       stop_after_delay)
+from omagent_core.utils.logger import logging
 
 CURRENT_PATH = Path(__file__).parents[0]
 
@@ -85,6 +86,7 @@ class TaskDivider(BaseLLMBackend, BaseWorker):
             former_results=last_output,
             tools=self.tool_manager.generate_prompt(),
         )
+        logging.info(f"Divider chat_complete_res: {chat_complete_res}")
         chat_complete_res = json_repair.loads(
             chat_complete_res["choices"][0]["message"]["content"]
         )

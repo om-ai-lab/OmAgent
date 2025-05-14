@@ -2,13 +2,12 @@
   llm: ${sub|gpt}
   chunk_size: 8
   concurrency: 1
-  special_task: sort
 - name: TaskGenerater
   llm: ${sub|gpt}
   concurrency: 1
-  num_branches_response: 1
-  num_branches_response_for_aggregater: 1
-  num_branches_response_for_refiner: 1
+  num_branches_response: 2
+  num_branches_response_for_aggregater: 2
+  num_branches_response_for_refiner: 2
   parse_method: parse_refine_answer
 - name: TaskScore
   llm: ${sub|gpt}

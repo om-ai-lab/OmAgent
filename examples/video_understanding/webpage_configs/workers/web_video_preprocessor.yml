@@ -1,0 +1,12 @@
+name: WebpageVideoPreprocessor
+llm: ${sub|gpt4o}
+use_cache: true
+scene_detect_threshold: 27
+frame_extraction_interval: 5
+stt:
+  name: STT
+  endpoint: ${env| custom_openai_endpoint, https://api.openai.com/v1}
+  api_key: ${env| custom_openai_key, openai_api_key}
+output_parser:
+  name: DictParser
+text_encoder: ${sub| text_encoder}

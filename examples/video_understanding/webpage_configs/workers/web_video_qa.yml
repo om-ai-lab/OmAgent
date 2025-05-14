@@ -1,0 +1,5 @@
+name: WebpageVideoQA
+llm: ${sub|gpt4o}
+output_parser: 
+  name: StrParser
+text_encoder: ${sub| text_encoder}

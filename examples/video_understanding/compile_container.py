@@ -12,7 +12,7 @@ registry.import_module(project_path=CURRENT_PATH.joinpath("agent"))
 # Register required components
 container.register_callback(callback="DefaultCallback")
 container.register_input(input="AppInput")
-container.register_stm("RedisSTM")
+container.register_stm("SharedMemSTM")
 container.register_ltm(ltm="VideoMilvusLTM")
 # Compile container config
 container.compile_config(CURRENT_PATH)

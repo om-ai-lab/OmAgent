@@ -1,0 +1,26 @@
+Configurations Generation Prompt:
+
+You are tasked with generating configuration files for the OmAgent system. These configuration files are used to set up values in classes—for example, API keys, endpoints, LLM types, etc. Please generate configuration files following these guidelines:
+
+1. Use YAML format for each configuration file.
+2. Save the configuration files under the "configs" folder with the following subdirectories:
+  e.g., "configs/workers/video_preprocessor.yml"
+3. Validate that all required keys for each component are present in your configuration.
+
+Below are some examples:
+
+-- **Worker Configuration (configs/workers/video_preprocessor.yml)** --
+Input python code:
+```python
+import ....
+@registry.register_worker()
+class VideoPreprocessor(BaseLLMBackend, BaseWorker):
+    llm: OpenaiGPTLLM            
+```
+Output yaml:
+```yaml
+name: VideoPreprocessor
+llm: ${sub|gpt4o}
+```
+Save the generated configuration files in the appropriate subdirectories under the "configs" folder. Here is the input code: {{code}}
+if the code contains llm in the class member, please use the llm name in the yaml file. 

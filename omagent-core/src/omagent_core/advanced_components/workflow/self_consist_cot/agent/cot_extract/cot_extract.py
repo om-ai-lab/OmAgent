@@ -43,26 +43,13 @@ class COTExtract(BaseLLMBackend, BaseWorker):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            dict: A dictionary containing the final answer and prompt and completion tokens.
+            dict: A dictionary containing the final answer.
         """
-
         final_answer = []
-        prompt_tokens = []
-        complete_tokens = []
-
         for item in reasoning_result:
             reasoning_result = self.simple_infer(reasoning_step=item)
-            prompt_tokens.append(reasoning_result["usage"]["prompt_tokens"])
-            complete_tokens.append(reasoning_result["usage"]["completion_tokens"])
             reasoning_result = reasoning_result["choices"][0]["message"]["content"]
-
             final_answer.append(reasoning_result)
-
-        self.stm(self.workflow_instance_id)['prompt_token'].extend(prompt_tokens)
-        self.stm(self.workflow_instance_id)['completion_token'].extend(complete_tokens)
         self.stm(self.workflow_instance_id)['reasoning_result'] = final_answer
-
-
         self.callback.send_answer(self.workflow_instance_id, msg=",".join(final_answer))
-
         return {'final_answer': final_answer}

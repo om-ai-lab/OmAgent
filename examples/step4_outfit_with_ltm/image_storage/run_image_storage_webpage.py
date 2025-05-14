@@ -1,4 +1,6 @@
 # Import required modules and components
+import os
+os.environ["OMAGENT_MODE"] = "lite"
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
 from omagent_core.utils.container import container
@@ -17,7 +19,7 @@ registry.import_module(project_path=CURRENT_PATH.joinpath("agent"))
 
 from omagent_core.clients.devices.app.image_index import ImageIndexListener
 # Import app-specific components
-from omagent_core.clients.devices.webpage.client import WebpageClient
+from omagent_core.clients.devices.webpage import WebpageClient
 
 # Configure container with storage systems
 container.register_stm(stm="RedisSTM")

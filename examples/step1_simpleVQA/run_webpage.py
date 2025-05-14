@@ -1,7 +1,9 @@
 # Import required modules and components
+import os
+os.environ["OMAGENT_MODE"] = "lite"
 from pathlib import Path
 
-from omagent_core.clients.devices.webpage.client import WebpageClient
+from omagent_core.clients.devices.webpage import WebpageClient
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
 from omagent_core.utils.container import container
