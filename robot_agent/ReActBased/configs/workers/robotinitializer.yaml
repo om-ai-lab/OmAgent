@@ -1,0 +1,3 @@
+name: RobotInitializer
+llm: ${sub|llm_text}
+tool_manager: ${sub|all_tools}

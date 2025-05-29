@@ -1,0 +1,6 @@
+name: OpenaiGPTLLM
+model_id: gpt-4o
+api_key: ${env| custom_openai_key, sk-2fpMc0GBGTGG96w62cF7B9621bA34aDa8b2112D26404Ae4e}
+endpoint: ${env| custom_openai_endpoint, http://localhost:4000/v1}
+temperature: 0
+vision: true

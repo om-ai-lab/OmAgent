@@ -1,0 +1,3 @@
+name: SpatialScanner
+llm: ${sub|vlm}
+tool_manager: ${sub|all_tools}

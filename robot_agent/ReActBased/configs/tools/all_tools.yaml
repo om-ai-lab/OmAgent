@@ -1,0 +1,2 @@
+llm: ${sub|llm_text}
+tools: []
