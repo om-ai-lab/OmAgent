@@ -3,6 +3,9 @@ import json
 import re
 from datetime import datetime
 from typing import List, Dict, Any
+import base64
+import io
+from PIL import Image
 
 @registry.register_worker()
 class ReActNavigator(BaseWorker, BaseLLMBackend):
@@ -194,17 +197,16 @@ class ReActNavigator(BaseWorker, BaseLLMBackend):
         self.callback.info(agent_id=self.workflow_instance_id, progress='📊 Gathering Context', 
                          message=f"Collecting context for step {step_count}")
         
-        # Fast environment analysis
-        env_analysis = self._analyze_environment(rgb_data)
+        # Get map data first
+        env_state_json = self.tool_manager.execute(
+            tool_name="mcp_thor_get_environment_state",
+            args={}
+        )
+        env_state = json.loads(env_state_json) if isinstance(env_state_json, str) else env_state_json
+        map_data = env_state.get("map", "")
         
-        # Quick object detection
-        detected_objects = self._detect_objects(rgb_data)
-        
-        # Generate visual description for current context
-        visual_description = self._generate_visual_description(rgb_data)
-        
-        # Get map data and analysis
-        map_analysis = self._analyze_map_data()
+        # Combined VLM analysis of both RGB and map images
+        combined_analysis = self._analyze_scene_and_map_combined(rgb_data, map_data, target_object)
         
         # Get previous reasoning and execution history
         previous_reasoning = self._get_previous_reasoning()
@@ -222,10 +224,10 @@ class ReActNavigator(BaseWorker, BaseLLMBackend):
             "target_location": target_location,
             "step_count": step_count,
             "max_steps": self.max_steps,
-            "env_analysis": env_analysis,
-            "detected_objects": detected_objects,
-            "visual_description": visual_description,
-            "map_analysis": map_analysis,
+            "env_analysis": combined_analysis.get("environment_analysis", "No environment analysis"),
+            "detected_objects": combined_analysis.get("detected_objects", "No objects detected"),
+            "visual_description": combined_analysis.get("visual_description", "No visual description"),
+            "map_analysis": combined_analysis.get("map_analysis", "No map analysis"),
             "previous_reasoning": previous_reasoning,
             "execution_history": execution_history,
             "spatial_scan_info": spatial_scan_info,
@@ -235,152 +237,290 @@ class ReActNavigator(BaseWorker, BaseLLMBackend):
         }
         
         self.callback.info(agent_id=self.workflow_instance_id, progress='✅ Context Ready', 
-                         message=f"Context gathered: RGB={'Available' if rgb_data else 'Missing'}, Spatial={'Available' if spatial_scan_info['scan_available'] else 'Missing'}")
+                         message=f"Combined analysis complete: RGB={'Available' if rgb_data else 'Missing'}, Map={'Available' if map_data else 'Missing'}")
         
         return context
-    
-    def _generate_visual_description(self, rgb_data: str) -> str:
-        """Generate visual description for current navigation context."""
-        if not rgb_data:
-            return "No visual data available"
+
+    def _analyze_scene_and_map_combined(self, rgb_data: str, map_data: str, target_object: str) -> Dict[str, Any]:
+        """Combined VLM analysis of both RGB and map data in a single call for efficiency."""
         
-        analysis_json = self.tool_manager.execute(
-            tool_name="mcp_vlm-r1_analyze_image",
-            args={
-                "image_path": rgb_data,
-                "question": "Describe this scene for robot navigation focusing on spatial layout, key objects, and visual landmarks. Be concise."
+        if not rgb_data and not map_data:
+            return {
+                "environment_analysis": "No visual data available",
+                "detected_objects": "No objects detected - no visual data",
+                "visual_description": "No visual data available",
+                "map_analysis": "No map data available"
             }
-        )
-        analysis_result = json.loads(analysis_json)
-        return analysis_result.get("raw_output", "Visual analysis failed")
         
-       
+        # Create comprehensive prompt for unified analysis
+        combined_prompt = f"""
+Please analyze the provided concatenated image for robot navigation. The image contains:
+LEFT SIDE: RGB camera view (robot's current visual perspective)
+RIGHT SIDE: Occupancy map (bird's eye view of the environment)
+
+Target object to find: {target_object}
+
+Provide a JSON response with exactly these four sections:
+
+{{
+    "environment_analysis": "Analyze the RGB scene (left side) for robot navigation. Focus on: navigable paths, obstacles including walls/furniture/barriers, glass walls/windows/transparent barriers that would block movement, and interesting objects. Pay special attention to transparent or reflective surfaces that might block the robot's path.",
     
-    def _analyze_map_data(self) -> str:
-        """Analyze map data for spatial understanding and navigation planning."""
-        # Get current environment state including map
-        env_state_json = self.tool_manager.execute(
-            tool_name="mcp_thor_get_environment_state",
-            args={}
-        )
-        env_state = json.loads(env_state_json) if isinstance(env_state_json, str) else env_state_json
-        map_data = env_state.get("map", "")
+    "detected_objects": "List all visible objects in the RGB image (left side). Be specific about object types, their positions (left/right/center, near/far), and note if the target object '{target_object}' is visible.",
+    
+    "visual_description": "Describe the RGB scene (left side) for robot navigation focusing on spatial layout, key objects, visual landmarks, and overall scene composition. Be concise but informative.",
+    
+    "map_analysis": "Analyze the occupancy map (right side) for robot navigation. Identify: 1) Open navigable areas (light/green regions), 2) Obstacles and walls (dark/black regions), 3) Current robot position if visible, 4) Optimal movement directions, 5) Spatial layout and room structure. Be specific about directions and distances."
+}}
+
+Ensure your response is valid JSON format with all four required fields.
+"""
         
-        if not map_data:
-            return "No map data available"
-        
-        # Analyze map using VLM for spatial understanding
-        map_analysis_json = self.tool_manager.execute(
-            tool_name="mcp_vlm-r1_analyze_image",
-            args={
-                "image_path": map_data,
-                "question": "Analyze this occupancy map for robot navigation. Identify: 1) Open navigable areas (light/green), 2) Obstacles (dark/black), 3) Current robot position, 4) Optimal movement directions, 5) Spatial layout and room structure. Be specific about directions and distances."
-            }
-        )
-        map_analysis_result = json.loads(map_analysis_json)
-        return map_analysis_result.get("raw_output", "Map analysis failed")
+        #try:
+        if True:
+            # Convert base64 images to PIL Images and concatenate
+            combined_image_b64 = self._create_combined_image(rgb_data, map_data)
             
-        
-    
-    def _analyze_obstacles(self, rgb_data: str, execution_history: str) -> str:
-        """Analyze obstacles including transparent barriers like glass walls."""
-        if not rgb_data:
-            return "No visual data available for obstacle analysis"
-        
-        try:
-            # Enhanced obstacle detection prompt
-            obstacle_prompt = """Analyze this image for navigation obstacles, paying special attention to:
-
-1. TRANSPARENT BARRIERS: Glass walls, windows, glass doors, or transparent panels that would block robot movement
-2. PHYSICAL OBSTACLES: Walls, furniture, objects blocking the path ahead
-3. BLOCKED PATHS: Any barriers that would prevent forward movement
-4. OPEN AREAS: Clear navigable space where the robot can move
-
-Look carefully for reflections, transparent surfaces, or glass that might not be immediately obvious.
-Consider the robot's perspective - what would actually block forward movement?
-
-Provide a clear assessment: Is the forward path BLOCKED or OPEN? If blocked, what type of obstacle?"""
-
+            if not combined_image_b64:
+                # Fallback to individual calls if image processing fails
+                return self._fallback_individual_analysis(rgb_data, map_data, target_object)
+            
+            # Call VLM with combined image
             analysis_json = self.tool_manager.execute(
                 tool_name="mcp_vlm-r1_analyze_image",
                 args={
-                    "image_path": rgb_data,
-                    "question": obstacle_prompt
+                    "image_path": combined_image_b64,
+                    "question": combined_prompt
                 }
             )
-            analysis_result = json.loads(analysis_json)
-            obstacle_analysis = analysis_result.get("raw_output", "Obstacle analysis failed")
             
-            # Enhanced analysis if we detect potential blocking
-            if "glass" in obstacle_analysis.lower() or "window" in obstacle_analysis.lower() or "blocked" in obstacle_analysis.lower():
-                # Additional check with execution history
-                recent_failures = "failed" in execution_history.lower() or "moveahead" in execution_history.lower()
-                if recent_failures:
-                    obstacle_analysis += "\n\nWARNING: Recent movement failures detected combined with potential barriers. Forward movement is likely BLOCKED."
+            analysis_result = json.loads(analysis_json) if isinstance(analysis_json, str) else analysis_json
+            raw_output = analysis_result.get("raw_output", "")
+            # Parse the JSON response from VLM
+            #try:
+            if True:
+                # Clean up the response - remove markdown formatting if present
+                cleaned_output = raw_output.split("```json")[1].split("```")[0].strip()
+                parsed_analysis = json.loads(cleaned_output)
+                
+                # Validate that all required fields are present
+                required_fields = ["environment_analysis", "detected_objects", "visual_description", "map_analysis"]
+                for field in required_fields:
+                    if field not in parsed_analysis:
+                        parsed_analysis[field] = f"Missing {field} from VLM response"
+                print (parsed_analysis)
+                self.callback.info(agent_id=self.workflow_instance_id, progress='🔍 Combined Analysis', 
+                                 message="Successfully parsed combined VLM analysis")
+                
+                return parsed_analysis
+                
+            #except json.JSONDecodeError as e:
+            #    self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ Parse Error', 
+            #                     message=f"Failed to parse VLM JSON response: {str(e)}")
+                
+                # Fallback: try to extract information from unstructured response
+            #    return self._extract_analysis_from_text(raw_output)
+                
+        #except Exception as e:
+        #    self.callback.info(agent_id=self.workflow_instance_id, progress='❌ Analysis Error', 
+        #                     message=f"Combined VLM analysis failed: {str(e)}")
             
-            return obstacle_analysis
+        #    # Fallback to individual calls if combined analysis fails
+        #    return self._fallback_individual_analysis(rgb_data, map_data, target_object)
+
+    def _create_combined_image(self, rgb_data: str, map_data: str, target_width: int = 800, target_height: int = 400) -> str:
+        """Convert base64 images to PIL Images, resize, concatenate horizontally, and return as base64."""
+        
+        try:
+            images = []
+            
+            # Process RGB image
+            if rgb_data:
+                # Handle data URL format or plain base64
+                if rgb_data.startswith('data:image'):
+                    # Extract base64 part from data URL
+                    rgb_b64 = rgb_data.split(',')[1]
+                else:
+                    rgb_b64 = rgb_data
+                
+                # Decode base64 to image
+                rgb_bytes = base64.b64decode(rgb_b64)
+                rgb_image = Image.open(io.BytesIO(rgb_bytes))
+                
+                # Convert to RGB if necessary
+                if rgb_image.mode != 'RGB':
+                    rgb_image = rgb_image.convert('RGB')
+                
+                # Resize to half target width to make room for map
+                rgb_resized = rgb_image.resize((target_width // 2, target_height), Image.Resampling.LANCZOS)
+                images.append(rgb_resized)
+                
+                self.callback.info(agent_id=self.workflow_instance_id, progress='🖼️ RGB Processed', 
+                                 message=f"RGB image resized to {rgb_resized.size}")
+            
+            # Process Map image
+            if map_data:
+                # Handle data URL format or plain base64
+                if map_data.startswith('data:image'):
+                    # Extract base64 part from data URL
+                    map_b64 = map_data.split(',')[1]
+                else:
+                    map_b64 = map_data
+                
+                # Decode base64 to image
+                map_bytes = base64.b64decode(map_b64)
+                map_image = Image.open(io.BytesIO(map_bytes))
+                
+                # Convert to RGB if necessary
+                if map_image.mode != 'RGB':
+                    map_image = map_image.convert('RGB')
+                
+                # Resize to half target width to make room for RGB
+                map_resized = map_image.resize((target_width // 2, target_height), Image.Resampling.LANCZOS)
+                images.append(map_resized)
+                
+                self.callback.info(agent_id=self.workflow_instance_id, progress='🗺️ Map Processed', 
+                                 message=f"Map image resized to {map_resized.size}")
+            
+            # Handle single image case
+            if len(images) == 1:
+                # Only one image available, resize to full target width
+                single_image = images[0].resize((target_width, target_height), Image.Resampling.LANCZOS)
+                combined_image = single_image
+            elif len(images) == 2:
+                # Concatenate horizontally: RGB on left, Map on right
+                combined_image = Image.new('RGB', (target_width, target_height), (255, 255, 255))
+                combined_image.paste(images[0], (0, 0))  # RGB on left
+                combined_image.paste(images[1], (target_width // 2, 0))  # Map on right
+            else:
+                # No images to process
+                self.callback.info(agent_id=self.workflow_instance_id, progress='❌ No Images', 
+                                 message="No valid images to process")
+                return ""
+            
+            # Convert combined image back to base64
+            buffer = io.BytesIO()
+            combined_image.save(buffer, format='JPEG', quality=85)
+            combined_b64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+            
+            # Create data URL format
+            combined_data_url = f"data:image/jpeg;base64,{combined_b64}"
+            
+            self.callback.info(agent_id=self.workflow_instance_id, progress='✅ Images Combined', 
+                             message=f"Combined image created: {combined_image.size}, {len(combined_b64)} chars")
+            
+            return combined_data_url
             
         except Exception as e:
-            return f"Obstacle analysis error: {str(e)}"
-    
-    def _validate_movement_history(self) -> str:
-        """Validate recent movement attempts and detect if robot is stuck."""
-        react_history = self.stm(self.workflow_instance_id).get("react_history", [])
+            self.callback.info(agent_id=self.workflow_instance_id, progress='❌ Image Processing Error', 
+                             message=f"Failed to process images: {str(e)}")
+            return ""
+
+    def _extract_analysis_from_text(self, text_response: str) -> Dict[str, Any]:
+        """Extract analysis components from unstructured VLM text response."""
         
-        if not react_history:
-            return "No movement history available"
+        # Try to find sections in the text response
+        sections = {
+            "environment_analysis": "",
+            "detected_objects": "",
+            "visual_description": "",
+            "map_analysis": ""
+        }
         
-        # Analyze last 3-5 actions for patterns
-        recent_actions = react_history[-5:]
-        move_attempts = []
-        failed_forward_moves = 0
-        consecutive_failures = 0
-        stuck_indicators = []
+        # Simple pattern matching to extract sections
+        for field in sections.keys():
+            pattern = rf'{field}["\']?\s*:\s*["\']?([^"}}]+)'
+            match = re.search(pattern, text_response, re.IGNORECASE | re.DOTALL)
+            if match:
+                sections[field] = match.group(1).strip()
+            else:
+                sections[field] = f"Could not extract {field} from response"
         
-        for i, action in enumerate(recent_actions):
-            action_name = action.get("action", "")
-            success = action.get("execution_success", False)
-            
-            if action_name == "MoveAhead":
-                move_attempts.append({"success": success, "step": i})
-                if not success:
-                    failed_forward_moves += 1
-                    consecutive_failures += 1
-                    stuck_indicators.append(f"Failed MoveAhead at step {i}")
-                else:
-                    consecutive_failures = 0
+        # If no structured sections found, use the whole response for each field
+        if all(not section or section.startswith("Could not extract") for section in sections.values()):
+            fallback_text = text_response[:200] + "..." if len(text_response) > 200 else text_response
+            sections = {
+                "environment_analysis": fallback_text,
+                "detected_objects": fallback_text,
+                "visual_description": fallback_text,
+                "map_analysis": fallback_text
+            }
         
-        # Detect repeated actions (sign of being stuck)
-        action_names = [action.get("action", "") for action in recent_actions]
-        repeated_moves = action_names.count("MoveAhead")
+        return sections
+
+    def _fallback_individual_analysis(self, rgb_data: str, map_data: str, target_object: str) -> Dict[str, Any]:
+        """Fallback to individual VLM calls if combined analysis fails."""
         
-        # Build status message
-        if failed_forward_moves >= 2:
-            status = "MOVEMENT SEVERELY BLOCKED"
-            message = f"{failed_forward_moves} recent MoveAhead actions failed. Robot is blocked by obstacle(s). STRONG RECOMMENDATION: Try RotateLeft/Right to find alternate path, or MoveBack to retreat."
-        elif failed_forward_moves == 1 and repeated_moves >= 2:
-            status = "MOVEMENT POTENTIALLY BLOCKED"
-            message = f"1 recent MoveAhead failed and {repeated_moves} total MoveAhead attempts detected. Possible obstacle ahead. RECOMMENDATION: Verify path is clear before moving forward, consider rotation."
-        elif repeated_moves >= 3 and consecutive_failures > 0:
-            status = "MOVEMENT PATTERN WARNING"
-            message = f"Detected {repeated_moves} MoveAhead attempts with recent failures. Robot may be stuck in a loop. RECOMMENDATION: Try different action (rotate or look around)."
-        elif consecutive_failures >= 2:
-            status = "CONSECUTIVE MOVEMENT FAILURES"
-            message = f"{consecutive_failures} consecutive movement failures detected. Robot is likely blocked. RECOMMENDATION: Rotate to find new path."
-        elif move_attempts:
-            successful_moves = sum(1 for attempt in move_attempts if attempt["success"])
-            total_moves = len(move_attempts)
-            status = "MOVEMENT OK"
-            message = f"Movement status acceptable: {successful_moves}/{total_moves} recent movements successful."
+        self.callback.info(agent_id=self.workflow_instance_id, progress='🔄 Fallback Mode', 
+                         message="Using individual VLM calls as fallback")
+        
+        result = {}
+        
+        # Environment analysis
+        if rgb_data:
+            try:
+                env_json = self.tool_manager.execute(
+                    tool_name="mcp_vlm-r1_analyze_image",
+                    args={
+                        "image_path": rgb_data,
+                        "question": "Analyze this scene for robot navigation. Focus on navigable paths, obstacles, and barriers."
+                    }
+                )
+                env_result = json.loads(env_json) if isinstance(env_json, str) else env_json
+                result["environment_analysis"] = env_result.get("raw_output", "Environment analysis failed")
+            except:
+                result["environment_analysis"] = "Environment analysis failed"
         else:
-            status = "NO RECENT MOVEMENT DATA"
-            message = "No recent movement attempts to analyze."
+            result["environment_analysis"] = "No RGB data for environment analysis"
         
-        # Add stuck indicators if any
-        if stuck_indicators:
-            message += f" Stuck indicators: {', '.join(stuck_indicators)}"
+        # Object detection
+        if rgb_data:
+            try:
+                obj_json = self.tool_manager.execute(
+                    tool_name="mcp_vlm-r1_detect_objects",
+                    args={"image_path": rgb_data}
+                )
+                obj_result = json.loads(obj_json) if isinstance(obj_json, str) else obj_json
+                result["detected_objects"] = str(obj_result.get("raw_output", "No objects found"))
+            except:
+                result["detected_objects"] = "Object detection failed"
+        else:
+            result["detected_objects"] = "No RGB data for object detection"
         
-        return f"{status}: {message}"
+        # Visual description
+        if rgb_data:
+            try:
+                desc_json = self.tool_manager.execute(
+                    tool_name="mcp_vlm-r1_analyze_image",
+                    args={
+                        "image_path": rgb_data,
+                        "question": "Describe this scene for robot navigation focusing on spatial layout and key objects."
+                    }
+                )
+                desc_result = json.loads(desc_json) if isinstance(desc_json, str) else desc_json
+                result["visual_description"] = desc_result.get("raw_output", "Visual description failed")
+            except:
+                result["visual_description"] = "Visual description failed"
+        else:
+            result["visual_description"] = "No RGB data for visual description"
+        
+        # Map analysis
+        if map_data:
+            try:
+                map_json = self.tool_manager.execute(
+                    tool_name="mcp_vlm-r1_analyze_image",
+                    args={
+                        "image_path": map_data,
+                        "question": "Analyze this occupancy map for robot navigation. Identify open areas, obstacles, and optimal movement directions."
+                    }
+                )
+                map_result = json.loads(map_json) if isinstance(map_json, str) else map_json
+                result["map_analysis"] = map_result.get("raw_output", "Map analysis failed")
+            except:
+                result["map_analysis"] = "Map analysis failed"
+        else:
+            result["map_analysis"] = "No map data for analysis"
+        
+        return result
     
     def _reasoning_phase(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """REASONING: Analyze situation and plan next action using ReAct methodology."""
@@ -457,106 +597,98 @@ Provide a clear assessment: Is the forward path BLOCKED or OPEN? If blocked, wha
       
     
     def _observing_phase(self, acting_result: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
-        """OBSERVING: Analyze results and update understanding."""
+        """
+        Optimized observing phase using single comprehensive MCP call
+        """
+        self.callback.info(agent_id=self.workflow_instance_id, progress='👁️ Observing Phase', 
+                         message="Analyzing observation results with single comprehensive call...")
         
-        self.callback.info(agent_id=self.workflow_instance_id, progress='👁️ ReAct OBSERVING', 
-                         message="Analyzing action results")
+        #try:
+        # Get new sensor data after action
+        rgb_data = self.tool_manager.execute(tool_name="mcp_thor_get_environment_state", args={})
+        if isinstance(rgb_data, str):
+            rgb_data_dict = json.loads(rgb_data)
+        else:
+            rgb_data_dict = rgb_data
+        new_rgb_data = rgb_data_dict.get("observation", {}).get("rgb", "")
+
+        new_map_data = rgb_data_dict.get("map", "")
         
-        try:
-            # Get new environment state after action
-            self.callback.info(agent_id=self.workflow_instance_id, progress='🔍 Getting New State', 
-                             message="Retrieving environment state after action")
-            
-            env_state_json = self.tool_manager.execute(
-                tool_name="mcp_thor_get_environment_state",
-                args={}
-            )
-            
-            if isinstance(env_state_json, str):
-                try:
-                    env_state = json.loads(env_state_json)
-                except json.JSONDecodeError as e:
-                    self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ JSON Parse Error', 
-                                     message=f"Failed to parse environment state: {str(e)}")
-                    env_state = {}
-            else:
-                env_state = env_state_json
-            
-            new_rgb_data = env_state.get("observation", {}).get("rgb", "")
-            new_map_data = env_state.get("map", "")
-            
-            self.callback.info(agent_id=self.workflow_instance_id, progress='📊 State Retrieved', 
-                             message=f"RGB: {'Available' if new_rgb_data else 'Missing'}, Map: {'Available' if new_map_data else 'Missing'}")
-            
-            # Display new view and map after action
-            if new_rgb_data:
-                self.callback.info_image(self.workflow_instance_id, progress="RGB", image=new_rgb_data)
-            else:
-                self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ No RGB Data', 
-                                 message="No RGB data available after action")
-                
-            if new_map_data:
-                self.callback.info_image(self.workflow_instance_id, progress="Map", image=new_map_data)
-            else:
-                self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ No Map Data', 
-                                 message="No map data available after action")
-            
-            # Quick analysis of new state
-            new_objects = self._detect_objects(new_rgb_data) if new_rgb_data else "No new observation"
-            new_visual_description = self._generate_visual_description(new_rgb_data) if new_rgb_data else "No new visual data"
-            
-            # Check if goal achieved after action
-            goal_achieved = self._check_goal_achievement(
-                new_objects, 
-                context["target_object"], 
-                context["target_location"]
-            )
-            
-            # Generate observation analysis
-            observation_prompt = f"""
-            OBSERVATION ANALYSIS:
-            Action Executed: {acting_result.get('action', 'unknown')}
-            Action Success: {acting_result.get('success', False)}
-            Previous Objects: {context['detected_objects']}
-            New Objects: {new_objects}
-            Previous Visual Scene: {context['visual_description']}
-            New Visual Scene: {new_visual_description}
-            Map Context: {context.get('map_analysis', 'No map data')}
-            Target: {context['target_object']} at {context['target_location']}
-            
-            Analyze what changed visually and spatially after this action. 
-            How does this movement relate to the overall spatial layout? What does this mean for navigation strategy?
-            """
-            
-            observation_response = self.llm.generate([
-                {"role": "user", "content": observation_prompt}
-            ])
-            
-            observation_analysis = observation_response["choices"][0]["message"].get("content", "")
-            
-            self.callback.info(agent_id=self.workflow_instance_id, progress='📊 Observation Analysis', 
-                                message=observation_analysis[:150] + "..." if len(observation_analysis) > 150 else observation_analysis)
-            
-            return {
-                "observation": observation_analysis,
-                "goal_achieved": goal_achieved,
-                "new_objects": new_objects,
-                "new_visual_description": new_visual_description,
-                "action_success": acting_result.get("success", False),
-                "timestamp": datetime.now().isoformat()
-            }
-            
-        except Exception as e:
-            self.callback.info(agent_id=self.workflow_instance_id, progress='❌ Observation Error', 
-                             message=f"Failed to analyze observation: {str(e)}")
-            return {
-                "observation": f"Observation analysis failed: {str(e)}",
-                "goal_achieved": False,
-                "new_objects": "Error detecting objects",
-                "new_visual_description": "Error generating visual description",
-                "action_success": acting_result.get("success", False),
-                "timestamp": datetime.now().isoformat()
-            }
+        # Display new observation if available
+        if new_rgb_data:
+            self.callback.info_image(self.workflow_instance_id, progress="Observation", image=new_rgb_data)
+        else:
+            self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ No Observation Data', 
+                             message="No RGB data available after action")
+        
+        # Display new map if available
+        if new_map_data:
+            self.callback.info_image(self.workflow_instance_id, progress="Map", image=new_map_data)
+        else:
+            self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ No Map Data', 
+                             message="No map data available after action")
+        
+        # Single comprehensive analysis instead of multiple separate calls
+        comprehensive_analysis = self._analyze_scene_comprehensive(
+            new_rgb_data, 
+            context["target_object"], 
+            context["target_location"]
+        )
+        print ("comprehensive_analysis:",comprehensive_analysis)
+        # Extract results from comprehensive analysis
+        new_objects = comprehensive_analysis["objects"]
+        new_visual_description = comprehensive_analysis["visual_description"]
+        goal_achieved = comprehensive_analysis["goal_achieved"]
+        navigation_analysis = comprehensive_analysis.get("navigation_analysis", "")
+        
+        # Generate observation analysis using the comprehensive results
+        observation_prompt = f"""
+        OBSERVATION ANALYSIS:
+        Action Executed: {acting_result.get('action', 'unknown')}
+        Action Success: {acting_result.get('success', False)}
+        Previous Objects: {context['detected_objects']}
+        New Objects: {new_objects}
+        Previous Visual Scene: {context['visual_description']}
+        New Visual Scene: {new_visual_description}
+        Navigation Analysis: {navigation_analysis}
+        Map Context: {context.get('map_analysis', 'No map data')}
+        Target: {context['target_object']} at {context['target_location']}
+        
+        Analyze what changed visually and spatially after this action. 
+        How does this movement relate to the overall spatial layout? What does this mean for navigation strategy?
+        """
+        
+        observation_response = self.llm.generate([
+            {"role": "user", "content": observation_prompt}
+        ])
+        
+        observation_analysis = observation_response["choices"][0]["message"].get("content", "")
+        
+        self.callback.info(agent_id=self.workflow_instance_id, progress='📊 Observation Analysis', 
+                            message=observation_analysis)
+        
+        return {
+            "observation": observation_analysis,
+            "goal_achieved": goal_achieved,
+            "new_objects": new_objects,
+            "new_visual_description": new_visual_description,
+            "navigation_analysis": navigation_analysis,
+            "action_success": acting_result.get("success", False),
+            "comprehensive_analysis_success": comprehensive_analysis["analysis_success"],
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        #except Exception as e:
+        #    self.callback.info(agent_id=self.workflow_instance_id, progress='❌ Observation Error', 
+        #                     message=f"Failed to analyze observation: {str(e)}")
+        #    return {
+        #        "observation": f"Observation analysis failed: {str(e)}",
+        #        "goal_achieved": False,
+        #        "new_objects": "Error detecting objects",
+        #        "new_visual_description": "Error generating visual description",
+        #        "action_success": acting_result.get("success", False),
+        #        "timestamp": datetime.now().isoformat()
+        #    }
             
 
     
@@ -648,7 +780,7 @@ Provide a clear assessment: Is the forward path BLOCKED or OPEN? If blocked, wha
             }
         )
         analysis_result = json.loads(analysis_json)
-        return analysis_result.get("result", "Analysis failed")
+        return analysis_result.get("raw_output", "Analysis failed")
         
         
     def _detect_objects(self, rgb_data: str) -> str:
@@ -934,4 +1066,237 @@ recommend CONFIDENT FORWARD MOVEMENT. If obstacles are detected, be appropriatel
             return base_analysis
             
         except Exception as e:
-            return f"Enhanced obstacle analysis error: {str(e)}" 
+            return f"Enhanced obstacle analysis error: {str(e)}"
+    
+    def _analyze_obstacles(self, rgb_data: str, execution_history: str) -> str:
+        """Analyze obstacles including transparent barriers like glass walls."""
+        if not rgb_data:
+            return "No visual data available for obstacle analysis"
+        
+        try:
+            # Enhanced obstacle detection prompt
+            obstacle_prompt = """Analyze this image for navigation obstacles, paying special attention to:
+
+1. TRANSPARENT BARRIERS: Glass walls, windows, glass doors, or transparent panels that would block robot movement
+2. PHYSICAL OBSTACLES: Walls, furniture, objects blocking the path ahead
+3. BLOCKED PATHS: Any barriers that would prevent forward movement
+4. OPEN AREAS: Clear navigable space where the robot can move
+
+Look carefully for reflections, transparent surfaces, or glass that might not be immediately obvious.
+Consider the robot's perspective - what would actually block forward movement?
+
+Provide a clear assessment: Is the forward path BLOCKED or OPEN? If blocked, what type of obstacle?"""
+
+            analysis_json = self.tool_manager.execute(
+                tool_name="mcp_vlm-r1_analyze_image",
+                args={
+                    "image_path": rgb_data,
+                    "question": obstacle_prompt
+                }
+            )
+            analysis_result = json.loads(analysis_json)
+            obstacle_analysis = analysis_result.get("raw_output", "Obstacle analysis failed")
+            
+            # Enhanced analysis if we detect potential blocking
+            if "glass" in obstacle_analysis.lower() or "window" in obstacle_analysis.lower() or "blocked" in obstacle_analysis.lower():
+                # Additional check with execution history
+                recent_failures = "failed" in execution_history.lower() or "moveahead" in execution_history.lower()
+                if recent_failures:
+                    obstacle_analysis += "\n\nWARNING: Recent movement failures detected combined with potential barriers. Forward movement is likely BLOCKED."
+            
+            return obstacle_analysis
+            
+        except Exception as e:
+            return f"Obstacle analysis error: {str(e)}"
+    
+    def _validate_movement_history(self) -> str:
+        """Validate recent movement attempts and detect if robot is stuck."""
+        react_history = self.stm(self.workflow_instance_id).get("react_history", [])
+        
+        if not react_history:
+            return "No movement history available"
+        
+        # Analyze last 3-5 actions for patterns
+        recent_actions = react_history[-5:]
+        move_attempts = []
+        failed_forward_moves = 0
+        consecutive_failures = 0
+        stuck_indicators = []
+        
+        for i, action in enumerate(recent_actions):
+            action_name = action.get("action", "")
+            success = action.get("execution_success", False)
+            
+            if action_name == "MoveAhead":
+                move_attempts.append({"success": success, "step": i})
+                if not success:
+                    failed_forward_moves += 1
+                    consecutive_failures += 1
+                    stuck_indicators.append(f"Failed MoveAhead at step {i}")
+                else:
+                    consecutive_failures = 0
+        
+        # Detect repeated actions (sign of being stuck)
+        action_names = [action.get("action", "") for action in recent_actions]
+        repeated_moves = action_names.count("MoveAhead")
+        
+        # Build status message
+        if failed_forward_moves >= 2:
+            status = "MOVEMENT SEVERELY BLOCKED"
+            message = f"{failed_forward_moves} recent MoveAhead actions failed. Robot is blocked by obstacle(s). STRONG RECOMMENDATION: Try RotateLeft/Right to find alternate path, or MoveBack to retreat."
+        elif failed_forward_moves == 1 and repeated_moves >= 2:
+            status = "MOVEMENT POTENTIALLY BLOCKED"
+            message = f"1 recent MoveAhead failed and {repeated_moves} total MoveAhead attempts detected. Possible obstacle ahead. RECOMMENDATION: Verify path is clear before moving forward, consider rotation."
+        elif repeated_moves >= 3 and consecutive_failures > 0:
+            status = "MOVEMENT PATTERN WARNING"
+            message = f"Detected {repeated_moves} MoveAhead attempts with recent failures. Robot may be stuck in a loop. RECOMMENDATION: Try different action (rotate or look around)."
+        elif consecutive_failures >= 2:
+            status = "CONSECUTIVE MOVEMENT FAILURES"
+            message = f"{consecutive_failures} consecutive movement failures detected. Robot is likely blocked. RECOMMENDATION: Rotate to find new path."
+        elif move_attempts:
+            successful_moves = sum(1 for attempt in move_attempts if attempt["success"])
+            total_moves = len(move_attempts)
+            status = "MOVEMENT OK"
+            message = f"Movement status acceptable: {successful_moves}/{total_moves} recent movements successful."
+        else:
+            status = "NO RECENT MOVEMENT DATA"
+            message = "No recent movement attempts to analyze."
+        
+        # Add stuck indicators if any
+        if stuck_indicators:
+            message += f" Stuck indicators: {', '.join(stuck_indicators)}"
+        
+        return f"{status}: {message}"
+
+    def _generate_visual_description(self, rgb_data: str) -> str:
+        """Generate a visual description of the current scene."""
+        if not rgb_data:
+            return "No visual data available for description"
+        
+        description_prompt = "Describe the current scene for robot navigation focusing on spatial layout and key objects."
+        description_response = self.tool_manager.execute(
+            tool_name="mcp_vlm-r1_analyze_image",
+            args={
+                "image_path": rgb_data,
+                "question": description_prompt
+            }
+        )
+        description_content = description_response.get("raw_output", "Visual description failed")
+        
+        self.callback.info(agent_id=self.workflow_instance_id, progress='📋 Visual Description', 
+                            message=description_content)
+        
+        return description_content
+
+    def _analyze_scene_comprehensive(self, rgb_data: str, target_object: str, target_location: str) -> Dict[str, Any]:
+        """Comprehensive scene analysis with a single MCP call to get all information at once."""
+        if not rgb_data:
+            return {
+                "objects": "No new observation",
+                "visual_description": "No new visual data", 
+                "goal_achieved": False,
+                "analysis_success": False
+            }
+        
+        try:
+            # Single comprehensive MCP call that gets all information at once
+            comprehensive_prompt = f"""
+            Analyze this robot navigation scene comprehensively and provide ALL of the following information:
+
+            1. OBJECT DETECTION: List all visible objects in the scene with their locations and descriptions.
+
+            2. VISUAL DESCRIPTION: Describe the current scene for robot navigation, focusing on spatial layout, key objects, and navigable areas.
+
+            3. GOAL ACHIEVEMENT: Check if the target object "{target_object}" at "{target_location}" is clearly present and visible in this scene.
+
+            4. NAVIGATION ANALYSIS: Analyze navigable paths, obstacles, and movement opportunities.
+
+            Please structure your response as follows:
+            OBJECTS: [detailed object list]
+            VISUAL_DESCRIPTION: [spatial layout description]
+            GOAL_ACHIEVED: [YES/NO - is target object clearly visible]
+            NAVIGATION: [path analysis and recommendations]
+            """
+            
+            analysis_json = self.tool_manager.execute(
+                tool_name="mcp_vlm-r1_analyze_image",
+                args={
+                    "image_path": rgb_data,
+                    "question": comprehensive_prompt
+                }
+            )
+            analysis_result = json.loads(analysis_json)
+            raw_response = analysis_result.get("raw_output", "")
+            print (raw_response)
+            # Parse the structured response
+            objects = self._extract_section(raw_response, "OBJECTS:")
+            visual_description = self._extract_section(raw_response, "VISUAL_DESCRIPTION:")
+            goal_check = self._extract_section(raw_response, "GOAL_ACHIEVED:")
+            navigation_analysis = self._extract_section(raw_response, "NAVIGATION:")
+            
+            # Determine goal achievement
+            goal_achieved = "YES" in goal_check.upper() if goal_check else False
+            
+            # If goal achievement is unclear, do additional verification
+            if not goal_achieved and target_object.lower() in objects.lower():
+                verification_prompt = f"""
+                Detected objects: {objects}
+                Target: {target_object} at {target_location}
+                
+                Is the target object clearly present and visible? Answer only: YES or NO
+                """
+                
+                verification_response = self.llm.generate([
+                    {"role": "user", "content": verification_prompt}
+                ])
+                
+                verification_result = verification_response["choices"][0]["message"].get("content", "").strip().upper()
+                goal_achieved = "YES" in verification_result
+            
+            return {
+                "objects": objects or "No objects detected",
+                "visual_description": visual_description or "No visual description available",
+                "goal_achieved": goal_achieved,
+                "navigation_analysis": navigation_analysis or "No navigation analysis available",
+                "analysis_success": True,
+                "raw_response": raw_response
+            }
+            
+        except Exception as e:
+            self.callback.info(agent_id=self.workflow_instance_id, progress='❌ Comprehensive Analysis Error', 
+                             message=f"Failed comprehensive analysis: {str(e)}")
+            return {
+                "objects": "Analysis failed",
+                "visual_description": "Analysis failed", 
+                "goal_achieved": False,
+                "navigation_analysis": "Analysis failed",
+                "analysis_success": False,
+                "error": str(e)
+            }
+
+    def _extract_section(self, text: str, section_header: str) -> str:
+        """Extract a specific section from structured text response."""
+        if not text or not section_header:
+            return ""
+        
+        # Find the section header
+        start_idx = text.find(section_header)
+        if start_idx == -1:
+            return ""
+        
+        # Move to content after header
+        start_idx += len(section_header)
+        
+        # Find the next section header or end of text
+        next_headers = ["OBJECTS:", "VISUAL_DESCRIPTION:", "GOAL_ACHIEVED:", "NAVIGATION:"]
+        end_idx = len(text)
+        
+        for header in next_headers:
+            if header != section_header:
+                next_pos = text.find(header, start_idx)
+                if next_pos != -1 and next_pos < end_idx:
+                    end_idx = next_pos
+        
+        # Extract and clean the section content
+        content = text[start_idx:end_idx].strip()
+        return content 

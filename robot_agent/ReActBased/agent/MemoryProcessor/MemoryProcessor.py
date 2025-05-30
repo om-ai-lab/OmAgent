@@ -10,40 +10,46 @@ import hashlib
 @registry.register_worker()
 class MemoryProcessor(BaseWorker, BaseLLMBackend):
     """
-    Memory processor that saves all memories with images and text as log files AND stores them in Milvus.
-    Provides dual storage: file-based logging for debugging and Milvus for semantic search and retrieval.
+    Enhanced Memory Processor for ReAct navigation that integrates with Milvus database
+    for persistent, searchable memory storage and retrieval.
+    
+    This processor:
+    1. Stores navigation experiences as structured memories
+    2. Enables text-based memory search for relevant past experiences
+    3. Provides location-based memory filtering
+    4. Supports memory-based learning and pattern recognition
     """
     llm: OpenaiGPTLLM
+    
     tool_manager: ToolManager
     prompts: List[PromptTemplate] = Field(
         default=[
             PromptTemplate.from_template(
-                "You are a memory logger that creates detailed memory entries for robot navigation logs. "
-                "Create comprehensive memory entries that combine spatial, visual, and contextual information. "
-                "Focus on key objects, spatial relationships, visual landmarks, and navigation-relevant information.",
+                "You are an intelligent memory system for robot navigation. Analyze and store navigation experiences "
+                "to help improve future navigation decisions. Focus on spatial relationships, successful strategies, "
+                "obstacle patterns, and environmental features.",
                 role="system"
             ),
             PromptTemplate.from_template(
-                "MEMORY CONTEXT:\n"
-                "Step {{step}}: {{action}} at {{location}}\n"
-                "Objects: {{objects}}\n"
-                "Environment: {{environment}}\n"
-                "Visual Scene: {{visual_description}}\n"
-                "Previous Visual Context: {{previous_visual_context}}\n\n"
-                "Create a comprehensive memory entry that includes:\n"
-                "1. Spatial information and location details\n"
-                "2. Visual landmarks and scene characteristics\n"
-                "3. Object relationships and navigation context\n"
-                "4. Changes from previous observations\n\n"
-                "Keep it detailed but organized (max 200 words):",
+                "MEMORY STORAGE CONTEXT:\n"
+                "Navigation Data: {{navigation_data}}\n"
+                "Current Location: {{current_location}}\n"
+                "Recent Experiences: {{recent_experiences}}\n\n"
+                "Process this navigation experience and create a comprehensive memory entry that includes:\n"
+                "1. Key spatial and environmental observations\n"
+                "2. Action outcomes and effectiveness\n"
+                "3. Obstacle detection and navigation strategies\n"
+                "4. Lessons learned for future reference\n\n"
+                "Format as structured memory entry for search and retrieval.",
                 role="user"
             )
         ]
     )
     
     logs_directory: str = Field(default="examples/robot/logs", description="Directory to save memory logs")
-    milvus_collection_name: str = Field(default="robot_navigation_memories", description="Milvus collection name for storing memories")
-    use_milvus: bool = Field(default=True, description="Whether to save memories to Milvus")
+    milvus_collection_name: str = Field(default="robot_navigation_memories", description="Milvus collection name")
+    use_milvus: bool = Field(default=True, description="Whether to use Milvus for memory storage")
+    memory_retention_days: int = Field(default=30, description="Days to retain memories in Milvus")
     
     def _run(self, *args, **kwargs):
         self.callback.info(agent_id=self.workflow_instance_id, progress='📝 Memory Logging', 
@@ -329,7 +335,7 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
             existing_collections = collections_data.get("collections", [])
             
             if self.milvus_collection_name not in existing_collections:
-                # Create collection with schema for robot navigation memories
+                # Create collection with schema for robot navigation memories (without vector field)
                 schema = {
                     "fields": [
                         {"name": "id", "type": "varchar", "max_length": 64, "is_primary": True},
@@ -350,8 +356,7 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
                         {"name": "visual_description", "type": "varchar", "max_length": 2000},
                         {"name": "memory_entry", "type": "varchar", "max_length": 3000},
                         {"name": "map_analysis", "type": "varchar", "max_length": 1000},
-                        {"name": "confidence", "type": "float"},
-                        {"name": "memory_vector", "type": "float_vector", "dim": 1536}
+                        {"name": "confidence", "type": "float"}
                     ]
                 }
                 
@@ -398,10 +403,7 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
         pose_y = float(pose[1]) if len(pose) > 1 else 0.0
         pose_z = float(pose[2]) if len(pose) > 2 else 0.0
         
-        # Generate embedding for memory entry text
-        memory_vector = self._generate_memory_embedding(log_data.get("memory_entry", ""))
-        
-        # Prepare single-row data for insertion
+        # Prepare single-row data for insertion (without vector field)
         milvus_data = {
             "id": [memory_id],
             "step": [log_data.get("step", 0)],
@@ -421,66 +423,49 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
             "visual_description": [log_data.get("visual_description", "")[:2000]],
             "memory_entry": [log_data.get("memory_entry", "")[:3000]],
             "map_analysis": [log_data.get("map_analysis", "")[:1000]],
-            "confidence": [float(log_data.get("confidence", 0.0))],
-            "memory_vector": [memory_vector]
+            "confidence": [float(log_data.get("confidence", 0.0))]
         }
         
         return milvus_data
     
-    def _generate_memory_embedding(self, text: str) -> List[float]:
-        """Generate embedding vector for memory text using OpenAI."""
-        try:
-            if not text or len(text.strip()) == 0:
-                # Return zero vector for empty text
-                return [0.0] * 1536
-            
-            # Use OpenAI embeddings through the LLM backend
-            embedding_result = self.llm.generate_embedding(text[:8000])  # Truncate for API limits
-            
-            if isinstance(embedding_result, list) and len(embedding_result) > 0:
-                return embedding_result
-            else:
-                # Fallback to zero vector
-                return [0.0] * 1536
-                
-        except Exception as e:
-            self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ Embedding Warning', 
-                             message=f"Embedding generation failed: {str(e)}")
-            # Return zero vector as fallback
-            return [0.0] * 1536
-
-    def search_memories(self, query_text: str, limit: int = 10, similarity_threshold: float = 0.7) -> List[Dict[str, Any]]:
-        """Search for similar memories using text query."""
+    def search_memories(self, query_text: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """Search for memories using text-based filtering on key fields."""
         try:
             if not self.use_milvus:
                 return []
             
-            # Generate embedding for query text
-            query_vector = self._generate_memory_embedding(query_text)
+            # Create text-based filter expression using LIKE operator for multiple fields
+            query_terms = query_text.lower().split()
+            filter_conditions = []
             
-            # Perform vector search in Milvus
-            search_result = self.tool_manager.execute(
-                tool_name="mcp_milvus-sse_milvus_vector_search",
+            # Search in multiple text fields
+            for term in query_terms:
+                term_conditions = [
+                    f"memory_entry like '%{term}%'",
+                    f"reasoning like '%{term}%'",
+                    f"action like '%{term}%'",
+                    f"detected_objects like '%{term}%'",
+                    f"visual_description like '%{term}%'"
+                ]
+                filter_conditions.append(f"({' or '.join(term_conditions)})")
+            
+            filter_expr = " and ".join(filter_conditions) if filter_conditions else "id != ''"
+            
+            # Query Milvus with text filter
+            query_result = self.tool_manager.execute(
+                tool_name="mcp_milvus-sse_milvus_query",
                 args={
                     "collection_name": self.milvus_collection_name,
-                    "vector": query_vector,
-                    "vector_field": "memory_vector",
-                    "limit": limit,
-                    "output_fields": "id,step,timestamp,session_id,location,action,reasoning,memory_entry,confidence",
-                    "metric_type": "COSINE"
+                    "filter_expr": filter_expr,
+                    "output_fields": "id,step,timestamp,session_id,location,action,reasoning,memory_entry,confidence,execution_success",
+                    "limit": limit
                 }
             )
             
-            search_data = json.loads(search_result) if isinstance(search_result, str) else search_result
-            results = search_data.get("results", [])
+            query_data = json.loads(query_result) if isinstance(query_result, str) else query_result
+            results = query_data.get("results", [])
             
-            # Filter by similarity threshold
-            filtered_results = [
-                result for result in results 
-                if result.get("distance", 0) >= similarity_threshold
-            ]
-            
-            return filtered_results
+            return results
             
         except Exception as e:
             self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ Search Warning', 

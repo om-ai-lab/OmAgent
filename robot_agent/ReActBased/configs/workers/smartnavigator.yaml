@@ -1,3 +1,0 @@
-name: SmartNavigator
-llm: ${sub|vlm}
-tool_manager: ${sub|all_tools}

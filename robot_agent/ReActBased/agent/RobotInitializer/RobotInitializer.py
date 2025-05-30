@@ -32,7 +32,7 @@ class RobotInitializer(BaseWorker, BaseLLMBackend):
         
         try:
             # Get navigation instruction from input
-            instruction = kwargs.get("instruction", "Find any chair in the room")
+            instruction = kwargs.get("instruction", "Find any computer in the room")
             self.callback.info(agent_id=self.workflow_instance_id, progress='📝 Instruction', 
                              message=f"Processing: {instruction}")
             

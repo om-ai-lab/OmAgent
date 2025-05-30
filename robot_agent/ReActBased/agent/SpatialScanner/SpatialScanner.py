@@ -103,6 +103,8 @@ class SpatialScanner(BaseWorker, BaseLLMBackend):
             # Display the captured view
             if view_data.get("rgb_data"):
                 self.callback.info_image(self.workflow_instance_id, progress=f"RGB", image=view_data["rgb_data"])
+            if view_data.get("map_data"):
+                self.callback.info_image(self.workflow_instance_id, progress=f"Map", image=view_data["map_data"])
         
         self.callback.info(agent_id=self.workflow_instance_id, progress='✅ Scan Capture Complete', 
                          message=f"Captured {len(scan_results)} views for analysis")
