@@ -1,0 +1,62 @@
+{
+    "name": "FastReActRobotWorkflow",
+    "tasks": [
+        {
+            "name": "RobotInitializer",
+            "taskReferenceName": "robot_init",
+            "inputParameters": {},
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        },
+        {
+            "name": "SpatialScanner",
+            "taskReferenceName": "spatial_scanner",
+            "inputParameters": {},
+            "type": "SIMPLE"
+        },
+        {
+            "name": "navigation_loop",
+            "taskReferenceName": "nav_loop",
+            "inputParameters": {},
+            "type": "DO_WHILE",
+            "loopCondition": "if ($.react_navigator['goal_achieved'] == true || $.react_navigator['max_steps_reached'] == true) { false; } else { true; }",
+            "loopOver": [
+                {
+                    "name": "ReActNavigator",
+                    "taskReferenceName": "react_navigator",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                },
+                {
+                    "name": "MemoryProcessor",
+                    "taskReferenceName": "memory_processor",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                }
+            ]
+        }
+    ],
+    "inputParameters": [],
+    "outputParameters": {},
+    "failureWorkflow": "",
+    "schemaVersion": 2,
+    "workflowStatusListenerEnabled": false,
+    "ownerEmail": "default@omagent.ai",
+    "timeoutSeconds": 300,
+    "variables": {},
+    "description": [
+        {
+            "Worker_Name": "RobotInitializer",
+            "Role": "Fast initialization combining instruction parsing and environment setup. Parses natural language goals, resets THOR environment, and captures initial state efficiently."
+        },
+        {
+            "Worker_Name": "ReActNavigator", 
+            "Role": "Unified ReAct-based navigation worker that implements Reasoning, Acting, and Observing methodology. Combines planning, execution, observation, and goal verification in one intelligent cycle with step-by-step reasoning, adaptive action selection, and continuous learning from execution results."
+        },
+        {
+            "Worker_Name": "MemoryProcessor",
+            "Role": "Lightweight memory management optimized for ReAct reasoning. Stores reasoning chains, execution patterns, and environmental observations. Provides contextual memory for improved decision-making and learning from previous attempts."
+        }
+    ],
+    "reasoning": "This streamlined ReAct workflow reduces complexity from 8 workers to 3 while implementing full ReAct methodology (Reasoning, Acting, Observing). The ReActNavigator combines 4 previous workers into one intelligent agent that maintains reasoning context throughout the navigation cycle. It uses step-by-step reasoning to analyze environment and memory, intelligently selects actions, observes results, and adapts strategy. Memory operations are optimized for storing reasoning chains and execution patterns. The simplified structure reduces latency while enhancing intelligence through ReAct methodology."
+} 

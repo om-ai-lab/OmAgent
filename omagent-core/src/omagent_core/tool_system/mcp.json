@@ -1,10 +1,31 @@
 {
   "mcpServers": {
+    "mem0": {
+        "transport": "sse",
+        "url": "http://localhost:8077/sse",
+        "headers": {},
+        "timeout": 30
+      },
     "vlm-r1": {
       "transport": "sse",
       "url": "http://10.0.0.26:8009/sse",
       "headers": {},
       "timeout": 30
+    },
+    "thor": {
+      "transport": "sse",
+      "url": "http://localhost:3001/sse",
+      "headers": {},
+      "timeout": 30
+    },
+    "milvus-sse": {
+      "transport": "sse",
+      "url": "http://localhost:8001/sse",
+      "disabled": false,
+      "autoApprove": []
     }
+  }
 }
-}
+
+
+

@@ -1,0 +1,7 @@
+fastmcp
+ai2thor>=5.0.0
+opencv-python
+numpy
+matplotlib
+pillow
+logging 

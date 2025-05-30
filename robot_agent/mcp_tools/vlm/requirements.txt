@@ -1,0 +1,8 @@
+fastmcp
+requests
+torch>=2.0.0
+transformers>=4.35.0
+pillow
+flash-attn
+bitsandbytes
+accelerate 

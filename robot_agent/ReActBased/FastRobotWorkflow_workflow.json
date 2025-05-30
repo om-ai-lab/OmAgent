@@ -1,0 +1,56 @@
+{
+    "name": "FastRobotWorkflow",
+    "tasks": [
+        {
+            "name": "RobotInitializer",
+            "taskReferenceName": "robot_init",
+            "inputParameters": {},
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        },
+        {
+            "name": "navigation_loop",
+            "taskReferenceName": "nav_loop",
+            "inputParameters": {},
+            "type": "DO_WHILE",
+            "loopCondition": "if ($.smart_navigator['goal_achieved'] == true || $.smart_navigator['max_steps_reached'] == true) { false; } else { true; }",
+            "loopOver": [
+                {
+                    "name": "SmartNavigator",
+                    "taskReferenceName": "smart_navigator",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                },
+                {
+                    "name": "MemoryProcessor",
+                    "taskReferenceName": "memory_processor",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                }
+            ]
+        }
+    ],
+    "inputParameters": [],
+    "outputParameters": {},
+    "failureWorkflow": "",
+    "schemaVersion": 2,
+    "workflowStatusListenerEnabled": false,
+    "ownerEmail": "default@omagent.ai",
+    "timeoutSeconds": 300,
+    "variables": {},
+    "description": [
+        {
+            "Worker_Name": "RobotInitializer",
+            "Role": "Combines instruction parsing and environment initialization. Parses natural language goals, resets THOR environment, and captures initial state in one efficient step."
+        },
+        {
+            "Worker_Name": "SmartNavigator", 
+            "Role": "Unified navigation worker that combines planning, execution, observation, and goal verification. Uses VLM for environment analysis, generates and executes actions, processes observations, and verifies goal completion in a single optimized cycle."
+        },
+        {
+            "Worker_Name": "MemoryProcessor",
+            "Role": "Lightweight memory management that stores observations, detects changes, and provides relevant context for navigation decisions. Optimized for speed with minimal overhead."
+        }
+    ],
+    "reasoning": "This streamlined workflow reduces complexity from 8 workers to 3, eliminating redundant data transfers and processing overhead. The SmartNavigator combines 4 previous workers (planning, execution, observation, verification) into one intelligent agent that maintains context throughout the navigation cycle. Memory operations are optimized for speed. The simplified structure reduces latency while maintaining all core functionality through intelligent worker design."
+} 

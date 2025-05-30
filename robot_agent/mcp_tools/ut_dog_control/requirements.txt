@@ -1,0 +1,7 @@
+fastmcp
+opencv-python
+numpy
+requests
+websocket-client
+pillow
+pydantic 

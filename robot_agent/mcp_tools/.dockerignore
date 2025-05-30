@@ -1,0 +1,16 @@
+**/.git
+**/.gitignore
+**/README.md
+**/Dockerfile*
+**/docker-compose*
+**/.env*
+**/.DS_Store
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/logs
+**/*.log
+**/data
+**/models
+**/.cache 
