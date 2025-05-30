@@ -13,6 +13,43 @@ from pymilvus import (
 )
 
 
+def validate_and_convert_data(data: dict[str, list[Any]]) -> dict[str, list[Any]]:
+    """
+    Validate and convert data types to ensure compatibility with Milvus schema.
+    
+    Args:
+        data: Dictionary mapping field names to lists of values
+        
+    Returns:
+        Validated and converted data
+    """
+    converted_data = {}
+    
+    for field_name, values in data.items():
+        if not isinstance(values, list):
+            # Convert single values to lists
+            values = [values]
+        
+        converted_values = []
+        for value in values:
+            # Handle common type conversions
+            if field_name == "id" or field_name.endswith("_id"):
+                # Ensure ID fields are integers
+                if isinstance(value, (list, tuple)):
+                    # If value is a list/tuple, take the first element
+                    value = value[0] if value else 0
+                try:
+                    converted_values.append(int(value))
+                except (ValueError, TypeError):
+                    converted_values.append(0)  # Default to 0 for invalid IDs
+            else:
+                converted_values.append(value)
+        
+        converted_data[field_name] = converted_values
+    
+    return converted_data
+
+
 class MilvusConnector:
     def __init__(
         self, uri: str, token: Optional[str] = None, db_name: Optional[str] = "default"
@@ -197,7 +234,8 @@ class MilvusConnector:
         try:
             # Check if collection already exists
             if collection_name in self.client.list_collections():
-                raise ValueError(f"Collection '{collection_name}' already exists")
+                print(f"Warning: Collection '{collection_name}' already exists, skipping creation")
+                return True
 
             # Create collection
             self.client.create_collection(
@@ -235,7 +273,9 @@ class MilvusConnector:
             data: Dictionary mapping field names to lists of values
         """
         try:
-            result = self.client.insert(collection_name=collection_name, data=data)
+            # Validate and convert data types
+            validated_data = validate_and_convert_data(data)
+            result = self.client.insert(collection_name=collection_name, data=validated_data)
             return result
         except Exception as e:
             raise ValueError(f"Insert failed: {str(e)}")
@@ -360,13 +400,16 @@ class MilvusConnector:
             batch_size: Number of records per batch
         """
         try:
+            # Validate and convert data types
+            validated_data = validate_and_convert_data(data)
+            
             results = []
-            field_names = list(data.keys())
-            total_records = len(data[field_names[0]])
+            field_names = list(validated_data.keys())
+            total_records = len(validated_data[field_names[0]])
 
             for i in range(0, total_records, batch_size):
                 batch_data = {
-                    field: data[field][i : i + batch_size] for field in field_names
+                    field: validated_data[field][i : i + batch_size] for field in field_names
                 }
 
                 result = self.client.insert(
@@ -432,7 +475,9 @@ class MilvusConnector:
             data: Dictionary mapping field names to lists of values
         """
         try:
-            result = self.client.upsert(collection_name=collection_name, data=data)
+            # Validate and convert data types
+            validated_data = validate_and_convert_data(data)
+            result = self.client.upsert(collection_name=collection_name, data=validated_data)
             return result
         except Exception as e:
             raise ValueError(f"Upsert failed: {str(e)}")
@@ -498,6 +543,41 @@ class MilvusContext:
         self.connector = connector
 
 
+def get_connector(ctx: Context) -> MilvusConnector:
+    """Get the connector from context, handling different FastMCP versions."""
+    try:
+        # Try the expected attribute first
+        if hasattr(ctx, 'lifespan_context') and hasattr(ctx.lifespan_context, 'connector'):
+            return ctx.lifespan_context.connector
+        # Fallback: check if the context directly has the connector
+        elif hasattr(ctx, 'connector'):
+            return ctx.connector
+        # Another fallback: check if there's a deps or dependencies attribute
+        elif hasattr(ctx, 'deps') and hasattr(ctx.deps, 'connector'):
+            return ctx.deps.connector
+        # Last resort: create a new connector from environment
+        else:
+            print("Warning: No connector found in context, creating new one from environment")
+            milvus_uri = os.environ.get("MILVUS_URI", "http://localhost:19530")
+            milvus_token = os.environ.get("MILVUS_TOKEN")
+            db_name = os.environ.get("MILVUS_DB", "default")
+            return MilvusConnector(uri=milvus_uri, token=milvus_token, db_name=db_name)
+    except AttributeError as e:
+        print(f"AttributeError accessing context: {e}. Creating fallback connector.")
+        # Emergency fallback
+        milvus_uri = os.environ.get("MILVUS_URI", "http://localhost:19530")
+        milvus_token = os.environ.get("MILVUS_TOKEN")
+        db_name = os.environ.get("MILVUS_DB", "default")
+        return MilvusConnector(uri=milvus_uri, token=milvus_token, db_name=db_name)
+    except Exception as e:
+        print(f"Unexpected error accessing context: {e}. Creating fallback connector.")
+        # Emergency fallback
+        milvus_uri = os.environ.get("MILVUS_URI", "http://localhost:19530")
+        milvus_token = os.environ.get("MILVUS_TOKEN")
+        db_name = os.environ.get("MILVUS_DB", "default")
+        return MilvusConnector(uri=milvus_uri, token=milvus_token, db_name=db_name)
+
+
 @asynccontextmanager
 async def server_lifespan(server: FastMCP) -> AsyncIterator[MilvusContext]:
     """Manage application lifecycle for Milvus connector."""
@@ -540,7 +620,7 @@ async def milvus_text_search(
         output_fields: Fields to include in results
         drop_ratio: Proportion of low-frequency terms to ignore (0.0-1.0)
     """
-    connector = ctx.lifespan_context.connector
+    connector = get_connector(ctx)
     results = await connector.search_collection(
         collection_name=collection_name,
         query_text=query_text,
@@ -557,9 +637,9 @@ async def milvus_text_search(
 
 
 @mcp.tool()
-async def milvus_list_collections(ctx: Context) -> str:
+async def milvus_list_collections(ctx: Context = None) -> str:
     """List all collections in the database."""
-    connector = ctx.lifespan_context.connector
+    connector = get_connector(ctx)
     collections = await connector.list_collections()
     return f"Collections in database:\n{', '.join(collections)}"
 
@@ -581,7 +661,7 @@ async def milvus_query(
         output_fields: Fields to include in results
         limit: Maximum number of results
     """
-    connector = ctx.lifespan_context.connector
+    connector = get_connector(ctx)
     results = await connector.query_collection(
         collection_name=collection_name,
         filter_expr=filter_expr,
@@ -619,7 +699,7 @@ async def milvus_vector_search(
         metric_type: Distance metric (COSINE, L2, IP)
         filter_expr: Optional filter expression
     """
-    connector = ctx.lifespan_context.connector
+    connector = get_connector(ctx)
     results = await connector.vector_search(
         collection_name=collection_name,
         vector=vector,
@@ -662,7 +742,7 @@ async def milvus_hybrid_search(
         output_fields: Fields to return in results
         filter_expr: Optional filter expression
     """
-    connector = ctx.lifespan_context.connector
+    connector = get_connector(ctx)
 
     results = await connector.hybrid_search(
         collection_name=collection_name,
@@ -697,7 +777,16 @@ async def milvus_create_collection(
         collection_schema: Collection schema definition
         index_params: Optional index parameters
     """
-    connector = ctx.lifespan_context.connector
+    connector = get_connector(ctx)
+    
+    # Check if collection already exists first
+    try:
+        existing_collections = await connector.list_collections()
+        if collection_name in existing_collections:
+            return f"Collection '{collection_name}' already exists, skipping creation"
+    except Exception as e:
+        print(f"Warning: Could not check existing collections: {e}")
+    
     success = await connector.create_collection(
         collection_name=collection_name,
         schema=collection_schema,
@@ -718,7 +807,7 @@ async def milvus_insert_data(
         collection_name: Name of collection
         data: Dictionary mapping field names to lists of values
     """
-    connector = ctx.lifespan_context.connector
+    connector = get_connector(ctx)
     result = await connector.insert_data(collection_name=collection_name, data=data)
 
     return (
@@ -737,7 +826,7 @@ async def milvus_delete_entities(
         collection_name: Name of collection
         filter_expr: Filter expression to select entities to delete
     """
-    connector = ctx.lifespan_context.connector
+    connector = get_connector(ctx)
     result = await connector.delete_entities(
         collection_name=collection_name, filter_expr=filter_expr
     )
@@ -756,7 +845,7 @@ async def milvus_load_collection(
         collection_name: Name of collection to load
         replica_number: Number of replicas
     """
-    connector = ctx.lifespan_context.connector
+    connector = get_connector(ctx)
     success = await connector.load_collection(
         collection_name=collection_name, replica_number=replica_number
     )
@@ -772,7 +861,7 @@ async def milvus_release_collection(collection_name: str, ctx: Context = None) -
     Args:
         collection_name: Name of collection to release
     """
-    connector = ctx.lifespan_context.connector
+    connector = get_connector(ctx)
     success = await connector.release_collection(collection_name=collection_name)
 
     return f"Collection '{collection_name}' released successfully"
@@ -781,7 +870,7 @@ async def milvus_release_collection(collection_name: str, ctx: Context = None) -
 @mcp.tool()
 async def milvus_list_databases(ctx: Context = None) -> str:
     """List all databases in the Milvus instance."""
-    connector = ctx.lifespan_context.connector
+    connector = get_connector(ctx)
     databases = await connector.list_databases()
     return f"Databases in Milvus instance:\n{', '.join(databases)}"
 
@@ -794,7 +883,7 @@ async def milvus_use_database(db_name: str, ctx: Context = None) -> str:
     Args:
         db_name: Name of the database to use
     """
-    connector = ctx.lifespan_context.connector
+    connector = get_connector(ctx)
     success = await connector.use_database(db_name)
 
     return f"Switched to database '{db_name}' successfully"
@@ -807,7 +896,7 @@ async def milvus_get_collection_info(collection_name: str, ctx: Context = None) 
     Args:
         collection_name: Name of collection to load
     """
-    connector = ctx.lifespan_context.connector
+    connector = get_connector(ctx)
     collection_info = await connector.get_collection_info(collection_name)
     info_str = json.dumps(collection_info, indent=2)
     return f"Collection information:\n{info_str}"
