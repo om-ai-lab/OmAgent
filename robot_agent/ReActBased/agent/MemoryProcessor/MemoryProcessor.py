@@ -328,17 +328,33 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
             # Check if collection exists
             collections_result = self.tool_manager.execute(
                 tool_name="mcp_milvus-sse_milvus_list_collections",
-                args={"input": "list"}
+                args={}
             )
             
-            collections_data = json.loads(collections_result) if isinstance(collections_result, str) else collections_result
-            existing_collections = collections_data.get("collections", [])
+            # Parse the collections from the string response
+            # The response format is "Collections in database:\ncollection1, collection2, ..."
+            if isinstance(collections_result, str):
+                # Extract collection names after the colon
+                if "Collections in database:" in collections_result:
+                    collections_line = collections_result.split("Collections in database:", 1)[1].strip()
+                    if collections_line:
+                        existing_collections = [name.strip() for name in collections_line.split(",")]
+                    else:
+                        existing_collections = []
+                else:
+                    existing_collections = []
+            else:
+                # Fallback for unexpected response format
+                existing_collections = []
             
             if self.milvus_collection_name not in existing_collections:
                 # Create collection with schema for robot navigation memories (without vector field)
                 schema = {
-                    "fields": [
-                        {"name": "id", "type": "varchar", "max_length": 64, "is_primary": True},
+                    "primary_field": "id",
+                    "id_type": "VARCHAR",
+                    "auto_id": False,
+                    "enable_dynamic_field": True,
+                    "other_fields": [
                         {"name": "step", "type": "int64"},
                         {"name": "timestamp", "type": "varchar", "max_length": 100},
                         {"name": "session_id", "type": "varchar", "max_length": 50},

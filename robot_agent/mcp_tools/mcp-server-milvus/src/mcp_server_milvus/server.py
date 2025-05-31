@@ -34,14 +34,12 @@ def validate_and_convert_data(data: dict[str, list[Any]]) -> dict[str, list[Any]
         for value in values:
             # Handle common type conversions
             if field_name == "id" or field_name.endswith("_id"):
-                # Ensure ID fields are integers
+                # Handle ID fields - could be string or int depending on schema
                 if isinstance(value, (list, tuple)):
                     # If value is a list/tuple, take the first element
-                    value = value[0] if value else 0
-                try:
-                    converted_values.append(int(value))
-                except (ValueError, TypeError):
-                    converted_values.append(0)  # Default to 0 for invalid IDs
+                    value = value[0] if value else ""
+                # Keep as string for VARCHAR IDs, convert to int for INT64 IDs
+                converted_values.append(str(value) if isinstance(value, (str, int, float)) else str(value))
             else:
                 converted_values.append(value)
         
@@ -237,12 +235,23 @@ class MilvusConnector:
                 print(f"Warning: Collection '{collection_name}' already exists, skipping creation")
                 return True
 
+            # Handle id_type conversion from string to DataType
+            id_type = schema.get("id_type", DataType.INT64)
+            if isinstance(id_type, str):
+                id_type_mapping = {
+                    "INT64": DataType.INT64,
+                    "VARCHAR": DataType.VARCHAR,
+                    "varchar": DataType.VARCHAR,
+                    "int64": DataType.INT64,
+                }
+                id_type = id_type_mapping.get(id_type, DataType.INT64)
+
             # Create collection
             self.client.create_collection(
                 collection_name=collection_name,
                 dimension=schema.get("dimension", 128),
                 primary_field=schema.get("primary_field", "id"),
-                id_type=schema.get("id_type", DataType.INT64),
+                id_type=id_type,
                 vector_field=schema.get("vector_field", "vector"),
                 metric_type=schema.get("metric_type", "COSINE"),
                 auto_id=schema.get("auto_id", False),
@@ -637,11 +646,16 @@ async def milvus_text_search(
 
 
 @mcp.tool()
-async def milvus_list_collections(ctx: Context = None) -> str:
+async def milvus_list_collections(
+    ctx: Context = None
+) -> str:
     """List all collections in the database."""
-    connector = get_connector(ctx)
-    collections = await connector.list_collections()
-    return f"Collections in database:\n{', '.join(collections)}"
+    try:
+        connector = get_connector(ctx)
+        collections = await connector.list_collections()
+        return f"Collections in database:\n{', '.join(collections)}"
+    except Exception as e:
+        return f"Error listing collections: {str(e)}"
 
 
 @mcp.tool()

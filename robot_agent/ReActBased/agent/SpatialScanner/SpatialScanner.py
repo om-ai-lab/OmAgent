@@ -65,7 +65,7 @@ class SpatialScanner(BaseWorker, BaseLLMBackend):
             self.stm(self.workflow_instance_id)["navigation_strategy"] = spatial_analysis.get("navigation_strategy", "")
             
             self.callback.info(agent_id=self.workflow_instance_id, progress='✅ Spatial Scan Complete', 
-                             message=f"360° scan completed. Strategy: {spatial_analysis.get('navigation_strategy', 'Explore systematically')[:100]}...")
+                             message=f"360° scan completed. Strategy: {spatial_analysis.get('navigation_strategy', 'Explore systematically')}...")
             
             return {"scan_complete": True, "spatial_analysis": spatial_analysis}
             

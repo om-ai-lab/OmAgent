@@ -131,44 +131,78 @@ def detect_objects(
         # Load image
         image = load_image(image_path_or_url_or_base64)
         
-        # Process image
-        inputs = processor(image=image, text=classes, return_tensors="pt")
+        # Convert to RGB if necessary
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+        
+        # Prepare text input - join classes with comma if multiple
+        text_input = ", ".join(classes) if isinstance(classes, list) else classes
+        
+        # Process image - NOTE: Use 'images' (plural) not 'image' (singular)
+        inputs = processor(images=image, text=text_input, return_tensors="pt")
         
         # Move inputs to model device if using GPU
         if next(model.parameters()).device.type != "cpu":
             inputs = {k: v.to(next(model.parameters()).device) for k, v in inputs.items()}
         
         # Run inference
-        outputs = model(**inputs)
+        with torch.no_grad():
+            outputs = model(**inputs)
         
         # Post-process results
         results = processor.post_process_grounded_object_detection(
             outputs,
             classes=classes,
-            target_sizes=[image.size[::-1]],
+            target_sizes=[image.size[::-1]],  # Height, Width format
             score_threshold=score_threshold,
             nms_threshold=nms_threshold
         )
         
         # Format results for API response
         detections = []
-        result = results[0]
-        for score, class_name, box in zip(result["scores"], result["classes"], result["boxes"]):
-            box = [round(i, 2) for i in box.tolist()]
-            detections.append({
-                "class": class_name,
-                "confidence": round(score.item(), 3),
-                "box": box
-            })
+        if results and len(results) > 0:
+            result = results[0]
+            
+            # Handle case where results might be empty
+            scores = result.get("scores", [])
+            class_names = result.get("classes", [])
+            boxes = result.get("boxes", [])
+            
+            for score, class_name, box in zip(scores, class_names, boxes):
+                # Convert tensor to float if necessary
+                if hasattr(score, 'item'):
+                    score_val = score.item()
+                else:
+                    score_val = float(score)
+                
+                # Convert box coordinates to list
+                if hasattr(box, 'tolist'):
+                    box_coords = [round(i, 2) for i in box.tolist()]
+                else:
+                    box_coords = [round(float(i), 2) for i in box]
+                
+                detections.append({
+                    "class": str(class_name),
+                    "score": round(score_val, 3),
+                    "bbox": box_coords  # Changed from "box" to "bbox" for consistency
+                })
         
         return {
             "detections": detections,
             "image_size": image.size,
-            "classes_requested": classes
+            "classes_requested": classes,
+            "num_detections": len(detections)
         }
     
     except Exception as e:
-        return {"error": str(e)}
+        import traceback
+        error_details = {
+            "error": str(e),
+            "error_type": type(e).__name__,
+            "traceback": traceback.format_exc()
+        }
+        print(f"[ERROR] Object detection failed: {error_details}")
+        return error_details
 
 # -------------------------------------------------------------------------------------------------
 # TOOL: list available images in a directory
@@ -187,9 +221,9 @@ DEFAULT_MODEL_PATH = "omlab/omdet-turbo-swin-tiny-hf"
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Run an OmDet Turbo server powered by fastmcp 2.x")
     p.add_argument("--model-path", default=DEFAULT_MODEL_PATH, help="HuggingFace repo or local checkpoint directory")
-    p.add_argument("--device", default="cuda:0", help="Device to run on (e.g. cuda:0 or cpu)")
+    p.add_argument("--device", default="cuda:1", help="Device to run on (e.g. cuda:0 or cpu)")
     p.add_argument("--load-in-8bit", action="store_true", help="Load in 8-bit precision")
-    p.add_argument("--port", type=int, default=8009, help="Port to run server on")
+    p.add_argument("--port", type=int, default=8089, help="Port to run server on")
     return p.parse_args()
 
 
@@ -207,4 +241,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()

@@ -135,6 +135,15 @@ class ReActNavigator(BaseWorker, BaseLLMBackend):
         # Update reasoning history
         self._update_reasoning_history(react_result)
         
+        # Enhanced debugging: print detailed react_result breakdown
+        print("=== REACT RESULT DEBUG ===")
+        print(f"react_result: {react_result}")
+        print(f"goal_achieved from react_result: {react_result.get('goal_achieved', False)}")
+        print(f"phase: {react_result.get('phase', 'unknown')}")
+        print(f"detected_objects: {react_result.get('detected_objects', 'none')}")
+        print(f"target_object: {target_object}")
+        print("========================")
+        
         if react_result.get("goal_achieved", False):
             self.callback.info(agent_id=self.workflow_instance_id, progress='🎉 Goal Achieved!', 
                                 message=f"ReAct successfully found {target_object}")
@@ -295,6 +304,7 @@ Ensure your response is valid JSON format with all four required fields.
             
             analysis_result = json.loads(analysis_json) if isinstance(analysis_json, str) else analysis_json
             raw_output = analysis_result.get("raw_output", "")
+            print (raw_output)
             # Parse the JSON response from VLM
             #try:
             if True:
@@ -528,16 +538,21 @@ Ensure your response is valid JSON format with all four required fields.
         self.callback.info(agent_id=self.workflow_instance_id, progress='🤔 ReAct REASONING', 
                          message="Analyzing current situation and planning action")
         
-        # Check for immediate goal achievement
+        # Check for immediate goal achievement using object detection
         goal_achieved = self._check_goal_achievement(
             context["detected_objects"], 
             context["target_object"], 
-            context["target_location"]
+            context["target_location"],
+            context.get("rgb_data")  # Pass RGB data for object detection
         )
+        
+        print(f"=== REASONING PHASE GOAL CHECK ===")
+        print(f"Goal achieved in reasoning phase: {goal_achieved}")
+        print("===================================")
         
         if goal_achieved:
             return {
-                "reasoning": f"GOAL ACHIEVED: Target {context['target_object']} found in current view",
+                "reasoning": f"GOAL ACHIEVED: Target {context['target_object']} found using object detection",
                 "planned_action": "goal_completed",
                 "confidence": 1.0,
                 "goal_achieved": True
@@ -803,32 +818,235 @@ Ensure your response is valid JSON format with all four required fields.
             
         
     
-    def _check_goal_achievement(self, detected_objects: str, target_object: str, target_location: str) -> bool:
-        """Quick goal verification."""
-            # Simple keyword matching for speed
-        detected_lower = detected_objects.lower()
-        target_lower = target_object.lower()
+    def _check_goal_achievement_with_detection(self, rgb_data: str, target_object: str, target_location: str) -> bool:
+        """
+        Enhanced goal verification using object detection to reduce false alarms.
+        Uses OmDet Turbo for precise object detection instead of relying on VLM text analysis.
+        """
         
-        # Check if target object is mentioned in detected objects
-        if target_lower in detected_lower or "any object" in target_lower:
-            # Additional verification with LLM for accuracy
-            verification_prompt = f"""
-            Detected objects: {detected_objects}
-            Target: {target_object} at {target_location}
+        self.callback.info(agent_id=self.workflow_instance_id, progress='🎯 Object Detection Check', 
+                         message=f"Using OmDet to detect '{target_object}'...")
+        
+        print(f"=== OBJECT DETECTION GOAL CHECK ===")
+        print(f"Target object: '{target_object}'")
+        print(f"Target location: '{target_location}'")
+        
+        # Skip if no image data
+        if not rgb_data:
+            print("No RGB data available for object detection")
+            print("=== GOAL CHECK RESULT: FALSE (no image) ===")
+            return False
+        
+        # Clean target object name
+        target_lower = target_object.lower().strip()
+        
+        # Skip if target is too generic
+        generic_targets = ["any object", "anything", "something", "object", "item"]
+        if target_lower in generic_targets:
+            print(f"Target is too generic ('{target_lower}'), skipping goal achievement check")
+            print("=== GOAL CHECK RESULT: FALSE (generic target) ===")
+            return False
+        
+        try:
+            # Prepare object classes for detection - include variations
+            target_classes = [target_object]
             
-            Is the target object clearly present and visible? Answer only: YES or NO
-            """
+            # Add common variations of the target object
+            target_lower = target_object.lower()
+            variations = []
             
+            # Add plural/singular variations
+            if target_lower.endswith('s') and len(target_lower) > 3:
+                variations.append(target_lower[:-1])  # Remove 's' for singular
+            else:
+                variations.append(target_lower + 's')  # Add 's' for plural
+            
+            # Add common synonyms or variations
+            synonym_map = {
+                'cup': ['mug', 'glass', 'tumbler'],
+                'mug': ['cup', 'coffee cup'],
+                'bottle': ['container', 'jar'],
+                'chair': ['seat'],
+                'table': ['desk'],
+                'laptop': ['computer', 'notebook'],
+                'phone': ['smartphone', 'mobile'],
+                'book': ['novel', 'textbook'],
+                'plate': ['dish'],
+                'bowl': ['container'],
+                'apple': ['fruit'],
+                'orange': ['fruit'],
+                'banana': ['fruit']
+            }
+            
+            if target_lower in synonym_map:
+                variations.extend(synonym_map[target_lower])
+            
+            # Add unique variations to target_classes
+            for variation in variations:
+                if variation not in [cls.lower() for cls in target_classes]:
+                    target_classes.append(variation)
+            
+            self.callback.info(agent_id=self.workflow_instance_id, progress='🔍 Detection Variants', 
+                             message=f"Searching for: {', '.join(target_classes)}")
+            
+            # Use object detection to find the target object
+            detection_result = self.tool_manager.execute(
+                tool_name="mcp_omdet_detect_objects",
+                args={
+                    "image_path_or_url_or_base64": rgb_data,
+                    "classes": target_classes,  # Detect variations of the target object
+                    "score_threshold": 0.25,    # Lower threshold to catch more objects
+                    "nms_threshold": 0.5        # Standard NMS threshold
+                }
+            )
+            print ("detection_result:",detection_result)
+            
+            # Parse detection result
+            if isinstance(detection_result, str):
+                detection_data = json.loads(detection_result)
+            else:
+                detection_data = detection_result
+            
+            print(f"Object detection result: {detection_data}")
+            
+            # Check if any objects were detected
+            detected_objects = detection_data.get("detections", [])
+            
+            if not detected_objects:
+                print(f"No objects of class '{target_object}' detected")
+                print("=== GOAL CHECK RESULT: FALSE (no detections) ===")
+                return False
+            
+            # Check if any detections meet our confidence criteria
+            high_confidence_detections = []
+            for detection in detected_objects:
+                score = detection.get("score", 0.0)
+                class_name = detection.get("class", "")
+                bbox = detection.get("bbox", [])
+                
+                print(f"Detection: class='{class_name}', score={score:.3f}, bbox={bbox}")
+                
+                # Check if this detection matches our target and has good confidence
+                if score >= 0.4:  # Slightly lower threshold for goal achievement
+                    high_confidence_detections.append(detection)
+            
+            if high_confidence_detections:
+                self.callback.info(agent_id=self.workflow_instance_id, progress='✅ Objects Found', 
+                                  message=f"Found {len(high_confidence_detections)} potential matches")
+                
+                print(f"Found {len(high_confidence_detections)} high-confidence detections")
+                
+                # Additional verification: check if object is reasonably sized and positioned
+                valid_detections = []
+                for detection in high_confidence_detections:
+                    bbox = detection.get("bbox", [])
+                    score = detection.get("score", 0.0)
+                    class_name = detection.get("class", "")
+                    
+                    if len(bbox) >= 4:
+                        width = bbox[2] - bbox[0]
+                        height = bbox[3] - bbox[1]
+                        area = width * height
+                        
+                        # Object should be reasonably sized (not tiny artifacts)
+                        # Lower area threshold for smaller objects
+                        min_area = 500 if score >= 0.6 else 1000
+                        
+                        if area > min_area:
+                            valid_detections.append(detection)
+                            print(f"Valid detection: class='{class_name}', score={score:.3f}, area={area:.0f}")
+                
+                if valid_detections:
+                    best_detection = max(valid_detections, key=lambda d: d.get("score", 0.0))
+                    best_class = best_detection.get("class", "")
+                    best_score = best_detection.get("score", 0.0)
+                    
+                    self.callback.info(agent_id=self.workflow_instance_id, progress='🎉 Goal Achieved!', 
+                                      message=f"Detected '{best_class}' with {best_score:.1%} confidence")
+                    
+                    print(f"Goal achieved! Found {len(valid_detections)} valid detections")
+                    print(f"Best detection: {best_class} (score: {best_score:.3f})")
+                    print("=== GOAL CHECK RESULT: TRUE ===")
+                    return True
+                else:
+                    self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ Objects Too Small', 
+                                      message="Found objects but they appear too small/unclear")
+                    print("Detections found but too small/invalid")
+                    print("=== GOAL CHECK RESULT: FALSE (invalid detections) ===")
+                    return False
+            else:
+                self.callback.info(agent_id=self.workflow_instance_id, progress='❌ No Objects Found', 
+                                  message=f"No confident detections of '{target_object}'")
+                print(f"Detections found but confidence too low (all < 0.4)")
+                print("=== GOAL CHECK RESULT: FALSE (low confidence) ===")
+                return False
+                
+        except Exception as e:
+            print(f"Object detection error: {str(e)}")
+            
+            # Fallback to VLM-based checking if object detection fails
+            print("Falling back to VLM-based goal checking...")
+            return self._check_goal_achievement_fallback(rgb_data, target_object, target_location)
+    
+    def _check_goal_achievement_fallback(self, rgb_data: str, target_object: str, target_location: str) -> bool:
+        """
+        Fallback goal verification using VLM analysis when object detection fails.
+        This is the original method but with stricter criteria.
+        """
+        
+        print(f"=== FALLBACK VLM GOAL CHECK ===")
+        
+        if not rgb_data:
+            return False
+        
+        # Very strict VLM verification
+        verification_prompt = f"""
+        You are a strict goal verification system for robot navigation.
+        
+        TARGET OBJECT: {target_object}
+        TARGET LOCATION: {target_location}
+        
+        ULTRA-STRICT CRITERIA:
+        1. The exact target object "{target_object}" must be clearly visible and identifiable in the image
+        2. The object must be prominently displayed, not partially hidden or unclear
+        3. Do NOT accept similar objects or partial matches
+        4. Do NOT accept if you have any doubt about object identity
+        5. Be extremely conservative - only return YES if you are 100% certain
+        
+        Look at this image carefully. Is the exact target object "{target_object}" clearly present and unambiguously visible?
+        
+        Answer ONLY with: YES or NO
+        """
+        
+        try:
             response = self.llm.generate([
                 {"role": "user", "content": verification_prompt}
             ])
             
-            result = response["choices"][0]["message"].get("content", "").strip().upper()
-            return "YES" in result
+            llm_result = response["choices"][0]["message"].get("content", "").strip().upper()
+            goal_achieved = llm_result == "YES"
+            
+            print(f"Fallback VLM result: '{llm_result}' -> {goal_achieved}")
+            print("=== FALLBACK GOAL CHECK RESULT: {} ===".format("TRUE" if goal_achieved else "FALSE"))
+            
+            return goal_achieved
+            
+        except Exception as e:
+            print(f"Fallback VLM check failed: {str(e)}")
+            return False
+
+    def _check_goal_achievement(self, detected_objects: str, target_object: str, target_location: str, rgb_data: str = None) -> bool:
+        """
+        Main goal achievement checker that uses object detection as primary method.
+        """
         
-        return False
-       
-    
+        # Use object detection if RGB data is available
+        if rgb_data:
+            return self._check_goal_achievement_with_detection(rgb_data, target_object, target_location)
+        else:
+            # If no RGB data, fall back to text-based analysis (very strict)
+            return self._check_goal_achievement_fallback("", target_object, target_location)
+
     def _execute_action(self, action_name: str, action_parameter: float) -> Dict[str, Any]:
         """Execute the planned action with configurable parameters."""
         # Map action names to THOR actions with dynamic parameters
@@ -1199,6 +1417,9 @@ Provide a clear assessment: Is the forward path BLOCKED or OPEN? If blocked, wha
             }
         
         try:
+            # Use object detection for goal achievement checking instead of VLM text analysis
+            goal_achieved = self._check_goal_achievement_with_detection(rgb_data, target_object, target_location)
+            
             # Single comprehensive MCP call that gets all information at once
             comprehensive_prompt = f"""
             Analyze this robot navigation scene comprehensively and provide ALL of the following information:
@@ -1207,15 +1428,14 @@ Provide a clear assessment: Is the forward path BLOCKED or OPEN? If blocked, wha
 
             2. VISUAL DESCRIPTION: Describe the current scene for robot navigation, focusing on spatial layout, key objects, and navigable areas.
 
-            3. GOAL ACHIEVEMENT: Check if the target object "{target_object}" at "{target_location}" is clearly present and visible in this scene.
-
-            4. NAVIGATION ANALYSIS: Analyze navigable paths, obstacles, and movement opportunities.
+            3. NAVIGATION ANALYSIS: Analyze navigable paths, obstacles, and movement opportunities.
 
             Please structure your response as follows:
             OBJECTS: [detailed object list]
-            VISUAL_DESCRIPTION: [spatial layout description]
-            GOAL_ACHIEVED: [YES/NO - is target object clearly visible]
+            VISUAL_DESCRIPTION: [spatial layout description]  
             NAVIGATION: [path analysis and recommendations]
+            
+            Note: Goal achievement will be determined separately using object detection.
             """
             
             analysis_json = self.tool_manager.execute(
@@ -1228,35 +1448,21 @@ Provide a clear assessment: Is the forward path BLOCKED or OPEN? If blocked, wha
             analysis_result = json.loads(analysis_json)
             raw_response = analysis_result.get("raw_output", "")
             print (raw_response)
+            
             # Parse the structured response
             objects = self._extract_section(raw_response, "OBJECTS:")
             visual_description = self._extract_section(raw_response, "VISUAL_DESCRIPTION:")
-            goal_check = self._extract_section(raw_response, "GOAL_ACHIEVED:")
             navigation_analysis = self._extract_section(raw_response, "NAVIGATION:")
             
-            # Determine goal achievement
-            goal_achieved = "YES" in goal_check.upper() if goal_check else False
-            
-            # If goal achievement is unclear, do additional verification
-            if not goal_achieved and target_object.lower() in objects.lower():
-                verification_prompt = f"""
-                Detected objects: {objects}
-                Target: {target_object} at {target_location}
-                
-                Is the target object clearly present and visible? Answer only: YES or NO
-                """
-                
-                verification_response = self.llm.generate([
-                    {"role": "user", "content": verification_prompt}
-                ])
-                
-                verification_result = verification_response["choices"][0]["message"].get("content", "").strip().upper()
-                goal_achieved = "YES" in verification_result
+            print(f"=== COMPREHENSIVE ANALYSIS RESULT ===")
+            print(f"Goal achieved (from object detection): {goal_achieved}")
+            print(f"Objects detected: {objects[:100]}...")
+            print("=====================================")
             
             return {
                 "objects": objects or "No objects detected",
                 "visual_description": visual_description or "No visual description available",
-                "goal_achieved": goal_achieved,
+                "goal_achieved": goal_achieved,  # Use object detection result
                 "navigation_analysis": navigation_analysis or "No navigation analysis available",
                 "analysis_success": True,
                 "raw_response": raw_response
