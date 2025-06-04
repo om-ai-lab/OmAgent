@@ -121,7 +121,7 @@ class SpatialScanner(BaseWorker, BaseLLMBackend):
                 degrees = abs(degrees)
             
             result = self.tool_manager.execute(
-                tool_name="mcp_thor_step",
+                tool_name="mcp_ut-dog_step",
                 args={"action": action, "degrees": degrees}
             )
             
@@ -137,7 +137,7 @@ class SpatialScanner(BaseWorker, BaseLLMBackend):
         try:
             # Get current environment state
             env_state_json = self.tool_manager.execute(
-                tool_name="mcp_thor_get_environment_state",
+                tool_name="mcp_ut-dog_get_environment_state",
                 args={}
             )
             env_state = json.loads(env_state_json) if isinstance(env_state_json, str) else env_state_json

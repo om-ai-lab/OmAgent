@@ -1,7 +1,7 @@
 conductor_config:
   name: Configuration
   base_url:
-    value: http://10.0.0.26:8081
+    value: http://10.8.25.20:8080
     description: The Conductor Server API endpoint
     env_var: CONDUCTOR_SERVER_URL
   auth_key:
@@ -23,7 +23,7 @@ conductor_config:
 aaas_config:
   name: AaasConfig
   base_url:
-    value: http://10.0.0.26:30002
+    value: http://10.8.25.20:30002
     description: The aaas task server API endpoint
     env_var: AAAS_TASK_SERVER_URL
   token:
@@ -49,7 +49,7 @@ connectors:
       value: null
       env_var: ID
     host:
-      value: 10.0.0.26
+      value: 10.8.25.20
       env_var: HOST
     port:
       value: 7379
@@ -69,7 +69,7 @@ connectors:
       value: null
       env_var: ID
     host:
-      value: 10.0.0.26
+      value: 10.8.25.20
       env_var: HOST
     port:
       value: 7379

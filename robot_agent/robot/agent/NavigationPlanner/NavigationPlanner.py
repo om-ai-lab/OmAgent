@@ -47,7 +47,7 @@ class NavigationPlanner(BaseWorker, BaseLLMBackend):
             # If no cached data, get current environment state (only when necessary)
             self.callback.info(agent_id=self.workflow_instance_id, progress='📡 Environment Data', message="Retrieving current environment state")
             env_state_json = self.tool_manager.execute(
-                tool_name="mcp_thor_get_environment_state",
+                tool_name="mcp_ut-dog_get_environment_state",
                 args={}
             )
             env_state = json.loads(env_state_json)

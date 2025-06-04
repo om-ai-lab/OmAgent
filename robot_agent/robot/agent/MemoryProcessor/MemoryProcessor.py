@@ -6,16 +6,45 @@ from datetime import datetime
 from typing import Dict, List, Any
 import hashlib
 
+# Try to import pymilvus model, with fallback if not available
+try:
+    from pymilvus import model
+    PYMILVUS_MODEL_AVAILABLE = True
+except ImportError:
+    try:
+        # Alternative import path that might work
+        from pymilvus.model.dense import DefaultEmbeddingFunction
+        PYMILVUS_MODEL_AVAILABLE = True
+        # Create a mock model module for compatibility
+        class MockModel:
+            DefaultEmbeddingFunction = DefaultEmbeddingFunction
+        model = MockModel()
+    except ImportError:
+        PYMILVUS_MODEL_AVAILABLE = False
+        # Create a fallback embedding function
+        class FallbackEmbeddingFunction:
+            def __init__(self):
+                self.dim = 384  # Default dimension
+            
+            def encode_documents(self, documents):
+                # Return dummy embeddings if model is not available
+                import numpy as np
+                return [np.random.rand(self.dim).astype('float32') for _ in documents]
+        
+        class MockModel:
+            DefaultEmbeddingFunction = FallbackEmbeddingFunction
+        model = MockModel()
+
 
 @registry.register_worker()
 class MemoryProcessor(BaseWorker, BaseLLMBackend):
     """
     Enhanced Memory Processor for ReAct navigation that integrates with Milvus database
-    for persistent, searchable memory storage and retrieval.
+    for persistent, searchable memory storage and retrieval using vector embeddings.
     
     This processor:
-    1. Stores navigation experiences as structured memories
-    2. Enables text-based memory search for relevant past experiences
+    1. Stores navigation experiences as structured memories with embeddings
+    2. Enables semantic memory search using vector similarity
     3. Provides location-based memory filtering
     4. Supports memory-based learning and pattern recognition
     """
@@ -51,6 +80,37 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
     use_milvus: bool = Field(default=True, description="Whether to use Milvus for memory storage")
     memory_retention_days: int = Field(default=30, description="Days to retain memories in Milvus")
     
+    # Embedding function for vector similarity search
+    embedding_function: Any = Field(default=None, description="Embedding function for vector operations")
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Initialize embedding function
+        try:
+            self.embedding_function = model.DefaultEmbeddingFunction()
+            if PYMILVUS_MODEL_AVAILABLE:
+                self.callback.info(agent_id=getattr(self, 'workflow_instance_id', 'init'), 
+                                 progress='🔧 Embedding Init', 
+                                 message=f"Initialized embedding function with dimension: {self.embedding_function.dim}")
+            else:
+                self.callback.info(agent_id=getattr(self, 'workflow_instance_id', 'init'), 
+                                 progress='⚠️ Fallback Embedding', 
+                                 message=f"Using fallback embedding function (pymilvus[model] not available) with dimension: {self.embedding_function.dim}")
+        except Exception as e:
+            # Fallback to simple embedding function
+            class SimpleFallbackEmbeddingFunction:
+                def __init__(self):
+                    self.dim = 384
+                
+                def encode_documents(self, documents):
+                    import numpy as np
+                    return [np.random.rand(self.dim).astype('float32') for _ in documents]
+            
+            self.embedding_function = SimpleFallbackEmbeddingFunction()
+            self.callback.info(agent_id=getattr(self, 'workflow_instance_id', 'init'), 
+                             progress='⚠️ Simple Fallback', 
+                             message=f"Using simple fallback embedding function due to error: {str(e)}")
+    
     def _run(self, *args, **kwargs):
         self.callback.info(agent_id=self.workflow_instance_id, progress='📝 Memory Logging', 
                          message="Saving navigation memory as log files")
@@ -68,7 +128,7 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
             
             # Get current environment state
             env_state_json = self.tool_manager.execute(
-                tool_name="mcp_thor_get_environment_state",
+                tool_name="mcp_ut-dog_get_environment_state",
                 args={}
             )
             env_state = json.loads(env_state_json) if isinstance(env_state_json, str) else env_state_json
@@ -323,7 +383,7 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
             raise Exception(f"Failed to save to Milvus: {str(e)}")
     
     def _ensure_milvus_collection(self):
-        """Ensure the Milvus collection exists, create if not."""
+        """Ensure the Milvus collection exists with vector field, create if not."""
         try:
             # Check if collection exists
             collections_result = self.tool_manager.execute(
@@ -348,7 +408,7 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
                 existing_collections = []
             
             if self.milvus_collection_name not in existing_collections:
-                # Create collection with schema for robot navigation memories (without vector field)
+                # Create collection with schema for robot navigation memories with vector field
                 schema = {
                     "primary_field": "id",
                     "id_type": "VARCHAR",
@@ -372,7 +432,9 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
                         {"name": "visual_description", "type": "varchar", "max_length": 2000},
                         {"name": "memory_entry", "type": "varchar", "max_length": 3000},
                         {"name": "map_analysis", "type": "varchar", "max_length": 1000},
-                        {"name": "confidence", "type": "float"}
+                        {"name": "confidence", "type": "float"},
+                        # Add vector field for embeddings
+                        {"name": "memory_vector", "type": "FLOAT_VECTOR", "dimension": self.embedding_function.dim}
                     ]
                 }
                 
@@ -384,6 +446,22 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
                     }
                 )
                 
+                # Create vector index for similarity search
+                index_params = {
+                    "field_name": "memory_vector",
+                    "index_type": "IVF_FLAT",
+                    "metric_type": "L2",
+                    "params": {"nlist": 128}
+                }
+                
+                self.tool_manager.execute(
+                    tool_name="mcp_milvus-sse_milvus_create_index",
+                    args={
+                        "collection_name": self.milvus_collection_name,
+                        "index_params": index_params
+                    }
+                )
+                
                 # Load the collection into memory
                 self.tool_manager.execute(
                     tool_name="mcp_milvus-sse_milvus_load_collection",
@@ -391,7 +469,7 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
                 )
                 
                 self.callback.info(agent_id=self.workflow_instance_id, progress='🆕 Milvus Collection', 
-                                 message=f"Created and loaded collection: {self.milvus_collection_name}")
+                                 message=f"Created collection with vector field: {self.milvus_collection_name}")
             else:
                 # Load existing collection
                 self.tool_manager.execute(
@@ -413,13 +491,35 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
         return hashlib.md5(id_string.encode()).hexdigest()[:16]
     
     def _prepare_milvus_data(self, log_data: Dict[str, Any], memory_id: str) -> Dict[str, List[Any]]:
-        """Prepare data for Milvus insertion."""
+        """Prepare data for Milvus insertion with embeddings."""
         pose = log_data.get("pose", [0.0, 0.0, 0.0])
         pose_x = float(pose[0]) if len(pose) > 0 else 0.0
         pose_y = float(pose[1]) if len(pose) > 1 else 0.0
         pose_z = float(pose[2]) if len(pose) > 2 else 0.0
         
-        # Prepare single-row data for insertion (without vector field)
+        # Create text for embedding generation
+        memory_text = log_data.get("memory_entry", "")
+        reasoning = log_data.get("reasoning", "")
+        visual_desc = log_data.get("visual_description", "")
+        detected_objs = log_data.get("detected_objects", "")
+        
+        # Combine key textual information for embedding
+        combined_text = f"Memory: {memory_text} Reasoning: {reasoning} Visual: {visual_desc} Objects: {detected_objs}"
+        
+        # Generate embedding
+        try:
+            embeddings = self.embedding_function.encode_documents([combined_text])
+            memory_vector = embeddings[0].tolist()  # Convert numpy array to list
+            
+            self.callback.info(agent_id=self.workflow_instance_id, progress='🔗 Embedding Generated', 
+                             message=f"Generated {len(memory_vector)}-dim embedding for memory {memory_id}")
+        except Exception as e:
+            # Fallback to zero vector if embedding fails
+            memory_vector = [0.0] * self.embedding_function.dim
+            self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ Embedding Warning', 
+                             message=f"Embedding generation failed, using zero vector: {str(e)}")
+        
+        # Prepare single-row data for insertion with vector field
         milvus_data = {
             "id": [memory_id],
             "step": [log_data.get("step", 0)],
@@ -439,57 +539,55 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
             "visual_description": [log_data.get("visual_description", "")[:2000]],
             "memory_entry": [log_data.get("memory_entry", "")[:3000]],
             "map_analysis": [log_data.get("map_analysis", "")[:1000]],
-            "confidence": [float(log_data.get("confidence", 0.0))]
+            "confidence": [float(log_data.get("confidence", 0.0))],
+            "memory_vector": [memory_vector]  # Add vector field
         }
         
         return milvus_data
     
     def search_memories(self, query_text: str, limit: int = 10) -> List[Dict[str, Any]]:
-        """Search for memories using text-based filtering on key fields."""
+        """Search for memories using vector similarity search."""
         try:
             if not self.use_milvus:
                 return []
             
-            # Create text-based filter expression using LIKE operator for multiple fields
-            query_terms = query_text.lower().split()
-            filter_conditions = []
+            # Generate embedding for the query text
+            query_embeddings = self.embedding_function.encode_documents([query_text])
+            query_vector = query_embeddings[0].tolist()
             
-            # Search in multiple text fields
-            for term in query_terms:
-                term_conditions = [
-                    f"memory_entry like '%{term}%'",
-                    f"reasoning like '%{term}%'",
-                    f"action like '%{term}%'",
-                    f"detected_objects like '%{term}%'",
-                    f"visual_description like '%{term}%'"
-                ]
-                filter_conditions.append(f"({' or '.join(term_conditions)})")
+            # Perform vector similarity search
+            search_params = {
+                "metric_type": "L2",
+                "params": {"nprobe": 10}
+            }
             
-            filter_expr = " and ".join(filter_conditions) if filter_conditions else "id != ''"
-            
-            # Query Milvus with text filter
-            query_result = self.tool_manager.execute(
-                tool_name="mcp_milvus-sse_milvus_query",
+            search_result = self.tool_manager.execute(
+                tool_name="mcp_milvus-sse_milvus_search",
                 args={
                     "collection_name": self.milvus_collection_name,
-                    "filter_expr": filter_expr,
+                    "query_vectors": [query_vector],
+                    "search_field": "memory_vector",
+                    "search_params": search_params,
                     "output_fields": "id,step,timestamp,session_id,location,action,reasoning,memory_entry,confidence,execution_success",
                     "limit": limit
                 }
             )
             
-            query_data = json.loads(query_result) if isinstance(query_result, str) else query_result
-            results = query_data.get("results", [])
+            search_data = json.loads(search_result) if isinstance(search_result, str) else search_result
+            results = search_data.get("results", [])
+            
+            self.callback.info(agent_id=self.workflow_instance_id, progress='🔍 Vector Search', 
+                             message=f"Found {len(results)} similar memories for query: {query_text[:50]}...")
             
             return results
             
         except Exception as e:
             self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ Search Warning', 
-                             message=f"Memory search failed: {str(e)}")
+                             message=f"Vector memory search failed: {str(e)}")
             return []
     
     def search_memories_by_location(self, target_location: str, radius: float = 1.0, limit: int = 10) -> List[Dict[str, Any]]:
-        """Search for memories near a specific location."""
+        """Search for memories near a specific location using hybrid filter + vector search."""
         try:
             if not self.use_milvus:
                 return []
@@ -504,23 +602,64 @@ class MemoryProcessor(BaseWorker, BaseLLMBackend):
                     # Create filter expression for location proximity
                     filter_expr = f"pose_x >= {target_x - radius} and pose_x <= {target_x + radius} and pose_y >= {target_y - radius} and pose_y <= {target_y + radius}"
                     
-                    # Query Milvus with location filter
-                    query_result = self.tool_manager.execute(
-                        tool_name="mcp_milvus-sse_milvus_query",
+                    # Use a generic query vector for location-based search (since we need vector search)
+                    # Generate embedding for location-based query
+                    location_query = f"navigation memories near location {target_location}"
+                    query_embeddings = self.embedding_function.encode_documents([location_query])
+                    query_vector = query_embeddings[0].tolist()
+                    
+                    search_params = {
+                        "metric_type": "L2", 
+                        "params": {"nprobe": 10}
+                    }
+                    
+                    # Perform filtered vector search
+                    search_result = self.tool_manager.execute(
+                        tool_name="mcp_milvus-sse_milvus_search",
                         args={
                             "collection_name": self.milvus_collection_name,
+                            "query_vectors": [query_vector],
+                            "search_field": "memory_vector",
+                            "search_params": search_params,
                             "filter_expr": filter_expr,
-                            "output_fields": "id,step,timestamp,location,action,reasoning,memory_entry",
+                            "output_fields": "id,step,timestamp,location,action,reasoning,memory_entry,pose_x,pose_y",
                             "limit": limit
                         }
                     )
                     
-                    query_data = json.loads(query_result) if isinstance(query_result, str) else query_result
-                    return query_data.get("results", [])
+                    search_data = json.loads(search_result) if isinstance(search_result, str) else search_result
+                    results = search_data.get("results", [])
+                    
+                    self.callback.info(agent_id=self.workflow_instance_id, progress='📍 Location Search', 
+                                     message=f"Found {len(results)} memories near {target_location}")
+                    
+                    return results
             
             return []
             
         except Exception as e:
             self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ Location Search Warning', 
                              message=f"Location-based memory search failed: {str(e)}")
+            return []
+    
+    def search_similar_situations(self, current_situation: str, limit: int = 5) -> List[Dict[str, Any]]:
+        """Search for memories of similar navigation situations using semantic similarity."""
+        try:
+            if not self.use_milvus:
+                return []
+            
+            # Create a rich query from current situation
+            situation_query = f"Similar navigation situation: {current_situation} robot navigation memory experience"
+            
+            # Use vector similarity search to find similar situations
+            results = self.search_memories(situation_query, limit)
+            
+            self.callback.info(agent_id=self.workflow_instance_id, progress='🎯 Situation Search', 
+                             message=f"Found {len(results)} similar navigation situations")
+            
+            return results
+            
+        except Exception as e:
+            self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ Situation Search Warning', 
+                             message=f"Similar situation search failed: {str(e)}")
             return [] 

@@ -105,7 +105,7 @@ class ReActNavigator(BaseWorker, BaseLLMBackend):
         
         # Get current environment state
         env_state_json = self.tool_manager.execute(
-            tool_name="mcp_thor_get_environment_state",
+            tool_name="mcp_ut-dog_get_environment_state",
             args={}
         )
         env_state = json.loads(env_state_json) if isinstance(env_state_json, str) else env_state_json
@@ -208,7 +208,7 @@ class ReActNavigator(BaseWorker, BaseLLMBackend):
         
         # Get map data first
         env_state_json = self.tool_manager.execute(
-            tool_name="mcp_thor_get_environment_state",
+            tool_name="mcp_ut-dog_get_environment_state",
             args={}
         )
         env_state = json.loads(env_state_json) if isinstance(env_state_json, str) else env_state_json
@@ -620,7 +620,7 @@ Ensure your response is valid JSON format with all four required fields.
         
         #try:
         # Get new sensor data after action
-        rgb_data = self.tool_manager.execute(tool_name="mcp_thor_get_environment_state", args={})
+        rgb_data = self.tool_manager.execute(tool_name="mcp_ut-dog_get_environment_state", args={})
         if isinstance(rgb_data, str):
             rgb_data_dict = json.loads(rgb_data)
         else:
@@ -1066,7 +1066,7 @@ Ensure your response is valid JSON format with all four required fields.
         try:
             # Execute action in THOR
             result = self.tool_manager.execute(
-                tool_name="mcp_thor_step",
+                tool_name="mcp_ut-dog_step",
                 args=thor_action
             )
             

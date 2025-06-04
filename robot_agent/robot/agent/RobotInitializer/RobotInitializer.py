@@ -72,10 +72,10 @@ class RobotInitializer(BaseWorker, BaseLLMBackend):
             
             # Reset and initialize environment
             self.callback.info(agent_id=self.workflow_instance_id, progress='🔄 Environment Reset', 
-                             message="Resetting THOR environment")
+                             message="Resetting UT-DOG environment")
             
             reset_result = self.tool_manager.execute(
-                tool_name="mcp_thor_reset_environment",
+                tool_name="mcp_ut-dog_reset_environment",
                 args={}
             )
             
@@ -87,7 +87,7 @@ class RobotInitializer(BaseWorker, BaseLLMBackend):
                              message="Capturing initial environment state")
             
             env_state_json = self.tool_manager.execute(
-                tool_name="mcp_thor_get_environment_state",
+                tool_name="mcp_ut-dog_get_environment_state",
                 args={}
             )
             env_state = json.loads(env_state_json) if isinstance(env_state_json, str) else env_state_json
@@ -123,12 +123,12 @@ class RobotInitializer(BaseWorker, BaseLLMBackend):
                 self.callback.info(agent_id=self.workflow_instance_id, progress='⚠️ No Map', 
                                  message="No map data in initial state")
             
-            # Test movement to verify THOR is working
+            # Test movement to verify UT-DOG is working
             self.callback.info(agent_id=self.workflow_instance_id, progress='🧪 Testing Movement', 
-                             message="Testing THOR environment with a small rotation")
+                             message="Testing UT-DOG environment with a small rotation")
             
             test_result = self.tool_manager.execute(
-                tool_name="mcp_thor_step",
+                tool_name="mcp_ut-dog_step",
                 args={"action": "RotateRight", "degrees": 30}
             )
             
@@ -147,7 +147,7 @@ class RobotInitializer(BaseWorker, BaseLLMBackend):
             # Rotate back to original position
             if test_success:
                 self.tool_manager.execute(
-                    tool_name="mcp_thor_step",
+                    tool_name="mcp_ut-dog_step",
                     args={"action": "RotateLeft", "degrees": 30}
                 )
             

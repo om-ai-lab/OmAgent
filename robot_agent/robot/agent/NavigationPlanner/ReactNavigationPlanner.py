@@ -207,7 +207,7 @@ class ReactNavigationPlanner(BaseWorker, BaseLLMBackend):
         """Analyze current environment using VLM."""
         try:
             env_state_json = self.tool_manager.execute(
-                tool_name="mcp_thor_get_environment_state",
+                tool_name="mcp_ut-dog_get_environment_state",
                 args={}
             )
             env_state = json.loads(env_state_json)
@@ -236,7 +236,7 @@ class ReactNavigationPlanner(BaseWorker, BaseLLMBackend):
         """Analyze map data for spatial understanding."""
         try:
             env_state_json = self.tool_manager.execute(
-                tool_name="mcp_thor_get_environment_state",
+                tool_name="mcp_ut-dog_get_environment_state",
                 args={}
             )
             env_state = json.loads(env_state_json)
