@@ -1,3 +1,0 @@
-name: ReActNavigator
-llm: ${sub|vlm}
-tool_manager: ${sub|all_tools}
