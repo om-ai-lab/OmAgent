@@ -941,6 +941,6 @@ if __name__ == "__main__":
     os.environ.setdefault("MILVUS_DB", args.milvus_db)
     
     if args.sse:
-        mcp.run(transport="sse", host="127.0.0.1", port=args.port)
+        mcp.run(transport="sse", host="0.0.0.0", port=args.port)
     else:
         mcp.run()

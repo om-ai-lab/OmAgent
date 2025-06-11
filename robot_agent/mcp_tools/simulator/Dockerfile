@@ -1,7 +1,12 @@
 FROM python:3.11-slim
 
 # Install system dependencies including X11 libraries for AI2Thor
-RUN apt-get update && apt-get install -y \
+
+RUN echo "deb http://mirrors.aliyun.com/debian bookworm main contrib non-free" > /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian bookworm-updates main contrib non-free" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian-security bookworm-security main contrib non-free" >> /etc/apt/sources.list && \
+    rm -rf /etc/apt/sources.list.d/* && \
+    apt-get update && apt-get install -y \
     xvfb \
     x11-utils \
     libx11-6 \
@@ -22,7 +27,9 @@ WORKDIR /app
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install uv -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
+RUN uv venv
+RUN uv pip install -r requirements.txt -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
 
 # Copy the server code
 COPY ai2thor/ ./ai2thor/

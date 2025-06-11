@@ -1,4 +1,4 @@
-from __future__ import annotations
+# from __future__ import annotations
 from mcp.server.fastmcp import FastMCP
 from starlette.applications import Starlette
 from mcp.server.sse import SseServerTransport
@@ -17,7 +17,7 @@ load_dotenv()
 mcp = FastMCP("mem0-mcp")
 
 # Initialize mem0 client and set default user
-mem0_client = MemoryClient()
+mem0_client = MemoryClient(api_key="m0-shsvgsRDZj6d3DDjV9PpV17ByvUkbhmKkXe1Nu5Z")
 ROBOT_USER_ID = "navigation_robot"
 
 # Custom instructions focused on robot navigation
