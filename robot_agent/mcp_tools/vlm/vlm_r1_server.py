@@ -41,7 +41,8 @@ except ImportError:
 
 # Import our VLM-R1 model ---------------------------------------------------------------------------
 try:
-    from src.vlm_r1 import VLMR1
+    from vlm_r1 import VLMR1
+    print("VLM-R1 model loaded successfully.")
 except ImportError as e:
     print(f"Error importing VLMR1: {e}")
     print("Make sure the src/vlm_r1.py file exists and all dependencies are installed.")

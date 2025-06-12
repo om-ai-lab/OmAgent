@@ -1,7 +1,8 @@
-fastmcp
+fastmcp==2.2.10
 ai2thor>=5.0.0
-opencv-python
-numpy
-matplotlib
-pillow
+opencv-python==4.11.0.86
+numpy==1.26.4
+matplotlib==3.10.1
+pillow==11.1.0
 logging 
+packaging

@@ -25,7 +25,7 @@ container.register_stm("SharedMemSTM")
 class LLMTest(BaseLLMBackend):
     llm: OpenaiGPTLLM ={
         "name": "OpenaiGPTLLM", 
-        "model_id": "gpt-4o", 
+        "model_id": "gpt-4o-mini", 
         "api_key": os.getenv("custom_openai_key"), 
         "endpoint": os.getenv("custom_openai_endpoint"),   
         "vision": False,
@@ -40,6 +40,6 @@ class LLMTest(BaseLLMBackend):
 llm_test = LLMTest(workflow_instance_id="temp")
 
 tool_manager = llm_test.tool_manager
-x = tool_manager.execute_task("describe /data0/qdl/test/old_women.png",) 
+x = tool_manager.execute_task("hi",) 
 print(x)
 

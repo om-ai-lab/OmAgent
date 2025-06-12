@@ -40,7 +40,7 @@ EOF
         exit 1
     fi
     
-    sudo docker run -d \
+    docker run -d \
         --name milvus-standalone \
         --security-opt seccomp:unconfined \
         -e ETCD_USE_EMBED=true \
@@ -66,7 +66,7 @@ wait_for_milvus_running() {
     echo "Wait for Milvus Starting..."
     while true
     do
-        res=`sudo docker ps|grep milvus-standalone|grep healthy|wc -l`
+        res=`docker ps|grep milvus-standalone|grep healthy|wc -l`
         if [ $res -eq 1 ]
         then
             echo "Start successfully."
@@ -78,17 +78,17 @@ wait_for_milvus_running() {
 }
 
 start() {
-    res=`sudo docker ps|grep milvus-standalone|grep healthy|wc -l`
+    res=`docker ps|grep milvus-standalone|grep healthy|wc -l`
     if [ $res -eq 1 ]
     then
         echo "Milvus is running."
         exit 0
     fi
 
-    res=`sudo docker ps -a|grep milvus-standalone|wc -l`
+    res=`docker ps -a|grep milvus-standalone|wc -l`
     if [ $res -eq 1 ]
     then
-        sudo docker start milvus-standalone 1> /dev/null
+        docker start milvus-standalone 1> /dev/null
     else
         run_embed
     fi
@@ -103,7 +103,7 @@ start() {
 }
 
 stop() {
-    sudo docker stop milvus-standalone 1> /dev/null
+    docker stop milvus-standalone 1> /dev/null
 
     if [ $? -ne 0 ]
     then
@@ -115,13 +115,13 @@ stop() {
 }
 
 delete_container() {
-    res=`sudo docker ps|grep milvus-standalone|wc -l`
+    res=`docker ps|grep milvus-standalone|wc -l`
     if [ $res -eq 1 ]
     then
         echo "Please stop Milvus service before delete."
         exit 1
     fi
-    sudo docker rm milvus-standalone 1> /dev/null
+    docker rm milvus-standalone 1> /dev/null
     if [ $? -ne 0 ]
     then
         echo "Delete milvus container failed."
@@ -132,16 +132,16 @@ delete_container() {
 
 delete() {
     delete_container
-    sudo rm -rf $(pwd)/volumes
-    sudo rm -rf $(pwd)/embedEtcd.yaml
-    sudo rm -rf $(pwd)/user.yaml
+    rm -rf $(pwd)/volumes
+    rm -rf $(pwd)/embedEtcd.yaml
+    rm -rf $(pwd)/user.yaml
     echo "Delete successfully."
 }
 
 upgrade() {
     read -p "Please confirm if you'd like to proceed with the upgrade. The default will be to the latest version. Confirm with 'y' for yes or 'n' for no. > " check
     if [ "$check" == "y" ] ||[ "$check" == "Y" ];then
-        res=`sudo docker ps -a|grep milvus-standalone|wc -l`
+        res=`docker ps -a|grep milvus-standalone|wc -l`
         if [ $res -eq 1 ]
         then
             stop

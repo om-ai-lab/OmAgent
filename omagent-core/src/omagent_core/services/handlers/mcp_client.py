@@ -6,7 +6,6 @@ import aiohttp
 
 from dotenv import load_dotenv
 from fastmcp import Client
-from fastmcp.client.progress import ProgressHandler
 
 load_dotenv()
 

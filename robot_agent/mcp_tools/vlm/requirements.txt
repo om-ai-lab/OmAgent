@@ -1,8 +1,11 @@
+packaging
 fastmcp
 requests
-torch>=2.0.0
+torch @ https://download.pytorch.org/whl/cu121/torch-2.1.0%2Bcu121-cp311-cp311-linux_x86_64.whl
+torchvision @ https://download.pytorch.org/whl/cu121/torchvision-0.16.0%2Bcu121-cp311-cp311-linux_x86_64.whl
 transformers>=4.35.0
 pillow
-flash-attn
 bitsandbytes
 accelerate 
+numpy==1.26.4
+qwen_vl_utils

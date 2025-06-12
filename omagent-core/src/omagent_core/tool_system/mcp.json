@@ -20,7 +20,7 @@
     },
     "milvus-sse": {
       "transport": "sse",
-      "url": "http://localhost:8001/sse",
+      "url": "http://localhost:8000/sse",
       "disabled": false,
       "autoApprove": []
     }
