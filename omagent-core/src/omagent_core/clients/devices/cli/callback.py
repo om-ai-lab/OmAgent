@@ -21,6 +21,34 @@ class DefaultCallback(CallbackBase):
             f"\n{Fore.BLUE}info:{agent_id} {progress} {message}{Style.RESET_ALL}"
         )
 
+    def show_image(self, agent_id, progress, image):
+        """
+        For CLI, just log that we would display an image.
+        
+        Args:
+            agent_id (str): ID of the agent/workflow
+            progress (str): Short description about the image
+            image: Can be a URL string, base64 string, or PIL Image object
+        """
+        image_type = "URL" if isinstance(image, str) and image.startswith(('http://', 'https://')) else "base64/PIL"
+        logging.info(
+            f"\n{Fore.MAGENTA}image:{agent_id} {progress} [Image would be displayed in WebpageClient - {image_type}]{Style.RESET_ALL}"
+        )
+
+    def info_image(self, agent_id, progress, image):
+        """
+        For CLI, just log that we would display an image in the info panel.
+        
+        Args:
+            agent_id (str): ID of the agent/workflow
+            progress (str): Short description about the image
+            image: Can be a URL string, base64 string, or PIL Image object
+        """
+        image_type = "URL" if isinstance(image, str) and image.startswith(('http://', 'https://')) else "base64/PIL"
+        logging.info(
+            f"\n{Fore.CYAN}info_image:{agent_id} {progress} [Image would be displayed in info panel - {image_type}]{Style.RESET_ALL}"
+        )
+
     def send_incomplete(self, agent_id, msg, **kwargs):
         sys.stdout.write(f"{Fore.BLUE}{msg}{Style.RESET_ALL}")
         sys.stdout.flush()

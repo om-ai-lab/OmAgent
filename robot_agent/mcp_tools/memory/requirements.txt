@@ -1,0 +1,5 @@
+fastmcp
+mem0ai
+python-dotenv
+uvicorn
+starlette 

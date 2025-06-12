@@ -1,0 +1,4 @@
+name: SimpleVQA
+llm: ${sub|gpt}
+tool_manager: ${sub|all_tools}
+

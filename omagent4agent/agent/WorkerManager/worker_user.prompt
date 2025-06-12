@@ -1,0 +1,221 @@
+You are tasked with creating a worker named "{{workflow_name}}" for a multi-agent workflow.
+
+# OVERVIEW
+Worker Role: {{worker_description}}
+Workflow JSON: {{workflow}}
+
+# CODE REQUIREMENTS
+1. Import with: `from omagent_core.omagent4agent import *`, it contains classes ["BaseWorker", "BaseLLMBackend", "OpenaiGPTLLM", "registry", "ToolManager",  "logging", "PromptTemplate", "Field", "List" ] 
+2. Define a class named `{{workflow_name}}` 
+3. Implement a `_run` method with appropriate parameters
+4. Include necessary components: OpenaiGPTLLM, ToolManager, prompts (if needed)
+
+# BASE TEMPLATE
+```python
+from omagent_core.omagent4agent import *
+
+@registry.register_worker()
+class {worker_name}(BaseWorker, BaseLLMBackend):
+    llm: OpenaiGPTLLM
+    tool_manager: ToolManager 
+    prompts: List[PromptTemplate] = Field(
+        default=[
+            PromptTemplate.from_template("System prompt here", role="system"),
+            PromptTemplate.from_template("User prompt here <tag>variable</tage>", role="user"),
+        ]
+    )
+    
+    def _run(self, param1, param2, *args, **kwargs):
+        # Worker code here
+        ...
+```
+
+# INPUT parameters and OUTPUT Returns
+{{input_parameters}}
+{{output_parameters}}
+
+
+# DATA HANDLING
+## Short Term Memory (STM)
+- Store: `self.stm(self.workflow_instance_id)["key"] = value`
+- Load: `value = self.stm(self.workflow_instance_id)["key"]`
+- For dictionaries: `self.stm(self.workflow_instance_id)["image_cache"] = {"<image_0>": image}`
+- DON'T use multi step dictionary: `self.stm(self.workflow_instance_id)["image_cache"]["<image_0>"] = image`
+
+## Function Returns
+- For SWITCH tasks: Return dictionary with decision case key (e.g., `return {"switch_case_value": "complex"}`)
+- For DO_WHILE loops: Return condition value (e.g., `return {"current_index": value}`)
+- For final worker: Return with `return {"last_output": result}`
+
+# TOOL USAGE
+Available tools: {{tool_schema}}
+
+Call tools with either:
+- `tool_call_result= self.tool_manager.execute(tool_name="tool_name", args=args_dict)`
+- `tool_call_result = self.tool_manager.execute_task("task description")`
+
+tool_call_result will be mostly string. You need to check again with llm to the output information if needed.
+
+For image processing, use: `from omagent_core.utils.general import read_image`
+
+# VISION MODELS (VLM)
+Use VLM for image-related tasks:
+```python
+chat_completion_res = self.simple_infer(
+    user_instruction=instruction,
+    image=image
+)["choices"][0]["message"].get("content")
+```
+
+In prompts, use `<tag>placeholder</tag>` format (not `{placeholder}`).
+
+# WORKFLOW TIPS
+- Match input parameters with workflow JSON
+- First task's inputParameters should use `${workflow.input.key_name}`
+- Print progress with `print(f"...")`
+- Include error handling
+- Properly implement SWITCH and DO_WHILE logic when present
+
+# EXAMPLES & REFERENCES
+Previous worker codes:
+```python
+{{previous_codes}}
+```
+
+# IMPORTANT
+- The keys of inputParameters must be matched with the function parameters.
+    {
+        ...
+        "inputParameters": {
+            "inputs": "${workflow.input.key_name}"
+        },
+        ...
+    },
+    it should be like below:
+    ```python
+    def _run(self, key_name, *args, **kwargs):        
+    ```
+
+First task of inputParameters's value must be "${workflow.input.{key_name}}".  
+
+- If there are SWITCH or DO_WHILE, the return of def _run must be dictionary for decisionCases or loopCondition. The last worker in the workflow must return for condition (e.g., return {"is_finished":True}).
+- The worker code must be complete. Do not use Placeholder or Dummy function.
+- if you need to use other tools, you can use llm with prompt engineering using above SimpleVQA example.
+
+An example of decisionCases for SWITCH:
+ {
+                    "name": "switch_task",
+                    "taskReferenceName": "switch_task",
+                    "inputParameters": {
+                        "switchCaseValue": "${task_conqueror.output.switch_case_value}"
+                    },
+                    "type": "SWITCH",
+                    "decisionCases": {
+                        "complex": [
+                            {
+                                "name": "TaskDivider",
+                                "taskReferenceName": "task_divider",
+                                "inputParameters": {},
+                                "type": "SIMPLE",
+
+                            }
+                        ],
+                        "failed": [
+                            {
+                                "name": "TaskRescue",
+                                "taskReferenceName": "task_rescue",
+                                "inputParameters": {},
+                                "type": "SIMPLE"
+                            }
+                        ]
+                    },
+                    "defaultCase": [],
+                    "evaluatorType": "value-param",
+                    "expression": "switchCaseValue"
+                },
+
+,which means task_conqueror's return should include {"switch_case_value": "complex"} or {"switch_case_value": "failed"}
+inputParameters of SWITCH should be like below:
+            "inputParameters": {
+                "switchCaseValue": "${previous_worker_reference_name.output.switch_case_value}"
+            },
+
+
+if an value of inputParameters is "${object_detection.output.mouse_detected}", it means the value of switchCaseValue is the value of mouse_detected in the output of object_detection.
+
+"inputParameters": {
+                "switchCaseValue": "${object_detection.output.mouse_detected}"
+            },
+            "type": "SWITCH",
+
+in object_detection worker, the function of _run return should be like below:
+return {"mouse_detected": ...}
+
+- Do not use kwargs.get() to get input parameters in the worker.
+- Use print to debug the informate values of the worker.
+- At the very last worker, please return the results with "last_output" key.
+- Please print to inform the user about the worker's progress and the output of LLM or VLM. Here is an example:
+print(f".....")
+- Please do not overwrite the image in the short term memory. Use the new key to store the image.
+- Please use VLM to solve the problem if the problem is about image. You can define the prompt based on the problem. 
+Example how to use VLM:
+from omagent_core.omagent4agent import *
+
+@registry.register_worker()
+class ExampleVLM(BaseWorker, BaseLLMBackend):
+    prompts: List[PromptTemplate] = Field(
+        default=[
+            PromptTemplate.from_template("You are a helpful assistant. Please output the result in JSON format.", role="system"),
+            PromptTemplate.from_template("<tag>user_instruction</tag>, example output: <tag>example_output</tag>, <tag>image</tag>", role="user"), # Please make sure you need to use '<tag>' '</tag>' instead of '{' and '}' for placeholder.
+        ]
+    )
+    llm: OpenaiGPTLLM
+    tool_manager: ToolManager
+    def _run(self, *args, **kwargs):        
+        user_instruction = self.stm(self.workflow_instance_id)["user_instruction"]
+        image_url = self.stm(self.workflow_instance_id)["image_cache"]["<image_0>"]
+        img = read_image(input_source=image_url)
+        example_output = {"objects": [{'xmin': 461.0, 'ymin': 586.0, 'xmax': 1188.0, 'ymax': 1197.0, 'conf': 0.958407998085022, 'label': 'dog'}, {'xmin': 928.0, 'ymin': 522.0, 'xmax': 1493.0, 'ymax': 1079.0, 'conf': 0.82, 'label': 'person'}, {'xmin': 1108.0, 'ymin': 700.0, 'xmax': 1255.0, 'ymax': 888.0, 'conf': 0.10, 'label': 'dog'}, {'xmin': 1180.0, 'ymin': 750.0, 'xmax': 1215.0, 'ymax': 795.0, 'conf': 0.10, 'label': 'dog'}, {'xmin': 461.0, 'ymin': 586.0, 'xmax': 1188.0, 'ymax': 1197.0, 'conf': 0.10, 'label': 'person'}]}).
+
+        chat_completion_res = self.simple_infer(user_instruction=user_instruction, example_output=example_output, image=img)["choices"][0]["message"].get(
+            "content"
+        )
+        return {"last_output": chat_completion_res}
+
+- Please define the prompt to define the tool for example, if you want to use OD, please use VLM to define system as "you are object detector.." in user prompt, define the output format.
+In the PromptTemplate.from_template, you need to add "<tag>image</tag>" in the user prompt and add "image" in the input parameters of self.simple_infer.
+
+- Do not assign the stm value like dictionary of dictionary like below:
+self.stm(self.workflow_instance_id)["image_cache"]["<image_0>"] = image
+it should be just single key and value like below:
+self.stm(self.workflow_instance_id)["image_cache"] = image
+If you need to assign the value to the dictionary, please use the following format:
+self.stm(self.workflow_instance_id)["image_cache"] = {"<image_0>": image}
+
+- Do NOT use self.output_parser.parse() in the code. 
+
+The resize of the image is 500x500 if it's bigger than 500x500.
+
+If DO_WHILE in the workflow has loopCondition like below:
+"loopCondition": "if ($.counter_task['current_index'] < 5) { true; } else { false; }",
+the taskReferenceName counter_task, def _run in CounterIncrementer should return {"current_index": ...} 
+
+{
+            "name": "processing_loop",
+            "taskReferenceName": "processing_loop",
+            "type": "DO_WHILE",
+            "loopCondition": "if ($.counter_task['current_index'] < 5) { true; } else { false; }",
+            "loopOver": [
+                 .........
+                {
+                    "name": "CounterIncrementer",
+                    "taskReferenceName": "counter_task",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                }
+            ]
+        },
+
+
+Previous codes (Please use the previous codes to implement the worker like how to set and use stm and input and output. If there is no previous codes, please implement the worker from scratch.. ):
+{{previous_codes}}

@@ -1,0 +1,3 @@
+name: StaticReplyGenerator
+llm: ${sub|llm_text}
+tool_manager: ${sub|all_tools}

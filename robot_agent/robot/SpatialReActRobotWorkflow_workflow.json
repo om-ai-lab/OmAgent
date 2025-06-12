@@ -1,0 +1,54 @@
+{
+  "name": "SpatialReActRobotWorkflow",
+  "description": "Robot navigation workflow with 360-degree spatial scanning followed by ReAct navigation",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "robot_initializer",
+      "taskReferenceName": "robot_initializer",
+      "inputParameters": {
+        "instruction": "${workflow.input.instruction}"
+      },
+      "type": "SIMPLE"
+    },
+    {
+      "name": "spatial_scanner",
+      "taskReferenceName": "spatial_scanner",
+      "inputParameters": {},
+      "type": "SIMPLE"
+    },
+    {
+      "name": "navigation_loop",
+      "taskReferenceName": "navigation_loop",
+      "inputParameters": {},
+      "type": "DO_WHILE",
+      "loopCondition": "if ($.navigation_loop['iteration'] < 15 && !$.react_navigator['goal_achieved'] && !$.react_navigator['max_steps_reached']) { true } else { false }",
+      "loopOver": [
+        {
+          "name": "react_navigator",
+          "taskReferenceName": "react_navigator",
+          "inputParameters": {},
+          "type": "SIMPLE"
+        },
+        {
+          "name": "memory_processor",
+          "taskReferenceName": "memory_processor",
+          "inputParameters": {},
+          "type": "SIMPLE"
+        }
+      ]
+    }
+  ],
+  "inputParameters": [
+    "instruction"
+  ],
+  "outputParameters": {
+    "goal_achieved": "${react_navigator.output.goal_achieved}",
+    "max_steps_reached": "${react_navigator.output.max_steps_reached}",
+    "final_step_count": "${react_navigator.output.step_count}",
+    "spatial_analysis": "${spatial_scanner.output.spatial_analysis}"
+  },
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": true
+} 

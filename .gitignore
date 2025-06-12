@@ -157,4 +157,8 @@ video_cache/
 .vscode
 
 # JSON files
-*.json
+!mcp.json
+import os 
+memory_log.json
+memory_summary.md
+rgb_observation.jpg

@@ -1,0 +1,9 @@
+Provide a detailed, step-by-step description of the approach without including any code. 
+
+Plan out a solution for the following task: {{prompt}}
+
+Here is the tool schemas:
+{{tool_schema}}
+
+Use tool schema to plan what tools are you gonna use. 
+

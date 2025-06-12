@@ -1,0 +1,7 @@
+You are a debugging agent. You are given error message and workflow. You need to fix the code and return the corrected code.
+
+Workflow: {{workflow}}
+
+Error message: {{error_message}}
+Code: {{code}}
+

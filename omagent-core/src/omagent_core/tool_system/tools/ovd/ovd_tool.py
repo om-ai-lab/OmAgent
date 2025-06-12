@@ -27,7 +27,7 @@ ARGSCHEMA = {
 
 
 @registry.register_tool()
-class ObjectDetection(BaseModelTool):
+class VideoObjectDetection(BaseModelTool):
     args_schema: ArgSchema = ArgSchema(**ARGSCHEMA)
     description: str = (
         "Object detection tool, which can detect any objects and add visual prompting(bounding box and label) to the image."

@@ -13,6 +13,7 @@ from omagent_core.engine.workflow.task.fork_task import ForkTask
 from omagent_core.engine.workflow.task.join_task import JoinTask
 from omagent_core.engine.workflow.task.set_variable_task import SetVariableTask
 from omagent_core.engine.workflow.task.switch_task import SwitchTask
+from omagent_core.engine.workflow.task.do_while_task import DoWhileTask
 from omagent_core.engine.workflow.task.task import TaskInterface
 from omagent_core.engine.workflow.task.task_type import TaskType
 from omagent_core.engine.workflow.task.timeout_policy import TimeoutPolicy
@@ -30,8 +31,10 @@ class ConductorWorkflow:
 
     def __init__(self, name: str, version: int = None, description: str = None, lite_version: bool = False) -> Self:
         if lite_version or os.getenv("OMAGENT_MODE") == "lite":
+            print ("lite mode")
             self._executor = LiteWorkflowExecutor()
         else:
+            print ("pro mode")
             self._executor = WorkflowExecutor()
         self.name = name
         self.version = version
@@ -209,7 +212,35 @@ class ConductorWorkflow:
             data = json.load(file)
         workflow_def = to_workflow_def(json_data=data)
         self.name = workflow_def.name
-        self._tasks = [simple_task(task_def_name=task.name, task_reference_name=task.task_reference_name, inputs=task.input_parameters) for task in workflow_def.tasks]
+        self._tasks = []
+        for task in workflow_def.tasks:            
+            if task.type == TaskType.SWITCH:                     
+                switch_task = SwitchTask(task_ref_name=task.task_reference_name, case_expression=task.input_parameters.get('switchCaseValue'))
+                if "default" in task.to_dict():
+                    default_tasks = []
+                    for default_task in task.to_dict().pop("default"):
+                        default_tasks.append(simple_task(task_def_name=default_task.name, task_reference_name=default_task.task_reference_name, inputs=default_task.input_parameters))
+                    switch_task.default_case(default_tasks)
+
+                for key, value in task.to_dict()["decision_cases"].items():
+                    case_tasks = []
+                    for case_task in value:
+                        case_tasks.append(simple_task(task_def_name=case_task.name, task_reference_name=case_task.task_reference_name, inputs=case_task.input_parameters))
+                    switch_task.switch_case(key, case_tasks)
+                    self._tasks.append(switch_task)
+
+            elif task.type == TaskType.DO_WHILE:
+                loop_over_tasks = []
+                for loop_task in task.loop_over:
+                    if not loop_task.input_parameters:
+                        loop_task.input_parameters = {}
+
+                    loop_over_tasks.append(simple_task(task_def_name=loop_task.name, task_reference_name=loop_task.task_reference_name, inputs=loop_task.input_parameters))
+                self._tasks.append(DoWhileTask(task_ref_name=task.task_reference_name, termination_condition=task.loop_condition, tasks=loop_over_tasks))
+            else:
+                if not task.input_parameters:
+                    task.input_parameters = {}
+                self._tasks.append(simple_task(task_def_name=task.name, task_reference_name=task.task_reference_name, inputs=task.input_parameters))
         self._input_parameters = workflow_def.input_parameters
         self._output_parameters = workflow_def.output_parameters
         self._failure_workflow = workflow_def.failure_workflow
@@ -218,7 +249,7 @@ class ConductorWorkflow:
         self._input_template = workflow_def.input_template
         self._workflow_status_listener_enabled = workflow_def.workflow_status_listener_enabled
         self._owner_email = workflow_def.owner_email
-
+        
     
 
     # Register the workflow definition with the server. If overwrite is set, the definition on the server will be
@@ -347,9 +378,8 @@ class ConductorWorkflow:
     def __get_workflow_task_list(self) -> List[WorkflowTask]:
         workflow_task_list = []
         for task in self._tasks:
-            print (type(task))
             converted_task = task.to_workflow_task()
-            print (converted_task)
+            # print (converted_task)
             if isinstance(converted_task, list):
                 for subtask in converted_task:
                     workflow_task_list.append(subtask)

@@ -1,0 +1,414 @@
+Task Description:
+
+You are given a task to '{{ content }}'. the plan is '{{ plan }}'.
+Your goal is to create a workflow that processes this image and provides the desired output.
+Think step by step and provide the detailed description of the workers and the workflow.
+
+
+Output Requirements:
+1. Define the necessary workers to process and achieve the task.
+2. Create a workflow JSON file that outlines the sequence of tasks.
+3. Each worker should have a name, task reference name, input parameters, and type.
+4. The workflow can include complex constructs like LOOP and SWITCH if needed.
+
+
+Workflow Constructs:
+- SIMPLE: A basic task that performs a single operation.
+- DO_WHILE: A construct that repeats a set of tasks until a condition is met.
+- SWITCH: A construct that branches the workflow based on conditions.
+
+Here is how the workflow are run in the code:
+```python
+def start_workflow(self, workflow_def, start_request, workers) -> str:
+        workflow_id = str(uuid.uuid4())        
+        print ("start_request:", start_request.input)
+        self.task_outputs["workflow"] = {"input": start_request.input}        
+        output = {}
+        for i, task_def in enumerate(workflow_def.tasks):
+            if i == 0:
+                task_def.input_parameters = start_request.input
+            print ("RUNNING TASK:", task_def.to_dict()["name"])
+            try:
+                output = self.execute_task(task_def.to_dict(), workers)
+            except Exception as e:
+                logging.error(f"Error executing task {task_def.to_dict()['name']}: {str(e)}")
+                return {"error": str(e),"class":task_def.to_dict()['name'], "traceback": traceback.format_exc()}
+        return output
+
+        #return workflow_id
+    def worker_task(self, worker, *args, **kwargs):
+        """Run the worker and put its output in the queue."""
+        result = worker._run(*args, **kwargs)
+        self.worker_output_queue.put(result)
+
+    def execute_task(self, task: Dict, workers) -> Dict:
+        """Execute a single task"""
+        task_name = task['name']
+        task_type = task['type']
+        
+        if task_type == 'SIMPLE':
+            worker = workers[task_name]
+            """
+            if not worker_class:
+                raise ValueError(f"Worker {task_name} not found")
+            
+            worker = worker_class()            
+            """
+            inputs = self.evaluate_input_parameters(task)      
+            print (inputs)      
+            # Execute task
+            result = worker._run(**inputs)
+            # Store output
+            task_ref_key = 'taskReferenceName' if 'taskReferenceName' in task else 'task_reference_name'
+
+            self.task_outputs[task[task_ref_key]] = {
+                'output': result
+            }            
+            return result
+            
+        elif task_type == 'DO_WHILE':
+            while True:
+                # Execute all tasks in loop
+                for loop_task in task['loopOver' if 'loopOver' in task else 'loop_over']:                    
+                    self.execute_task(loop_task, workers)
+                if 'loopCondition' in task or "loop_condition" in task:
+                    should_continue = self.evaluate_loop_condition(task['loopCondition' if 'loopCondition' in task else "loop_condition"])            
+                    if not should_continue:
+                        break
+                else:
+                    exit_monitor_output = self.task_outputs['task_exit_monitor']['output']
+                    if exit_monitor_output.get('exit_flag', False):
+                        break
+                    
+        elif task_type == 'SWITCH':
+            case_value = self.evaluate_input_parameters(task)['switchCaseValue']
+            if case_value in task['decision_cases']:
+                for case_task in task['decision_cases'][case_value]:
+                    self.execute_task(case_task.to_dict(), workers)
+            else:
+                for default_task in task.get('defaultCase' if 'defaultCase' in task else 'default_case', []):
+                    self.execute_task(default_task.to_dict(), workers)
+                    
+        return self.task_outputs
+
+
+
+An Example of a Workflow:
+```json
+{
+    "name": "GoT",
+    "tasks": [
+        {
+            "name": "SimpleInput",
+            "taskReferenceName": "input_task",
+            "inputParameters": {},
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        },
+        {
+            "name": "TaskSplitter",
+            "taskReferenceName": "task_splitter",
+            "inputParameters": {
+                "query": "${input_task.output.query}",
+                "task": "${input_task.output.task}",
+                "meta": "${input_task.output.meta}"
+            },
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        },
+        {
+            "name": "got_loop_task",
+            "taskReferenceName": "got_loop_task",
+            "inputParameters": {},
+            "type": "DO_WHILE",
+            "taskDefinition": {},
+            "loopCondition": " if ( $.got_task_exit_monitor['exit_flag'] == true) { false; } else { true; }",
+            "loopOver": [
+                {
+                    "name": "TaskGenerater",
+                    "taskReferenceName": "task_generater",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                },
+                {
+                    "name": "TaskScore",
+                    "taskReferenceName": "task_score",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                },
+                {
+                    "name": "KeepBestN",
+                    "taskReferenceName": "task_keep_best_n",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                },
+                {
+                    "name": "GoTTaskExitMonitor",
+                    "taskReferenceName": "got_task_exit_monitor",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                }
+            ]
+        },
+        {
+            "name": "TaskConcluder",
+            "taskReferenceName": "task_concluder",
+            "inputParameters": {},
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        }
+    ],
+    "inputParameters": [],
+    "outputParameters": {},
+    "failureWorkflow": "",
+    "schemaVersion": 2,
+    "workflowStatusListenerEnabled": false,
+    "ownerEmail": "default@omagent.ai",
+    "timeoutSeconds": 60,
+    "variables": {},
+    "inputTemplate": {},
+    "description": [{"Worker_Name": "SimpleInput",  "Role": "....."}, {"Worker_Name": "TaskSplitter", "Role": "....."}}, {"Worker_Name": "TaskGenerater ", "Role": "....."}, {"Worker_Name": "TaskScore", "Role": "....."}, {"Worker_Name": "KeepBestN", "Role": "....."}, {"Worker_Name": "GoTTaskExitMonitor", "Role": "....."}],
+    "reasoning": "....."
+}
+Role must be very in detail based on the plan. "reasoning" must include the reason why the workflow and workers are like this.
+
+The worker_output_key only use decisionCases for SWITCH and loopCondition for DO_WHILE. Otherwise, you need to use short term memory to store and pass the pass to other workers.
+Please do not use inputParameters if you can pass the value using short term memory. 
+This is an example of using short term memory to store values. 
+self.stm(self.workflow_instance_id)["user_instruction"] = user_instruction
+
+This is an example of using short term memory to load values.
+user_instruction = self.stm(self.workflow_instance_id)["user_instruction"]
+
+
+An example of loopCondition for DO_WHILE:
+```json
+...
+ {
+            "name": "got_loop_task",
+            "taskReferenceName": "got_loop_task",
+            "inputParameters": {},
+            "type": "DO_WHILE",
+            "taskDefinition": {},
+            "loopCondition": " if ( $.got_task_exit_monitor['exit_flag'] == true) { false; } else { true; }",
+            "loopOver": [
+                {
+                    "name": "TaskGenerater",
+                    "taskReferenceName": "task_generater",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                },
+                {
+                    "name": "TaskScore",
+                    "taskReferenceName": "task_score",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                },
+                {
+                    "name": "KeepBestN",
+                    "taskReferenceName": "task_keep_best_n",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                },
+                {
+                    "name": "GoTTaskExitMonitor",
+                    "taskReferenceName": "got_task_exit_monitor",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                }
+            ]
+        },
+```
+Important:
+in the loopCondition, the condition's taskReferenceName name must be in loopOver's taskReferenceName like above example.
+    "loopCondition": " if ( $.got_task_exit_monitor['exit_flag'] == true) { false; } else { true; }",
+    "loopOver": [
+        ....
+        {
+            "name": "GoTTaskExitMonitor",
+            "taskReferenceName": "got_task_exit_monitor",
+            "inputParameters": {},
+            "type": "SIMPLE"
+        }
+    ]
+
+An example of decisionCases for SWITCH:
+ {
+                    "name": "switch_task",
+                    "taskReferenceName": "switch_task",
+                    "inputParameters": {
+                        "switchCaseValue": "${task_conqueror.output.switch_case_value}"
+                    },
+                    "type": "SWITCH",
+                    "decisionCases": {
+                        "complex": [
+                            {
+                                "name": "TaskDivider",
+                                "taskReferenceName": "task_divider",
+                                "inputParameters": {},
+                                "type": "SIMPLE",
+
+                            }
+                        ],
+                        "failed": [
+                            {
+                                "name": "TaskRescue",
+                                "taskReferenceName": "task_rescue",
+                                "inputParameters": {},
+                                "type": "SIMPLE"
+                            }
+                        ]
+                    },
+                    "defaultCase": [],
+                    "evaluatorType": "value-param",
+                    "expression": "switchCaseValue"
+                },
+
+
+
+The worker name will be used as the name of class name in the codes later. Please think carefully and optimize the workflow. Each worker will process the task and return the result. If you need to detect the objects, one worker can detect many objects, so you can set ObjectDetector as worker name. 
+Now, generate the workers and workflow for the given task. Only output the JSON. description must be in the output for coding agents.
+The input will be given as the following: {{ input }} 
+
+
+
+Here is an complete simple example of using short term memory to VQA including worker and workflow json:
+```python
+import ....
+@registry.register_worker()
+class InputInterface(BaseWorker):
+    def _run(self, *args, **kwargs):
+        # Read user input through configured input interface
+        user_input = self.input.read_input(
+            workflow_instance_id=self.workflow_instance_id,
+            input_prompt="Please tell me a question and a image.",
+        )
+        image_path = None
+        content = user_input["messages"][-1]["content"]
+        for content_item in content:
+            if content_item["type"] == "text":
+                user_instruction = content_item["data"]
+            elif content_item["type"] == "image_url":
+                image_path = content_item["data"]
+        logging.info(f"User_instruction: {user_instruction}\nImage_path: {image_path}")
+        if image_path:
+            img = read_image(input_source=image_path)
+            image_cache = {"<image_0>": img}
+            self.stm(self.workflow_instance_id)["image_cache"] = image_cache
+        self.stm(self.workflow_instance_id)["user_instruction"] = user_instruction
+
+import ....
+
+@registry.register_worker()
+class SimpleVQA(BaseWorker, BaseLLMBackend):
+    """Simple Visual Question Answering processor that handles image-based questions.
+
+    This processor:
+    1. Takes user instruction and cached image from workflow context
+    2. Creates chat messages containing the text question and base64-encoded image
+    3. Sends messages to LLM to generate a response
+    4. Returns response and sends it via callback
+    """
+
+    llm: OpenaiGPTLLM
+
+    def _run(self, *args, **kwargs):
+        # Initialize empty list for chat messages
+        chat_message = []
+        user_instruction = self.stm(self.workflow_instance_id)["user_instruction"]
+        # Add text question as first message
+        chat_message.append(
+            Message(role="user", message_type="text", content=user_instruction)
+        )
+
+        # Retrieve cached image from workflow shared memory
+        if self.stm(self.workflow_instance_id).get("image_cache", None):
+            img = self.stm(self.workflow_instance_id)["image_cache"]["<image_0>"]
+
+            # Add base64 encoded image as second message
+            chat_message.append(
+                Message(
+                    role="user",
+                    message_type="image",
+                    content=[
+                        Content(
+                            type="image_url",
+                            image_url={
+                                "url": f"data:image/jpeg;base64,{encode_image(img)}"
+                            },
+                        )
+                    ],
+                )
+            )
+
+        # Get response from LLM model
+        chat_complete_res = self.llm.generate(records=chat_message)
+
+        # Extract answer text from response
+        answer = chat_complete_res["choices"][0]["message"]["content"]
+
+        # Send answer via callback and return
+        self.callback.send_answer(self.workflow_instance_id, msg=answer)
+        return answer
+```
+Workflow json:
+```json
+{
+    "name": "step1_simpleVQA",
+    "tasks": [
+        {
+            "name": "InputInterface",
+            "taskReferenceName": "input_task",
+            "inputParameters": {},
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        },
+        {
+            "name": "SimpleVQA",
+            "taskReferenceName": "simple_vqa",
+            "inputParameters": {},
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        }
+    ],
+    "inputParameters": [],
+    "outputParameters": {},
+    "failureWorkflow": "",
+    "schemaVersion": 2,
+    "workflowStatusListenerEnabled": false,
+    "ownerEmail": "default@omagent.ai",
+    "timeoutSeconds": 60,
+    "variables": {},
+    "description": [{"Worker_Name": "InputInterface",  "Role": "...."}, {"Worker_Name": "SimpleVQA", "Role": "...."}],
+    "inputTemplate": {},
+    "reasoning": "....."
+}
+
+"description" include all sub-workers in the workflow including inside loopOver and decisionCases. 
+
+The initial inputParameters must be this format:
+```json
+{
+    "inputParameters": {
+        "image_path": "${workflow.input.image_path}"
+    }
+}
+```        
+- image_path is very initial input. {"image_path": "..."}. It can be any key name but it must be matched with the example input.
+if the input is {"data": "..."}, the inputParameters must be {"data": "${workflow.input.data}"}.
+
+Important:
+*For SWITCH task, the inputParameters must contain switchCaseValue like below.
+"inputParameters": {
+                        "switchCaseValue": "${task_conqueror.output.switch_case_value}"
+                    },
+                    "type": "SWITCH",
+*For DO_WHILE task, loopCondition and loopOver must include like below
+ "loopCondition": " if ( $.got_task_exit_monitor['exit_flag'] == true) { false; } else { true; }",
+            "loopOver": [
+                {
+                    "name": "TaskGenerater",
+                    "taskReferenceName": "task_generater",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                },.....]

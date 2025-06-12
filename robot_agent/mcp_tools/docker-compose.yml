@@ -1,0 +1,180 @@
+version: '3.8'
+
+services:
+  # Milvus vector database
+  milvus:
+    image: milvusdb/milvus:latest
+    container_name: milvus-standalone
+    command: ["milvus", "run", "standalone"]
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    volumes:
+      - milvus_data:/var/lib/milvus
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    depends_on:
+      - etcd
+      - minio
+    networks:
+      - mcp_network
+
+  # Etcd for Milvus metadata
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    container_name: milvus-etcd
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - etcd_data:/etcd
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    networks:
+      - mcp_network
+
+  # MinIO for Milvus object storage
+  minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    container_name: milvus-minio
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    volumes:
+      - minio_data:/data
+    command: minio server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - mcp_network
+
+  # VLM-R1 Vision Language Model Server
+  vlm-server:
+    build:
+      context: ./vlm
+      dockerfile: Dockerfile
+    container_name: vlm-mcp-server
+    ports:
+      - "8009:8009"
+    volumes:
+      - ./vlm/images:/app/images
+      - huggingface_cache:/root/.cache/huggingface
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+    # Uncomment if you have NVIDIA GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    networks:
+      - mcp_network
+    restart: unless-stopped
+
+  # UT Dog Robot Control Server
+  ut-dog-server:
+    build:
+      context: ./ut_dog_control
+      dockerfile: Dockerfile
+    container_name: ut-dog-mcp-server
+    ports:
+      - "3000:3000"
+    environment:
+      - ROBOT_URL=http://172.16.44.211:18080
+      - AUDIO_URL=http://172.16.44.211:8080
+      - NAV_URL=http://localhost:8765
+    networks:
+      - mcp_network
+    restart: unless-stopped
+
+  # AI2Thor Simulator Server
+  thor-simulator:
+    build:
+      context: ./simulator
+      dockerfile: Dockerfile
+    container_name: thor-mcp-server
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./simulator/logs:/app/envs/thor_env/logs
+    environment:
+      - DISPLAY=:99
+    networks:
+      - mcp_network
+    restart: unless-stopped
+
+  # Mem0 Memory Server
+  memory-server:
+    build:
+      context: ./memory
+      dockerfile: Dockerfile
+    container_name: memory-mcp-server
+    ports:
+      - "8080:8080"
+    environment:
+      - MEM0_API_KEY=${MEM0_API_KEY}
+    networks:
+      - mcp_network
+    restart: unless-stopped
+
+  # Milvus MCP Server
+  milvus-server:
+    build:
+      context: ./mcp-server-milvus
+      dockerfile: Dockerfile
+    container_name: milvus-mcp-server
+    ports:
+      - "8000:8000"
+    environment:
+      - MILVUS_URI=http://milvus:19530
+      - MILVUS_TOKEN=${MILVUS_TOKEN}
+      - MILVUS_DB=default
+    depends_on:
+      - milvus
+    networks:
+      - mcp_network
+    restart: unless-stopped
+
+  # Robot Agent Switch Tool
+  switch-robot:
+    build:
+      context: .
+      dockerfile: Dockerfile.switch
+    container_name: switch-robot-server
+    ports:
+      - "8010:8010"
+    environment:
+      - SIMULATOR_URL=http://thor-simulator:3001
+      - ROBOT_URL=http://ut-dog-server:3000
+      - VLM_URL=http://vlm-server:8009
+      - MEMORY_URL=http://memory-server:8080
+      - MILVUS_URL=http://milvus-server:8000
+    depends_on:
+      - vlm-server
+      - ut-dog-server
+      - thor-simulator
+      - memory-server
+      - milvus-server
+    networks:
+      - mcp_network
+    restart: unless-stopped
+
+volumes:
+  milvus_data:
+  etcd_data:
+  minio_data:
+  huggingface_cache:
+
+networks:
+  mcp_network:
+    driver: bridge 

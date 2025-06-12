@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and install Python dependencies
+COPY requirements.switch.txt .
+RUN pip install --no-cache-dir -r requirements.switch.txt
+
+# Copy the switch robot script
+COPY switch_robot.py .
+
+# Expose port
+EXPOSE 8010
+
+# Run the server
+CMD ["python", "switch_robot.py", "--port", "8010"] 
