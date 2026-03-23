@@ -1,0 +1,5 @@
+name: MiniMaxLLM
+model_id: MiniMax-M2.7
+api_key: ${env| MINIMAX_API_KEY}
+endpoint: https://api.minimax.io/v1
+temperature: 0
