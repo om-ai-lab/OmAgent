@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict
 
 from pydantic import field_validator
 
@@ -71,14 +71,14 @@ class TwelveLabsVideo(BaseTool):
         "Use task='analyze' to answer questions about a video (Pegasus), or "
         "task='embed' to get an embedding vector for text or an image (Marengo)."
     )
-    api_key: Optional[str] = None
+    api_key: str
     analyze_model_name: str = "pegasus1.5"
     embed_model_name: str = "marengo3.0"
 
     @field_validator("api_key")
     @classmethod
-    def api_key_validator(cls, api_key: Union[str, None]) -> Union[str, None]:
-        if api_key is None or api_key == "":
+    def api_key_validator(cls, api_key: str) -> str:
+        if not api_key:
             raise ValueError(
                 "TwelveLabs API key is not provided. Get a free key at https://twelvelabs.io."
             )
@@ -134,6 +134,10 @@ class TwelveLabsVideo(BaseTool):
         if not text and not image_url:
             raise ValueError(
                 "Either `text` or `image_url` is required for task='embed'."
+            )
+        if text and image_url:
+            raise ValueError(
+                "Provide exactly one of `text` or `image_url` for task='embed', not both."
             )
         try:
             if text:

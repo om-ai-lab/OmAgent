@@ -82,14 +82,14 @@ from omagent_core.tool_system.tools.twelvelabs_video.twelvelabs_video import Twe
 tool = TwelveLabsVideo(api_key="tlk-xxx")
 
 # Marengo embedding
-res = tool._run(task="embed", text="a cat playing piano")
+res = tool.run({"task": "embed", "text": "a cat playing piano"})
 print(res["dimension"], res["embedding"][:3])
 
 # Pegasus video understanding
-res = tool._run(
-    task="analyze",
-    video_url="https://example.com/your-video.mp4",
-    prompt="Describe what happens in this video.",
-)
+res = tool.run({
+    "task": "analyze",
+    "video_url": "https://example.com/your-video.mp4",
+    "prompt": "Describe what happens in this video.",
+})
 print(res["text"])
 ```
