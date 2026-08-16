@@ -33,7 +33,7 @@ class TestMiniMaxLLMConfig(unittest.TestCase):
     def test_default_config(self, mock_async, mock_sync):
         """Test default configuration values."""
         llm = MiniMaxLLM(api_key="test-key-123")
-        self.assertEqual(llm.model_id, "MiniMax-M2.7")
+        self.assertEqual(llm.model_id, "MiniMax-M3")
         self.assertEqual(llm.endpoint, MINIMAX_API_BASE)
         self.assertAlmostEqual(llm.temperature, 0.7)
         self.assertEqual(llm.max_tokens, 2048)
@@ -327,6 +327,7 @@ class TestModelConstants(unittest.TestCase):
 
     def test_minimax_models_defined(self):
         """Test that all MiniMax models are defined."""
+        self.assertIn("MiniMax-M3", MINIMAX_MODELS)
         self.assertIn("MiniMax-M2.7", MINIMAX_MODELS)
         self.assertIn("MiniMax-M2.7-highspeed", MINIMAX_MODELS)
         self.assertIn("MiniMax-M2.5", MINIMAX_MODELS)
@@ -334,6 +335,7 @@ class TestModelConstants(unittest.TestCase):
 
     def test_model_context_sizes(self):
         """Test model context window sizes."""
+        self.assertEqual(MINIMAX_MODELS["MiniMax-M3"], 1000000)
         self.assertEqual(MINIMAX_MODELS["MiniMax-M2.7"], 1048576)
         self.assertEqual(MINIMAX_MODELS["MiniMax-M2.7-highspeed"], 1048576)
         self.assertEqual(MINIMAX_MODELS["MiniMax-M2.5"], 204800)

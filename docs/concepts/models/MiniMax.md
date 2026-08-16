@@ -6,7 +6,8 @@
 
 | Model | Context Window | Description |
 |-------|---------------|-------------|
-| MiniMax-M2.7 | 1M tokens | Latest flagship model |
+| MiniMax-M3 | 1M tokens | Current flagship model |
+| MiniMax-M2.7 | 1M tokens | Earlier flagship model |
 | MiniMax-M2.7-highspeed | 1M tokens | High-speed variant of M2.7 |
 | MiniMax-M2.5 | 204K tokens | Previous generation model |
 | MiniMax-M2.5-highspeed | 204K tokens | High-speed variant of M2.5 |
@@ -27,7 +28,7 @@ Create a YAML config file (e.g., `configs/llms/minimax.yml`):
 
 ```yaml
 name: MiniMaxLLM
-model_id: MiniMax-M2.7
+model_id: MiniMax-M3
 api_key: ${env| MINIMAX_API_KEY}
 endpoint: https://api.minimax.io/v1
 temperature: 0
@@ -39,7 +40,7 @@ temperature: 0
 from omagent_core.models.llms.minimax_llm import MiniMaxLLM
 
 llm = MiniMaxLLM(
-    model_id="MiniMax-M2.7",
+    model_id="MiniMax-M3",
     api_key="your_api_key",
     temperature=0,
 )
@@ -64,7 +65,7 @@ class MyAgent(BaseLLMBackend):
     )
     llm: MiniMaxLLM = {
         "name": "MiniMaxLLM",
-        "model_id": "MiniMax-M2.7",
+        "model_id": "MiniMax-M3",
         "api_key": "your_api_key",
     }
     output_parser: StrParser = StrParser()
@@ -74,7 +75,7 @@ class MyAgent(BaseLLMBackend):
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `model_id` | str | `MiniMax-M2.7` | The model to use |
+| `model_id` | str | `MiniMax-M3` | The model to use |
 | `api_key` | str | `$MINIMAX_API_KEY` | Your MiniMax API key |
 | `endpoint` | str | `https://api.minimax.io/v1` | API endpoint URL |
 | `temperature` | float | `0.7` | Sampling temperature (0-1.0) |

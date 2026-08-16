@@ -33,7 +33,7 @@ class TestMiniMaxLLMIntegration(unittest.TestCase):
 
         self.llm = MiniMaxLLM(
             api_key=MINIMAX_API_KEY,
-            model_id="MiniMax-M2.7",
+            model_id="MiniMax-M3",
             temperature=0,
             max_tokens=100,
             use_default_sys_prompt=False,
