@@ -24,7 +24,7 @@ Operating System: {}"""
 # MiniMax supported models and their context window sizes
 MINIMAX_MODELS = {
     "MiniMax-M3": 1000000,          # 1M context
-    "MiniMax-M2.7": 1048576,        # 1M context
+    "MiniMax-M2.7": 204800,         # 204K context
     "MiniMax-M2.7-highspeed": 1048576,  # 1M context
     "MiniMax-M2.5": 204800,         # 204K context
     "MiniMax-M2.5-highspeed": 204800,   # 204K context

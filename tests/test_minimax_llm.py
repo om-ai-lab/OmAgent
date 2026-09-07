@@ -336,7 +336,7 @@ class TestModelConstants(unittest.TestCase):
     def test_model_context_sizes(self):
         """Test model context window sizes."""
         self.assertEqual(MINIMAX_MODELS["MiniMax-M3"], 1000000)
-        self.assertEqual(MINIMAX_MODELS["MiniMax-M2.7"], 1048576)
+        self.assertEqual(MINIMAX_MODELS["MiniMax-M2.7"], 204800)
         self.assertEqual(MINIMAX_MODELS["MiniMax-M2.7-highspeed"], 1048576)
         self.assertEqual(MINIMAX_MODELS["MiniMax-M2.5"], 204800)
         self.assertEqual(MINIMAX_MODELS["MiniMax-M2.5-highspeed"], 204800)

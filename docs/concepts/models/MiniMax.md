@@ -7,14 +7,14 @@
 | Model | Context Window | Description |
 |-------|---------------|-------------|
 | MiniMax-M3 | 1M tokens | Current flagship model |
-| MiniMax-M2.7 | 1M tokens | Earlier flagship model |
+| MiniMax-M2.7 | 204K tokens | Earlier flagship model |
 | MiniMax-M2.7-highspeed | 1M tokens | High-speed variant of M2.7 |
 | MiniMax-M2.5 | 204K tokens | Previous generation model |
 | MiniMax-M2.5-highspeed | 204K tokens | High-speed variant of M2.5 |
 
 ## Setup
 
-1. Get your API key from [MiniMax Platform](https://platform.minimax.chat/).
+1. Get your API key from [MiniMax Platform](https://platform.minimax.io/).
 2. Set the environment variable:
    ```bash
    export MINIMAX_API_KEY="your_minimax_api_key"
@@ -33,6 +33,8 @@ api_key: ${env| MINIMAX_API_KEY}
 endpoint: https://api.minimax.io/v1
 temperature: 0
 ```
+
+Use `https://api.minimaxi.com/v1` as the endpoint for the China region.
 
 ### Python Configuration
 
