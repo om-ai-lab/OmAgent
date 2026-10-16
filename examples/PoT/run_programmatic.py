@@ -1,10 +1,13 @@
-# Import required modules and components
+# Import core modules and components for the Program of Thought (PoT) workflow
+import os
+os.environ["OMAGENT_MODE"] = "lite"
+
 from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.advanced_components.workflow.pot.workflow import PoTWorkflow
 from pathlib import Path
 from omagent_core.utils.registry import registry
-from omagent_core.clients.devices.programmatic.client import ProgrammaticClient
+from omagent_core.clients.devices.programmatic import ProgrammaticClient
 from omagent_core.utils.logger import logging
 
 
@@ -16,6 +19,8 @@ CURRENT_PATH = Path(__file__).parents[0]
 
 # Load custom agent modules from the project directory
 registry.import_module(project_path=CURRENT_PATH.joinpath('agent'))
+
+container.register_stm("SharedMemSTM")
 
 # Load container configuration from YAML file
 container.from_config(CURRENT_PATH.joinpath('container.yaml'))

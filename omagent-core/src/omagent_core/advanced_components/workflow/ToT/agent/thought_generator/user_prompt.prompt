@@ -1,0 +1,7 @@
+Now, it's your turn to generate the thoughts.
+
+{{few_shots}}
+
+Problem: {{problem}}
+Requirements: {{requirements}}
+Previous thought chain: {{previous_thought_chain}}

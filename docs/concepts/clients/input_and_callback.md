@@ -7,7 +7,7 @@ The input has only one method:
   - `workflow_instance_id` is the ID of the workflow instance.
   - `input_prompt` is the information prompting the user on what to input, which can be empty.
 
-The callback has five methods:
+The callback has the following methods:
 - `send_incomplete(agent_id, msg, took=0, msg_type=MessageType.TEXT.value, prompt_tokens=0, output_tokens=0, filter_special_symbols=True)`
 - `send_block(agent_id, msg, took=0, msg_type=MessageType.TEXT.value, interaction_type=InteractionType.DEFAULT.value, prompt_tokens=0, output_tokens=0, filter_special_symbols=True)`
 - `send_answer(agent_id, msg, took=0, msg_type=MessageType.TEXT.value, prompt_tokens=0, output_tokens=0, filter_special_symbols=True)`
@@ -25,6 +25,26 @@ The callback has five methods:
 
 - `info(agent_id, progress, message)`
   - The required parameters for the `info` method are `agent_id`, `progress`, and `message`. `agent_id` is the ID of the workflow instance, `progress` is the program name, and `message` is the progress information.
+
+- `show_image(agent_id, progress, image)`
+  - Displays an image in the main chat interface.
+  - `agent_id` is the ID of the workflow instance.
+  - `progress` is a short description of what the image represents (not displayed in the interface).
+  - `image` can be any of the following formats:
+    - URL string (starting with 'http://' or 'https://')
+    - base64 encoded image string
+    - PIL Image object (will be converted to PNG)
+  - In CLI mode, this will just log a message about the image, but in WebpageClient it will display the actual image in the main chat area.
+
+- `info_image(agent_id, progress, image)`
+  - Displays an image in the info panel (right side) only.
+  - `agent_id` is the ID of the workflow instance.
+  - `progress` is a short description of what the image represents (shown in the info panel).
+  - `image` can be any of the following formats:
+    - URL string (starting with 'http://' or 'https://')
+    - base64 encoded image string
+    - PIL Image object (will be converted to PNG)
+  - In CLI mode, this will just log a message about the image, but in WebpageClient it will display the actual image in the info panel.
 
 - `error(agent_id, error_code, error_info, **kwargs)`
   - The required parameters for the `error` method are `agent_id`, `error_code`, and `error_info`. `agent_id` is the ID of the workflow instance, `error_code` is the error code, and `error_info` is the error information.

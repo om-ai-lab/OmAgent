@@ -1,7 +1,7 @@
 
 [tool.poetry]
 name = "omagent_core"
-version = "0.2.2"
+version = "0.2.4"
 description = "Core package for OmAgent"
 authors = ["OM AI Lab <OmAIglobal2024@gmail.com>"]
 readme = "README.md"
@@ -48,9 +48,11 @@ face-recognition = "^1.3.0"
 tavily-python = "^0.5.0"
 httpx = {extras = ["http2"], version = "^0.28.1"}
 func-timeout = "^4.3.5"
-fakeredis = "^2.26.2"
-gradio = "^4.1.0"
+gradio = "^5.7.1"
+opencv-python = "^4.10.0.84"
 wikipedia = "^1.4.0"
+sympy = "^1.13.3"
+redislite = "^6.2.912183"
 
 [build-system]
 requires = ["poetry-core"]

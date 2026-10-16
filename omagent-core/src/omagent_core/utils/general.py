@@ -8,6 +8,10 @@ from typing import Sequence
 
 import requests
 from PIL import Image
+import yaml
+from pathlib import Path
+from mcp.client.stdio import StdioServerParameters
+from omagent_core.services.handlers.mcp_client import MCPClient
 
 
 class LRUCache:
@@ -150,3 +154,31 @@ def read_image(input_source) -> Image.Image:
     raise ValueError(
         "Invalid input type. Must be a string (URL or file path), Path object, or PIL Image object."
     )
+
+
+def create_mcp_client_from_config(config_path: str) -> MCPClient:
+    """
+    Reads command, args, and env settings from a YAML config file,
+    then returns an MCPClient instance based on those settings.
+    """
+    config_file = Path(config_path)
+    if not config_file.exists():
+        raise FileNotFoundError(f"Config file not found: {config_file}")
+
+    with open(config_file, "r") as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+
+    # Grab the relevant part of your config
+    mcp_config = config.get("mcp", {}).get("server_params", {})
+    command = mcp_config.get("command", "docker")
+    args = mcp_config.get("args", [])
+    env = mcp_config.get("env", {})
+
+    # Create StdioServerParameters using loaded config
+    server_params = StdioServerParameters(
+        command=command,
+        args=args,
+        env=env
+    )
+
+    return MCPClient(server_params) 

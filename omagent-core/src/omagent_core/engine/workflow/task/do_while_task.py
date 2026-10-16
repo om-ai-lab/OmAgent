@@ -1,11 +1,12 @@
 from copy import deepcopy
 from typing import Any, Dict, List
-
+import os
 from omagent_core.engine.http.models.workflow_task import WorkflowTask
 from omagent_core.engine.workflow.task.task import (
     TaskInterface, get_task_interface_list_as_workflow_task_list)
 from omagent_core.engine.workflow.task.task_type import TaskType
 from typing_extensions import Self
+from omagent_core.engine.workflow.task.simple_task import simple_task
 
 
 def get_for_loop_condition(task_ref_name: str, iterations: int) -> str:
@@ -17,7 +18,6 @@ def get_dnc_loop_condition(task_ref_name: str) -> str:
     return (
         f" if ( $.{task_ref_name}['exit_flag'] == true) {{ false; }} else {{ true; }}"
     )
-
 
 class DoWhileTask(TaskInterface):
     # termination_condition is a Javascript expression that evaluates to True or False

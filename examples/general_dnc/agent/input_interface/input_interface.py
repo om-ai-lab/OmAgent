@@ -35,5 +35,5 @@ class InputInterface(BaseWorker):
             elif each_content["type"] == "text":
                 text = each_content["data"]
         if image is not None:
-            self.stm(self.workflow_instance_id)["image_cache"] = {f"<image_0>": image}
+            self.stm(self.workflow_instance_id)["image_cache"] = image
         return {"query": text}

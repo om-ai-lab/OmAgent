@@ -1,5 +1,4 @@
 # Import required modules and components
-import os
 from omagent_core.utils.container import container
 from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
 from omagent_core.engine.workflow.task.simple_task import simple_task
@@ -30,7 +29,7 @@ with open(config_path.joinpath('path_config.yaml'), 'r') as f:
 registry.import_module(CURRENT_PATH.joinpath('agent'))
 
 # Load container configuration from YAML file
-container.register_stm("RedisSTM")
+container.register_stm("SharedMemSTM")
 container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 
 # Initialize general_self_consist_cot workflow

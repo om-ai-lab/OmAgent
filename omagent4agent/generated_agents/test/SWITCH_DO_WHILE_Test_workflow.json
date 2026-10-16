@@ -1,0 +1,103 @@
+{
+    "name": "SWITCH_DO_WHILE_Test",
+    "tasks": [
+        {
+            "name": "InputHandler",
+            "taskReferenceName": "input_handler",
+            "inputParameters": {
+                "input": "${workflow.input.input}"
+            },
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        },
+        {
+            "name": "SWITCHTestWorker",
+            "taskReferenceName": "switch_test",
+            "inputParameters": {
+                "switchCaseValue": "${input_handler.output.input}"
+            },
+            "type": "SWITCH",
+            "decisionCases": {
+                "1": [
+                    {
+                        "name": "CaseOneHandler",
+                        "taskReferenceName": "case_one_handler",
+                        "inputParameters": {},
+                        "type": "SIMPLE"
+                    }
+                ],
+                "default": [
+                    {
+                        "name": "DefaultHandler",
+                        "taskReferenceName": "default_handler",
+                        "inputParameters": {},
+                        "type": "SIMPLE"
+                    }
+                ]
+            },
+            "evaluatorType": "value-param",
+            "expression": "switchCaseValue"
+        },
+        {
+            "name": "DO_WHILE_TestWorker",
+            "taskReferenceName": "do_while_test",
+            "inputParameters": {},
+            "type": "DO_WHILE",
+            "taskDefinition": {},
+            "loopCondition": "if ($.do_while_exit_monitor['exit_flag'] == true) { false; } else { true; }",
+            "loopOver": [
+                {
+                    "name": "IncrementCounter",
+                    "taskReferenceName": "increment_counter",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                },
+                {
+                    "name": "CheckCondition",
+                    "taskReferenceName": "do_while_exit_monitor",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                }
+            ]
+        }
+    ],
+    "inputParameters": [],
+    "outputParameters": {},
+    "failureWorkflow": "",
+    "schemaVersion": 2,
+    "workflowStatusListenerEnabled": false,
+    "ownerEmail": "default@omagent.ai",
+    "timeoutSeconds": 60,
+    "variables": {},
+    "description": [
+        {
+            "Worker_Name": "InputHandler",
+            "Role": "Handles initial input and prepares it for further processing."
+        },
+        {
+            "Worker_Name": "SWITCHTestWorker",
+            "Role": "Demonstrates the use of a SWITCH statement based on an integer input."
+        },
+        {
+            "Worker_Name": "CaseOneHandler",
+            "Role": "Handles the first case of the SWITCH statement."
+        },
+        {
+            "Worker_Name": "DefaultHandler",
+            "Role": "Handles the default case of the SWITCH statement."
+        },
+        {
+            "Worker_Name": "DO_WHILE_TestWorker",
+            "Role": "Demonstrates the use of a DO_WHILE loop to repeatedly execute tasks."
+        },
+        {
+            "Worker_Name": "IncrementCounter",
+            "Role": "Increments a counter to test the DO_WHILE loop condition."
+        },
+        {
+            "Worker_Name": "CheckCondition",
+            "Role": "Checks if the condition for the DO_WHILE loop is met and sets an exit flag."
+        }
+    ],
+    "reasoning": "This workflow is designed to test the functionality of SWITCH and DO_WHILE constructs. The InputHandler processes the input, which is then used by SWITCHTestWorker to demonstrate a selection control mechanism based on input value. The DO_WHILE_TestWorker checks a condition via repeated tasks to mimic real-world looping logic, which runs until the condition becomes false, ensuring a thorough test of these typical programming constructs."
+}

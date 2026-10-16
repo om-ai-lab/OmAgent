@@ -1,0 +1,8 @@
+name: OpenaiGPTLLM
+model_id: ${env| custom_model_id}
+api_key: ${env| custom_openai_key, openai_api_key}
+endpoint: ${env| custom_openai_endpoint, https://api.openai.com/v1}
+temperature: 0.0
+max_tokens: 2048
+response_format: json_object
+n: 3

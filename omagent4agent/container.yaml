@@ -1,0 +1,117 @@
+conductor_config:
+  name: Configuration
+  base_url:
+    value: http://10.8.21.38:8080
+    description: The Conductor Server API endpoint
+    env_var: CONDUCTOR_SERVER_URL
+  auth_key:
+    value: null
+    description: The authorization key
+    env_var: AUTH_KEY
+  auth_secret:
+    value: null
+    description: The authorization secret
+    env_var: CONDUCTOR_AUTH_SECRET
+  auth_token_ttl_min:
+    value: 45
+    description: The authorization token refresh interval in minutes.
+    env_var: AUTH_TOKEN_TTL_MIN
+  debug:
+    value: false
+    description: Debug mode
+    env_var: DEBUG
+aaas_config:
+  name: AaasConfig
+  base_url:
+    value: http://localhost:30002
+    description: The aaas task server API endpoint
+    env_var: AAAS_TASK_SERVER_URL
+  token:
+    value: null
+    description: The authorization token
+    env_var: AAAS_TOKEN
+  enable:
+    value: true
+    description: Whether to enable the aaas task server
+    env_var: AAAS_ENABLE
+  domain_token:
+    value: null
+    description: The domain token
+    env_var: DOMAIN_TOKEN
+  is_prod:
+    value: false
+    description: Whether it is a production environment
+    env_var: IS_PROD
+connectors:
+  redis_stream_client:
+    name: RedisConnector
+    id:
+      value: null
+      env_var: ID
+    host:
+      value: 10.8.21.38
+      env_var: HOST
+    port:
+      value: 7379
+      env_var: PORT
+    password:
+      value: null
+      env_var: PASSWORD
+    username:
+      value: null
+      env_var: USERNAME
+    db:
+      value: 0
+      env_var: DB
+components:
+  AppCallback:
+    name: AppCallback
+    id:
+      value: null
+      env_var: ID
+    bot_id:
+      value: ''
+      env_var: BOT_ID
+    start_time:
+      value: 2025-04-11_08:23:14
+      env_var: START_TIME
+  AppInput:
+    name: AppInput
+    id:
+      value: null
+      env_var: ID
+  AaasCallback:
+    name: AaasCallback
+    id:
+      value: null
+      env_var: ID
+    bot_id:
+      value: ''
+      env_var: BOT_ID
+    start_time:
+      value: 2025-04-11_08:23:14
+      env_var: START_TIME
+  AaasInput:
+    name: AaasInput
+    id:
+      value: null
+      env_var: ID
+  DefaultCallback:
+    name: DefaultCallback
+    id:
+      value: null
+      env_var: ID
+    bot_id:
+      value: ''
+      env_var: BOT_ID
+    start_time:
+      value: 2025-04-11_08:23:14
+      env_var: START_TIME
+    incomplete_flag:
+      value: false
+      env_var: INCOMPLETE_FLAG
+  SharedMemSTM:
+    name: SharedMemSTM
+    id:
+      value: null
+      env_var: ID

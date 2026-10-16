@@ -1,0 +1,18 @@
+- name: ConstructDncPayload
+- name: StructureUpdate
+- name: TaskConqueror
+  llm: ${sub|json_res}
+  tool_manager: ${sub|all_tools}
+  output_parser: 
+    name: StrParser
+- name: TaskDivider
+  llm: ${sub|json_res}
+  tool_manager: ${sub|all_tools}
+  output_parser: 
+    name: StrParser
+- name: TaskRescue
+  llm: ${sub|text_res}
+  tool_manager: ${sub|all_tools}
+  output_parser: 
+    name: StrParser
+- name: TaskExitMonitor

@@ -1,0 +1,10 @@
+Please process the following input data:
+
+{{input}}
+
+Return the result in valid JSON format, with a descriptive sentence explaining what was done and what was found. The result should clearly state:
+- What task was performed
+- What input was processed
+- What was the outcome
+
+No additional explanations or comments needed.

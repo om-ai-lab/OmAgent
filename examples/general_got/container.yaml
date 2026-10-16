@@ -1,7 +1,7 @@
 conductor_config:
   name: Configuration
   base_url:
-    value: http://10.8.25.26:8080
+    value: http://localhost:8080
     description: The Conductor Server API endpoint
     env_var: CONDUCTOR_SERVER_URL
   auth_key:
@@ -20,9 +20,34 @@ conductor_config:
     value: false
     description: Debug mode
     env_var: DEBUG
+aaas_config:
+  name: AaasConfig
+  base_url:
+    value: http://localhost:30002
+    description: The aaas task server API endpoint
+    env_var: AAAS_TASK_SERVER_URL
+  token:
+    value: null
+    description: The authorization token
+    env_var: AAAS_TOKEN
+  enable:
+    value: true
+    description: Whether to enable the aaas task server
+    env_var: AAAS_ENABLE
+  domain_token:
+    value: null
+    description: The domain token
+    env_var: DOMAIN_TOKEN
+  is_prod:
+    value: false
+    description: Whether it is a production environment
+    env_var: IS_PROD
 connectors:
   redis_stream_client:
     name: RedisConnector
+    id:
+      value: null
+      env_var: ID
     host:
       value: localhost
       env_var: HOST
@@ -38,50 +63,58 @@ connectors:
     db:
       value: 0
       env_var: DB
-  redis_stm_client:
-    name: RedisConnector
-    host:
-      value: localhost
-      env_var: HOST
-    port:
-      value: 6379
-      env_var: PORT
-    password:
-      value: null
-      env_var: PASSWORD
-    username:
-      value: null
-      env_var: USERNAME
-    db:
-      value: 0
-      env_var: DB
+    use_lite:
+      value: true
+      env_var: USE_LITE
 components:
   DefaultCallback:
     name: DefaultCallback
+    id:
+      value: null
+      env_var: ID
     bot_id:
       value: ''
       env_var: BOT_ID
     start_time:
-      value: 2024-12-17_14:31:40
+      value: 2025-02-17_14:51:00
       env_var: START_TIME
-    folder_name:
-      value: ./running_logs/2024-12-17_14:31:40
-      env_var: FOLDER_NAME
     incomplete_flag:
       value: false
       env_var: INCOMPLETE_FLAG
   AppInput:
     name: AppInput
+    id:
+      value: null
+      env_var: ID
   AppCallback:
     name: AppCallback
+    id:
+      value: null
+      env_var: ID
     bot_id:
       value: ''
       env_var: BOT_ID
     start_time:
-      value: 2024-12-17_14:31:40
+      value: 2025-02-17_14:51:00
       env_var: START_TIME
-    folder_name:
-      value: ./running_logs/2024-12-17_14:31:40
-      env_var: FOLDER_NAME
-  RedisSTM:
-    name: RedisSTM
+  AaasCallback:
+    name: AaasCallback
+    id:
+      value: null
+      env_var: ID
+    bot_id:
+      value: ''
+      env_var: BOT_ID
+    start_time:
+      value: 2025-02-17_14:51:00
+      env_var: START_TIME
+  AaasInput:
+    name: AaasInput
+    id:
+      value: null
+      env_var: ID
+  SharedMemSTM:
+    name: SharedMemSTM
+    id:
+      value: null
+      env_var: ID

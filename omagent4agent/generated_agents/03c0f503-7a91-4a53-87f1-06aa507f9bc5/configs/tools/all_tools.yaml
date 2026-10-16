@@ -1,0 +1,4 @@
+llm: ${sub|llm_text}
+tools: 
+  - name: TavilyWebSearch
+    tavily_api_key: ${env|tavily_api_key, null}

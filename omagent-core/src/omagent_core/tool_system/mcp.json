@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "mem0": {
+        "transport": "sse",
+        "url": "http://10.0.0.154:8080/sse",
+        "headers": {},
+        "timeout": 30
+      },
+    "vlm-r1": {
+      "transport": "sse",
+      "url": "http://localhost:8008/sse",
+      "headers": {},
+      "timeout": 30
+    },
+    "thor": {
+      "transport": "sse",
+      "url": "http://10.0.0.154:3001/sse",
+      "headers": {},
+      "timeout": 30
+    }
+}
+}
+

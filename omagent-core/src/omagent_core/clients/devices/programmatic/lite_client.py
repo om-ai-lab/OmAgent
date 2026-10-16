@@ -39,8 +39,9 @@ class ProgrammaticClient:
             worker_cls = registry.get_worker(config['name'])        
             self.workers[config['name']] = worker_cls(**config)                    
 
-    def start_processor_with_input(self, workflow_input: dict):                          
-        self._interactor.start_workflow_with_input(workflow_input=workflow_input, workers=self.workers)
+    def start_processor_with_input(self, workflow_input: dict):      
+        print ("start_processor_with_input:",workflow_input)                     
+        return self._interactor.start_workflow_with_input(workflow_input=workflow_input, workers=self.workers)
 
     
     def start_batch_processor(self, workflow_input_list: list, max_tasks=1):

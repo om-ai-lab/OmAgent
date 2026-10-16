@@ -1,0 +1,216 @@
+Convert from workflow json to workflow.py
+Here is an example input jsona dn output python code:
+```json
+{
+    "name": "general_dnc",
+    "tasks": [
+        {
+            "name": "InputInterface",
+            "taskReferenceName": "input_interface",
+            "inputParameters": {},
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        },
+        {
+            "name": "ConstructDncPayload",
+            "taskReferenceName": "construct_dnc_payload",
+            "inputParameters": {
+                "query": "${input_interface.output.query}"
+            },
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        },
+        {
+            "name": "dncloop_task",
+            "taskReferenceName": "dncloop_task",
+            "inputParameters": {},
+            "type": "DO_WHILE",
+            "taskDefinition": {},
+            "loopCondition": " if ( $.task_exit_monitor['exit_flag'] == true) { false; } else { true; }",
+            "loopOver": [
+                {
+                    "name": "StructureUpdate",
+                    "taskReferenceName": "structure_update",
+                    "inputParameters": {
+                        "dnc_structure": "${construct_dnc_payload.output.dnc_structure}"
+                    },
+                    "type": "SIMPLE"
+                },
+                {
+                    "name": "TaskConqueror",
+                    "taskReferenceName": "task_conqueror",
+                    "inputParameters": {
+                        "dnc_structure": "${structure_update.output.dnc_structure}",
+                        "last_output": "${structure_update.output.last_output}"
+                    },
+                    "type": "SIMPLE"
+                },
+                {
+                    "name": "switch_task",
+                    "taskReferenceName": "switch_task",
+                    "inputParameters": {
+                        "switchCaseValue": "${task_conqueror.output.switch_case_value}"
+                    },
+                    "type": "SWITCH",
+                    "decisionCases": {
+                        "complex": [
+                            {
+                                "name": "TaskDivider",
+                                "taskReferenceName": "task_divider",
+                                "inputParameters": {
+                                    "dnc_structure": "${task_conqueror.output.dnc_structure}",
+                                    "last_output": "${task_conqueror.output.last_output}"
+                                },
+                                "type": "SIMPLE"
+                            }
+                        ],
+                        "failed": [
+                            {
+                                "name": "TaskRescue",
+                                "taskReferenceName": "task_rescue",
+                                "inputParameters": {
+                                    "dnc_structure": "${task_conqueror.output.dnc_structure}",
+                                    "last_output": "${task_conqueror.output.last_output}"
+                                },
+                                "type": "SIMPLE"
+                            }
+                        ]
+                    },
+                    "defaultCase": [],
+                    "evaluatorType": "value-param",
+                    "expression": "switchCaseValue"
+                },
+                {
+                    "name": "TaskExitMonitor",
+                    "taskReferenceName": "task_exit_monitor",
+                    "inputParameters": {},
+                    "type": "SIMPLE"
+                }
+            ]
+        },
+        {
+            "name": "Conclude",
+            "taskReferenceName": "task_conclude",
+            "inputParameters": {
+                "dnc_structure": "${task_exit_monitor.output.dnc_structure}",
+                "last_output": "${task_exit_monitor.output.last_output}"
+            },
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        }
+    ],
+    "inputParameters": [],
+    "outputParameters": {},
+    "failureWorkflow": "",
+    "schemaVersion": 2,
+    "workflowStatusListenerEnabled": false,
+    "ownerEmail": "default@omagent.ai",
+    "timeoutSeconds": 60,
+    "variables": {},
+    "inputTemplate": {}
+}
+```
+Output:
+```python
+from agents.conqueror.conqueror import TaskConqueror
+from agents.construct_dnc_payload.construct_dnc_payload import \
+    ConstructDncPayload
+from agents.divider.divider import TaskDivider
+from agents.structure_update.structure_update import StructureUpdate
+from agents.task_exit_monitor.task_exit_monitor import TaskExitMonitor
+from agents.task_rescue.rescue import TaskRescue
+from omagent_core.engine.workflow.conductor_workflow import ConductorWorkflow
+from omagent_core.engine.workflow.task.do_while_task import DnCLoopTask
+from omagent_core.engine.workflow.task.simple_task import simple_task
+from omagent_core.engine.workflow.task.switch_task import SwitchTask
+
+
+class DnCWorkflow(ConductorWorkflow):
+    def __init__(self):
+        super().__init__(name="dnc_workflow")
+
+    def set_input(self, query: str):
+        self.query = query
+        self._configure_tasks()
+        self._configure_workflow()
+
+    def _configure_tasks(self):
+        # construct input query into dnc tree structure
+        self.construct_dnc_payload_task = simple_task(
+            task_def_name=ConstructDncPayload,
+            task_reference_name="construct_dnc_payload",
+            inputs={"query": self.query},
+        )
+
+        # this task is to update dnc tree structure using stm
+        self.structure_update_task = simple_task(
+            task_def_name=StructureUpdate,
+            task_reference_name="structure_update",
+            inputs={
+                "dnc_structure": self.construct_dnc_payload_task.output("dnc_structure")
+            },
+        )
+        # conqueror task for task generation
+        self.conqueror_task = simple_task(
+            task_def_name=TaskConqueror,
+            task_reference_name="task_conqueror",
+            inputs={
+                "dnc_structure": self.structure_update_task.output("dnc_structure"),
+                "last_output": self.structure_update_task.output("last_output"),
+            },
+        )
+
+        # divider task for task division
+        self.divider_task = simple_task(
+            task_def_name=TaskDivider,
+            task_reference_name="task_divider",
+            inputs={
+                "dnc_structure": self.conqueror_task.output("dnc_structure"),
+                "last_output": self.conqueror_task.output("last_output"),
+            },
+        )
+
+        # rescue task for task rescue
+        self.rescue_task = simple_task(
+            task_def_name=TaskRescue,
+            task_reference_name="task_rescue",
+            inputs={
+                "dnc_structure": self.conqueror_task.output("dnc_structure"),
+                "last_output": self.conqueror_task.output("last_output"),
+            },
+        )
+
+        # wwitch task for task routing
+        self.switch_task = SwitchTask(
+            task_ref_name="switch_task",
+            case_expression=self.conqueror_task.output("switch_case_value"),
+        )
+        self.switch_task.switch_case("complex", self.divider_task)
+        self.switch_task.switch_case("failed", self.rescue_task)
+
+        # task exit monitor task for task exit monitoring
+        self.task_exit_monitor_task = simple_task(
+            task_def_name=TaskExitMonitor, task_reference_name="task_exit_monitor"
+        )
+
+        # DnC loop task for task loop
+        self.dncloop_task = DnCLoopTask(
+            task_ref_name="dncloop_task",
+            tasks=[self.structure_update_task, self.conqueror_task, self.switch_task],
+            post_loop_exit=[self.task_exit_monitor_task],
+        )
+
+    def _configure_workflow(self):
+        # configure workflow execution flow
+        self >> self.construct_dnc_payload_task >> self.dncloop_task
+        self.dnc_structure = self.task_exit_monitor_task.output("dnc_structure")
+        self.last_output = self.task_exit_monitor_task.output("last_output")
+```
+Here is the simple codes for each worker only showing class and return:
+{{simple_codes}}
+
+Here is the workflow json:
+{{workflow_json}}
+
+Please generate python code.
+

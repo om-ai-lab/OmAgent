@@ -51,9 +51,18 @@ class TaskSplitter(BaseLLMBackend, BaseWorker):
                   Format: {'got_structure': <task_tree_model_dump>}
 
         Raises:
-            ValueError: If required metadata is missing for specific task types.
+            ValueError: If required metadata is missing for specific task types or task cannot be split.
         """
-        
+
+        task_tree = TaskTree()
+        if task is not None and task != "":
+            self.special_task = task
+        else:
+            self.special_task = None
+        if meta is not None and meta != {}:
+            self.meta = meta
+
+
         if self.special_task is not None:
             self.prompts = [
                 PromptTemplate.from_file(
@@ -63,17 +72,62 @@ class TaskSplitter(BaseLLMBackend, BaseWorker):
                     CURRENT_PATH.joinpath("{}_user_prompt.prompt".format(self.special_task)), role="user"
                 ),
             ]
-        task_tree = TaskTree()
-        print(query)
-        if task is not None and task != "":
-            self.special_task = task
-        if meta is not None and meta != {}:
-            self.meta = meta
+        else:
+            self.prompts = [
+                PromptTemplate.from_file(
+                    CURRENT_PATH.joinpath("check_split_sys_prompt.prompt"), role="system"
+                ),
+                PromptTemplate.from_file(
+                    CURRENT_PATH.joinpath("check_split_user_prompt.prompt"), role="user"
+                ),
+            ]
+            
+            check_response = self.simple_infer(input=query)
+            print(check_response)
+            try:
+                check_result = json_repair.loads(check_response['choices'][0]['message']['content'])
+                can_split = check_result['can_split']
+                self.callback.info(agent_id=self.workflow_instance_id, progress='Task Split Result', message=can_split)
+            except Exception as e:
+                print(e)
+                can_split = False
+            if not can_split:
+                self.callback.info(agent_id=self.workflow_instance_id, progress='Task Split', message="Task cannot be split, we will not split the task")
+                self.stm(self.workflow_instance_id)['query'] = query
+                self.prompts = [
+                    PromptTemplate.from_file(
+                        CURRENT_PATH.joinpath("sys_prompt.prompt"), role="system"
+                        ),
+                    PromptTemplate.from_file(
+                        CURRENT_PATH.joinpath("user_prompt.prompt"), role="user"
+                    ),
+                ]
+                response = self.simple_infer(query=query)['choices'][0]['message']['content']
+                task_tree.add_node({"task": "task cannot be split", "original_task_input": self.stm(self.workflow_instance_id)['query'], "phrase": "0"})
+                self.stm(self.workflow_instance_id)['task_tree'] = task_tree
+                self.stm(self.workflow_instance_id)['response'] = response
+                return {'got_structure': None}
+            else:
+                self.callback.info(agent_id=self.workflow_instance_id, progress='Task Split', message="Task can be split, we will split the task")
+
+                
+                self.prompts = [
+                    PromptTemplate.from_file(
+                        CURRENT_PATH.joinpath("general_split_sys_prompt.prompt"), role="system"
+                    ),
+                    PromptTemplate.from_file(
+                        CURRENT_PATH.joinpath("general_split_user_prompt.prompt"), role="user"
+                    ),
+                ]
+                chat_complete_res = self.simple_infer(input=query)
+                print(chat_complete_res)
+
+
         self.stm(self.workflow_instance_id)['query'] = query
         self.stm(self.workflow_instance_id)['phrase'] = 0
         self.stm(self.workflow_instance_id)['current_node_id'] = 0
         self.stm(self.workflow_instance_id)['special_task'] = self.special_task
-        task_tree.add_node({"task": "split the list into two sublists", "original_task_input": self.stm(self.workflow_instance_id)['query'], "phrase": self.stm(self.workflow_instance_id)['phrase']})
+        task_tree.add_node({"task": "split the task into subtasks", "original_task_input": self.stm(self.workflow_instance_id)['query'], "phrase": self.stm(self.workflow_instance_id)['phrase']})
         self.callback.info(agent_id=self.workflow_instance_id, progress='Task Split', message=query)
 
         if self.special_task == "sort":
@@ -97,12 +151,14 @@ class TaskSplitter(BaseLLMBackend, BaseWorker):
                 self.stm(self.workflow_instance_id)['all_possible_countries'] = self.meta['all_possible_countries']
             except Exception:
                 raise ValueError("all_possible_countries must be in meta information for keyword_count task. Please check the meta information.")
-            
             chat_complete_res = self.simple_infer(input=query)
+        
+        # prepare task_tree for each subtasks
         try:
             subtasks = json_repair.loads(chat_complete_res['choices'][0]['message']['content'])
-            if self.special_task in ["sort", "set_intersection"] and len(subtasks.keys()) != num_chunks:
+            if self.special_task in ["sort", "set_intersection"] and 'num_chunks' in locals() and len(subtasks.keys()) != num_chunks:
                 logging.warning("Expected {} lists in json, but found {}.".format(num_chunks, len(subtasks.keys())))
+            
             self.stm(self.workflow_instance_id)['phrase'] = self.stm(self.workflow_instance_id)['phrase'] + 1
             task_tree.nodes[0].current_task_input = subtasks
             for key, value in subtasks.items():
@@ -117,7 +173,6 @@ class TaskSplitter(BaseLLMBackend, BaseWorker):
         except Exception as e:
             logging.error(f"Could not parse answer: {chat_complete_res}. Encountered exception: {e}")
             subtasks = chat_complete_res["choices"][0]["message"]["content"]
-
 
         self.callback.info(agent_id=self.workflow_instance_id, progress='Task Split', message=subtasks)
         task_tree.get_node(0).executed = True

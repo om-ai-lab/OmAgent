@@ -1,0 +1,9 @@
+- name: InputInterface
+- name: Selection 
+- name: Expansion
+  llm: ${sub|gpt}
+- name: SimulationPreProcess
+- name: SimulationPostProcess
+- name: BackPropagation
+- name: MCTSCompletionCheck
+- name: OutputInterface

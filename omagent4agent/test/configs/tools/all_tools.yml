@@ -1,0 +1,8 @@
+llm: ${sub|text_res}
+tools:
+ - name: GeneralOD    
+   url: http://10.0.0.132:8005/inf_predict
+ - name: SuperResolution
+   api_url: http://10.0.0.26:8010/superres
+ - name: TavilyWebSearch
+   tavily_api_key: ${env|tavily_api_key, null}

@@ -1,22 +1,9 @@
-import asyncio
-import os
-import subprocess
-
-from ....utils.registry import registry
-from ...base import ArgSchema, BaseTool
+from omagent_core.utils.registry import registry
+from omagent_core.tool_system.base import ArgSchema, BaseTool
+from jupyter_client import KernelManager
 
 ARGSCHEMA = {
     "code": {"type": "string", "description": "Code block to be executed"},
-    "command": {
-        "type": "string",
-        "description": "Command to be executed, need to be python filename, e.g. python llm_code.py",
-        "required": False,
-    },
-    "filename": {
-        "type": "string",
-        "description": "Filename of the code block",
-        "required": False,
-    },
 }
 
 
@@ -28,60 +15,71 @@ class CodeInterpreter(BaseTool):
     )
 
     def _run(
-        self, code: str = None, command: str = None, filename: str = "llm_code.py"
+        self,
+        code: str = None,
     ) -> dict:
-        if code:
-            with open(filename, "w") as f:
-                f.write(code)
-        command = command or f"python {filename}"
+
+        # Choose a kernel name, for example 'python3'
+        kernel_name = "python3"
+
+        # Create a KernelManager
+        km = KernelManager(kernel_name=kernel_name)
+        # Initialize the KernelManager
+        km = KernelManager()
+        # Start the kernel
+        km.start_kernel()
+        # Create a client to communicate with the kernel
+        kc = km.client()
+        # Start the communication channels
+        kc.start_channels()
+
+        # Wait until the kernel is ready
+        kc.wait_for_ready()
+
+        # Send code to be executed by the kernel
+        kc.execute(code)
+
+        # Initialize a dictionary to store the result
+        result = {"Error": None, "Output": None}
+        print(code)
+
         try:
-            exec_proc = subprocess.Popen(
-                command,
-                shell=True,
-                stderr=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stdin=subprocess.PIPE,
-                cwd=".",
-            )
-            stdout, stderr = exec_proc.communicate(timeout=30)
+            while True:
+                # Get messages from the IOPub channel with a timeout of 10 seconds
+                msg = kc.get_iopub_msg(timeout=10)
+                # Get the type of message
+                msg_type = msg["header"]["msg_type"]
 
+                # Check if the message is an execution result
+                if msg_type == "execute_result":
+                    # Store the output in the result dictionary
+                    result["Output"] = msg["content"]["data"]["text/plain"]
+                    break
+                # Check if the message is a stream message from stdout
+                elif msg_type == "stream" and msg["content"]["name"] == "stdout":
+                    # Store the output in the result dictionary
+                    result["Output"] = msg["content"]["text"]
+                    break
+                # Check if the message is an error message
+                elif msg_type == "error":
+                    # Store the error in the result dictionary
+                    result["Error"] = msg["content"]["evalue"]
+                    break
         except Exception as e:
-            raise ValueError(e)
+            # Handle timeout or other exceptions
+            result["Error"] = f"Timeout or Error: {str(e)}"
 
-        if stderr:
-            raise ValueError(f"{code}\nExecute error:\n {stderr.decode()}")
-        result = {
-            "ReturnCode": exec_proc.returncode,
-            "Error": stderr.decode() if stderr else None,
-            "Output": stdout.decode() if stdout else None,
-            "absolute_filename": os.path.abspath(filename),
-        }
+        # Stop the communication channels
+        kc.stop_channels()
+        # Shutdown the kernel
+        km.shutdown_kernel()
 
         return result
 
     async def _arun(
-        self, code: str = None, command: str = None, filename: str = "llm_code.py"
+        self,
+        code: str = None,
     ) -> str:
-        if code:
-            with open(filename, "w") as f:
-                f.write(code)
-
-        command = command or f"python {filename}"
-        exec_proc = await asyncio.create_subprocess_shell(
-            command,
-            stderr=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stdin=asyncio.subprocess.PIPE,
-            cwd=".",
-        )
-
-        stdout, stderr = await asyncio.wait_for(exec_proc.communicate(), timeout=10)
-
-        result = {
-            "ReturnCode": exec_proc.returncode,
-            "Error": stderr.decode() if stderr else None,
-            "Output": stdout.decode() if stdout else None,
-            "absolute_filename": os.path.abspath(filename),
-        }
+        result = self._run(code)
 
         return result

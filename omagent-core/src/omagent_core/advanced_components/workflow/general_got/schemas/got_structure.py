@@ -21,7 +21,7 @@ class TaskNode(BaseModel):
     pre_task_input: Any = None
     original_task_input: Any = ""
     current_task_input: Any = None
-    score: int = 0
+    score: float = 0
     scored: bool = False
     
 
@@ -221,10 +221,10 @@ if __name__ == "__main__":
     # Test code
     tree = TaskTree()
     
-    # 添加根任务
+    # Add root task
     root = tree.add_node({"task": "search hangzhou weather tomorrow and save the result into a file"})
     id = tree.get_node_id(root)
-    # 添加子任务
+    # Add subtasks
     subtasks = [
         {"task": "search hangzhou weather tomorrow"},
         {"task": "analyze the weather data"},

@@ -11,6 +11,16 @@ from pydantic import BaseModel, field_validator, model_validator
 from ...utils.general import encode_image
 from ..od.schemas import Target
 
+BASIC_DATA_TYPES = [
+        str,
+        list,
+        tuple,
+        int,
+        float,
+        bool,
+        datetime.datetime,
+        datetime.time,
+    ]
 
 class Role(str, Enum):
     USER = "user"
@@ -70,27 +80,11 @@ class Content(BaseModel):
 class Message(BaseModel):
     """
     - role (str): The role of this message. Choose from 'user', 'assistant', 'system'.
-    - message_type (str): Type of the message. Choose from 'text', 'image' and 'mixed'.
-    - src_type (str): Type of the message content. If message is text, src_type='text'. If message is image, Choose from 'url', 'base64', 'local' and 'redis'.
     - content (str): Message content.
-    - objects (List[schemas.Target]): The detected objects.
     """
 
     role: Role = Role.USER
-    message_type: MessageType = MessageType.TEXT
-    content: List[Content | Dict] | Content | str
-    objects: List[Target] = []
-    kwargs: dict = {}
-    basic_data_types: ClassVar[List[type]] = [
-        str,
-        list,
-        tuple,
-        int,
-        float,
-        bool,
-        datetime.datetime,
-        datetime.time,
-    ]
+    content: List[Content] | str
 
     @classmethod
     def merge_consecutive_text(cls, content) -> List:
@@ -106,7 +100,7 @@ class Message(BaseModel):
                     current_str = ""
                 result.append(part)
 
-        if current_str:  # 处理最后的字符串
+        if current_str:
             result.append(current_str)
 
         return result
@@ -115,9 +109,9 @@ class Message(BaseModel):
     @classmethod
     def content_validator(
         cls, content: List[Content | Dict] | Content | str
-    ) -> List[Content] | Content:
+    ) -> List[Content] | str:
         if isinstance(content, str):
-            return Content(type="text", text=content)
+            return content
         elif isinstance(content, list):
             # combine str elements in list
             content = cls.merge_consecutive_text(content)
@@ -141,17 +135,21 @@ class Message(BaseModel):
                             },
                         )
                     )
-                elif isinstance(c, tuple(cls.basic_data_types)):
+                elif isinstance(c, tuple(BASIC_DATA_TYPES)):
                     formatted.append(Content(type="text", text=str(c)))
                 else:
                     raise ValueError(
                         f"Content list must contain [Content, str, list, dict, PIL.Image], got {type(c)}"
                     )
+            return formatted
+        elif isinstance(content, Image.Image):
+            return [Content(type="image_url", image_url={
+                "url": f"data:image/jpeg;base64,{encode_image(content)}"
+            })]
         else:
             raise ValueError(
                 "Content must be a string, a list of Content objects or list of dicts."
             )
-        return formatted
 
     @classmethod
     def system(cls, content: str | List[str | Dict | Content]) -> "Message":

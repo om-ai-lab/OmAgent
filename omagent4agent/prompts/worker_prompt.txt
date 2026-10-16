@@ -1,0 +1,284 @@
+Worker Implementation:
+You need to implement a worker named '{{workflow_name}}'.
+You are given a plan by a planning agent that solves a vision problem posed by the user.  Your job is to organize the code so that it can be easily called by the user to solve the task.
+
+Description: {{worker_description}}
+Workflow json: {{workflow}}
+
+Requirements:
+1. Define a class named '{{workflow_name}}' that inherits from 'BaseWorker'.
+2. Implement a '_run' method that performs the main logic of the worker.
+3. Save the implementation in a Python file named '{worker_name}.py' in the appropriate directory.
+
+Example Code1:
+```python
+from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.utils.registry import registry
+
+@registry.register_worker()
+class {worker_name}(BaseWorker):
+    def _run(self, *args, **kwargs):
+        # Logic for {worker_description}
+        ....
+```
+
+Example Code2 (if the worker has input parameters):
+```python
+from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.utils.registry import registry
+
+@registry.register_worker()
+class {worker_name}(BaseWorker):
+    def _run(self, param1, param2, *args, **kwargs):
+        # Logic for {worker_description}
+        ....
+```
+
+
+The return of worker only use decisionCases for SWITCH and loopCondition for DO_WHILE. Otherwise, you need to use short term memory to store and pass the pass to other workers.
+This is an example of using short term memory to store values. 
+self.stm(self.workflow_instance_id)["user_instruction"] = user_instruction
+
+This is an example of using short term memory to load values.
+user_instruction = self.stm(self.workflow_instance_id)["user_instruction"]
+
+Here is an complete simple example of using short term memory to VQA including worker and workflow json:
+```python
+from pathlib import Path
+from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.utils.general import read_image
+from omagent_core.utils.logger import logging
+from omagent_core.utils.registry import registry
+@registry.register_worker()
+class InputInterface(BaseWorker):
+    def _run(self, *args, **kwargs):
+        # Read user input through configured input interface
+        user_input = self.input.read_input(
+            workflow_instance_id=self.workflow_instance_id,
+            input_prompt="Please tell me a question and a image.",
+        )
+        image_path = None
+        content = user_input["messages"][-1]["content"]
+        for content_item in content:
+            if content_item["type"] == "text":
+                user_instruction = content_item["data"]
+            elif content_item["type"] == "image_url":
+                image_path = content_item["data"]
+        logging.info(f"User_instruction: {user_instruction}\nImage_path: {image_path}")
+        if image_path:
+            img = read_image(input_source=image_path)
+            image_cache = {"<image_0>": img}
+            self.stm(self.workflow_instance_id)["image_cache"] = image_cache
+        self.stm(self.workflow_instance_id)["user_instruction"] = user_instruction
+
+from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.models.llms.base import BaseLLMBackend
+from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
+from omagent_core.utils.container import container
+from omagent_core.utils.registry import registry
+from omagent_core.models.llms.prompt import PromptTemplate
+from pydantic import Field
+
+@registry.register_worker()
+class SimpleVQA(BaseWorker, BaseLLMBackend):
+    prompts: List[PromptTemplate] = Field(
+        default=[
+            PromptTemplate.from_template("You are a helpful assistant.", role="system"),
+            PromptTemplate.from_template("{{user_instruction}}, {{image}}", role="user"),
+        ]
+    )
+    llm: OpenaiGPTLLM
+    def _run(self, *args, **kwargs):        
+        user_instruction = self.stm(self.workflow_instance_id)["user_instruction"]
+        image_url = self.stm(self.workflow_instance_id)["image_cache"]["<image_0>"]
+        img = read_image(input_source=image_url)
+        chat_completion_res = self.simple_infer(user_instruction=user_instruction, image=img)["choices"][0]["message"].get(
+            "content"
+        )
+        return {"last_output": chat_completion_res}
+```
+Workflow json:
+```json
+{
+    "name": "step1_simpleVQA",
+    "tasks": [
+        {
+            "name": "InputInterface",
+            "taskReferenceName": "input_task",
+            "inputParameters": {},
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        },
+        {
+            "name": "SimpleVQA",
+            "taskReferenceName": "simple_vqa",
+            "inputParameters": {},
+            "type": "SIMPLE",
+            "taskDefinition": {}
+        }
+    ],
+    "inputParameters": [],
+    "outputParameters": {},
+    "failureWorkflow": "",
+    "schemaVersion": 2,
+    "workflowStatusListenerEnabled": false,
+    "ownerEmail": "default@omagent.ai",
+    "timeoutSeconds": 60,
+    "variables": {},
+    "inputTemplate": {}
+}
+```
+
+Set user_instruction based on the task.
+
+Coding Style:
+- Use PEP 8 style guide for Python code.
+- Ensure all class and method names are descriptive.
+- Include type hints for method parameters and return types.
+- Add docstrings to classes and methods to describe their purpose and usage.
+
+Imports:
+- Ensure all necessary imports are included at the top of the file.
+- Group imports into standard library, third-party, and local imports.
+- Do not import any other unknown libraries or modules. If you need to use other libraries, implement them in another class or tools. 
+- The most important thing is that you must use the correct type of the input and output of each worker method. 
+
+
+Now, implement the worker using the guidelines and example code provided. Only return the code, do not include any other text. The functions of input and output must be matched with workflow.
+When handling the image input, it should support all possible image formats such as image url, image path, image base64, etc.
+Please carefully design the input and output parameters based on the workflow. The input parameters must be matched with the workflow input parameters. Please check again and again if all the input parameters are matched with the workflow input parameters.
+If you need to process the image, if the image is url, you can use the url directly to call the api. If it's local image, you can convert the image to base64 to call the api.
+
+the the return of def _run can be empty many times. If there are SWITCH or DO_WHILE, the return of def _run must be dictionary for decisionCases or loopCondition. The last worker in the workflow must return the result.
+
+
+The worker code must be complete. Do not use Placeholder or Dummy function.
+
+Tools:
+- You can use tool_manager to call other tools. Here are available tools:
+- GeneralOD: Detect objects in the image.
+```python
+result = tool_manager.execute("GeneralOD", {"image": image, "labels": "{target_labels separated by comma}", "threshold": 0.5, "nms_threshold": 0.5}) # image can be image url, pill image, image base64, etc.
+```
+an example result:
+{"objects": [{'xmin': 461.0, 'ymin': 586.0, 'xmax': 1188.0, 'ymax': 1197.0, 'conf': 0.958407998085022, 'label': 'dog'}, {'xmin': 928.0, 'ymin': 522.0, 'xmax': 1493.0, 'ymax': 1079.0, 'conf': 0.8276795148849487, 'label': 'person'}, {'xmin': 1108.0, 'ymin': 700.0, 'xmax': 1255.0, 'ymax': 888.0, 'conf': 0.1099763959646225, 'label': 'dog'}, {'xmin': 1180.0, 'ymin': 750.0, 'xmax': 1215.0, 'ymax': 795.0, 'conf': 0.10541261732578278, 'label': 'dog'}, {'xmin': 461.0, 'ymin': 586.0, 'xmax': 1188.0, 'ymax': 1197.0, 'conf': 0.10040629655122757, 'label': 'person'}]}
+
+- DetectAll: Detect all objects in the image.
+```python
+result = tool_manager.execute("DetectAll", {"image": image}) # image can be image url, pill image, image base64, etc.
+```
+an example result:
+{"objects": [{'xmin': 461.0, 'ymin': 586.0, 'xmax': 1188.0, 'ymax': 1197.0, 'conf': 0.958407998085022, 'label': 'dog'}, {'xmin': 928.0, 'ymin': 522.0, 'xmax': 1493.0, 'ymax': 1079.0, 'conf': 0.8276795148849487, 'label': 'person'}, {'xmin': 1108.0, 'ymin': 700.0, 'xmax': 1255.0, 'ymax': 888.0, 'conf': 0.1099763959646225, 'label': 'dog'}, {'xmin': 1180.0, 'ymin': 750.0, 'xmax': 1215.0, 'ymax': 795.0, 'conf': 0.10541261732578278, 'label': 'dog'}, {'xmin': 461.0, 'ymin': 586.0, 'xmax': 1188.0, 'ymax': 1197.0, 'conf': 0.10040629655122757, 'label': 'person'}]}
+
+- SuperResolution: Enhance the image.
+Use this tool when the image is low resolution less than 128x128.
+```python
+result = tool_manager.execute("SuperResolution", {"image": image}) # image can be image url, pill image, image base64, etc.
+```
+An example result:
+{"upscaled_image": upscaled_image} #upscaled_image is PIL image
+
+all image for tools, it will be the best if image type is url. if local file path, then convert to base64 and use in tools.
+
+- Search: Search the internet for information.
+```python
+result = tool_manager.execute("TavilyWebSearch", {"search_query": query, "topic": "general", "include_answer": True, "include_images": False, "include_raw_content": False, "days": 3, "max_results": 5})
+```
+
+You must include tool_manager: ToolManager in the worker.
+example:
+```python
+from omagent_core.tool_system.manager import ToolManager
+from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.utils.registry import registry
+@registry.register_worker()
+class {worker_name}(BaseWorker):
+    tool_manager: ToolManager
+    def _run(self, *args, **kwargs):
+        # Logic for {worker_description}
+        ....
+```
+if you need to use other tools, you can use llm with prompt engineering using above SimpleVQA example.
+
+
+An example of decisionCases for SWITCH:
+ {
+                    "name": "switch_task",
+                    "taskReferenceName": "switch_task",
+                    "inputParameters": {
+                        "switchCaseValue": "${task_conqueror.output.switch_case_value}"
+                    },
+                    "type": "SWITCH",
+                    "decisionCases": {
+                        "complex": [
+                            {
+                                "name": "TaskDivider",
+                                "taskReferenceName": "task_divider",
+                                "inputParameters": {},
+                                "type": "SIMPLE",
+
+                            }
+                        ],
+                        "failed": [
+                            {
+                                "name": "TaskRescue",
+                                "taskReferenceName": "task_rescue",
+                                "inputParameters": {},
+                                "type": "SIMPLE"
+                            }
+                        ]
+                    },
+                    "defaultCase": [],
+                    "evaluatorType": "value-param",
+                    "expression": "switchCaseValue"
+                },
+
+,which means task_conqueror's return should include {"switch_case_value": "complex"} or {"switch_case_value": "failed"}
+inputParameters of SWITCH should be like below:
+            "inputParameters": {
+                "switchCaseValue": "${previous_worker_reference_name.output.switch_case_value}"
+            },
+
+
+if an value of inputParameters is "${object_detection.output.mouse_detected}", it means the value of switchCaseValue is the value of mouse_detected in the output of object_detection.
+
+"inputParameters": {
+                "switchCaseValue": "${object_detection.output.mouse_detected}"
+            },
+            "type": "SWITCH",
+
+in object_detection worker, the function of _run return should be like below:
+return {"mouse_detected": ...}
+
+The following worker is how to use self.simple_infer which can call llm and vlm with prompts
+```python   
+from omagent_core.engine.worker.base import BaseWorker
+from omagent_core.models.llms.base import BaseLLM
+from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
+from omagent_core.utils.container import container
+from omagent_core.utils.registry import registry
+from pydantic import Field
+
+
+@registry.register_worker()
+class SimpleVQA(BaseWorker, BaseLLMBackend):
+    prompts: List[PromptTemplate] = Field(
+        default=[
+            PromptTemplate.from_template("You are a helpful assistant.", role="system"),
+            PromptTemplate.from_template("{{user_instruction}}, {{image}}", role="user"),
+        ]
+    )
+    llm: BaseLLM  # do not assign any value here. 
+    def _run(self, *args, **kwargs):        
+        user_instruction = self.stm(self.workflow_instance_id)["user_instruction"]
+        image_url = self.stm(self.workflow_instance_id)["image_cache"]["<image_0>"]
+        img = read_image(input_source=image_url)
+        chat_completion_res = self.simple_infer(user_instruction=user_instruction, image=img)["choices"][0]["message"].get(
+            "content"
+        )
+        return {"last_output": chat_completion_res}
+```
+Please use this example to call llm and vlm with prompts that you generated based on the task. if PromptTemplate.from_template has {{image}} only then self.simple_infer will have one image parameter (e.g., self.simple_infer(image=img)). if from_template has {{user_instruction}} and {{image}} then self.simple_infer will have two parameters (e.g., self.simple_infer(user_instruction=user_instruction, image=img)). It should be matched with  PromptTemplate.from_file and self.simple_infer.
+
+Previous codes (Please use the previous codes to implement the worker like how to set and use stm and input and output. If there is no previous codes, please implement the worker from scratch.. ):
+{{previous_codes}}

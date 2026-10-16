@@ -1,5 +1,8 @@
 # Import required modules from omagent_core
-from omagent_core.clients.devices.webpage.client import \
+import os
+os.environ["OMAGENT_MODE"] = "lite"
+
+from omagent_core.clients.devices.webpage import \
     WebpageClient  # For webpage client interface
 from omagent_core.engine.workflow.conductor_workflow import \
     ConductorWorkflow  # For workflow management
@@ -19,7 +22,6 @@ CURRENT_PATH = Path(__file__).parents[0]  # Get current directory path
 # Import agent modules
 registry.import_module(project_path=CURRENT_PATH.joinpath("agent"))
 
-import os
 # Add parent directory to Python path for imports
 import sys
 

@@ -87,7 +87,16 @@ The container.yaml file is a configuration file that manages dependencies and se
 
 ## Running the Example
 
-3. Run the video understanding example, currently only supports CLI usage:
+1. Run the video understanding example via Webpage:
+
+   ```bash
+   python run_webpage.py
+   ```
+
+   First, select a video or upload a video file on the left; after the video preprocessing is completed, ask questions about the video content on the right.
+
+
+2. Run the video understanding example, currently only supports CLI usage:
 
    ```bash
    python run_cli.py
@@ -95,7 +104,6 @@ The container.yaml file is a configuration file that manages dependencies and se
 
    First time you need to input the video file path, it will take a while to preprocess the video and store the information into vector database.
    After the video is preprocessed, you can input your question about the video and the system will answer it. Note that the agent may give the wrong or vague answer, especially some questions are related the name of the characters in the video.
-
 
 ## Troubleshooting
 
@@ -110,7 +118,10 @@ If you encounter issues:
 - **Open an issue on GitHub if you can't find a solution, we will do our best to help you out!**
 
 
-## Building the Example
+4. Run the video understanding example, currently only supports Webpage usage:
 
-Coming soon! This section will provide detailed instructions for building and packaging the general_dnc example step by step.
+   ```bash
+   python run_webpage.py
+   ```
 
+   First, select a video or upload a video file on the left; after the video preprocessing is completed, ask questions about the video content on the right.

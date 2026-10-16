@@ -48,10 +48,7 @@ class COTConclusion(BaseLLMBackend, BaseWorker):
                   completion tokens, and the body of the request.
         """
         reasoning_result = self.simple_infer(final_answer=str(final_answer))
-        prompt_tokens = sum(self.stm(self.workflow_instance_id)['prompt_token'])   + reasoning_result["usage"]["prompt_tokens"]
-        completion_tokens = sum(self.stm(self.workflow_instance_id)['completion_token']) + reasoning_result["usage"]["completion_tokens"]
         reasoning_result = reasoning_result["choices"][0]["message"]["content"]
         self.stm(self.workflow_instance_id)['final_answer'] = reasoning_result
-        self.callback.send_answer(self.workflow_instance_id, msg={'final_answer': reasoning_result,'question': question,"prompt_tokens":prompt_tokens, "completion_tokens": completion_tokens})
         body = self.stm(self.workflow_instance_id)["body"] 
-        return {'final_answer': reasoning_result,'question': question,'prompt_tokens': prompt_tokens, 'completion_tokens': completion_tokens,"body":body}
+        return {'final_answer': reasoning_result,'question': question,'prompt_tokens': self.token_usage['prompt_tokens'], 'completion_tokens': self.token_usage['completion_tokens'],"body":body}

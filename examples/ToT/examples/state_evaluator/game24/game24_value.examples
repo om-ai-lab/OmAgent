@@ -1,0 +1,62 @@
+1. 
+Input: 10 14
+Output: {
+    "llm_response": "10 + 14 = 24, it is sure that we can reach 24",
+    "value": "sure",
+}
+
+2. 
+Input: 11 12
+Output: {
+    "llm_response": "11 + 12 = 23\n12 - 11 = 1\n11 * 12 = 132\n11 / 12 = 0.91\n it is impossible to reach 24",
+    "value": "impossible",
+}
+
+3. 
+Input: 4 4 10
+Output: {
+    "llm_response": "4 + 4 + 10 = 18\n4 * 10 - 4 = 36\n(10 - 4) * 4 = 24\n it is sure that we can reach 24",
+    "value": "sure",
+}
+
+4. 
+Input: 4 9 11
+Output: {
+    "llm_response": "9 + 11 + 4 = 20 + 4 = 24\n it is sure that we can reach 24",
+    "value": "sure",
+}
+
+5. 
+Input: 5 7 8
+Output: {
+    "llm_response": "5 + 7 + 8 = 12 + 8 = 20\n(8 - 5) * 7 = 3 * 7 = 21\nI cannot obtain 24 now, but numbers are within a reasonable range",
+    "value": "likely",
+}
+
+6. 
+Input: 5 6 6
+Output: {
+    "llm_response": "5 + 6 + 6 = 17\n(6 - 5) * 6 = 1 * 6 = 6\nI cannot obtain 24 now, but numbers are within a reasonable range",
+    "value": "likely",
+}
+
+7. 
+Input: 10 10 11
+Output: {
+    "llm_response": "10 + 10 + 11 = 31\n(11 - 10) * 10 = 10\n10 10 10 are all too big\n it is impossible to reach 24",
+    "value": "impossible",
+}
+
+8. 
+Input: 1 3 3
+Output: {
+    "llm_response": "1 * 3 * 3 = 9\n(1 + 3) * 3 = 12\n1 3 3 are all too small\n it is impossible to reach 24",
+    "value": "impossible",
+}
+
+9. 
+Input: 7 1 24
+Output: {
+    "llm_response": "7 + 1 + 24 = 32\n(24 - 7) * 1 = 17\n it is impossible to reach 24",
+    "value": "impossible",
+}

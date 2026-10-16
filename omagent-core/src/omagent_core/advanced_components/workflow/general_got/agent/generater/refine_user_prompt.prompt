@@ -1,0 +1,19 @@
+Please analyze and refine the following result:
+
+
+
+Current Result:
+{{current_task_input}}
+
+Your task is to:
+1. Analyze if the current result is correct
+2. Identify any errors or missing elements
+3. Provide a refined version that fixes any issues
+
+Return a JSON object in the same format as the current result, but with corrections if needed:
+{
+    "task": "task_type",
+    "result": "corrected description of results"
+}
+
+Note: Only make changes if there are actual errors to fix. If the current result is correct, return it unchanged. 

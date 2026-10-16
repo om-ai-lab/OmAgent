@@ -1,5 +1,5 @@
 name: Conclude
-llm: ${sub|text_res_stream}
+llm: ${sub|text_res}
 prompts:
   - role: system
     template: examples/general_dnc/agent/conclude/sys_prompt.prompt

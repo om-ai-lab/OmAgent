@@ -1,0 +1,19 @@
+Please evaluate the following subtask execution result and provide your analysis:
+
+Subtask result:
+{{current_task_input}}
+
+Return a JSON object with:
+1. 'analysis': Brief explanation of why the result is correct or incorrect
+2. 'score': Numeric score where:
+   - 0: Perfect execution (correct result for the subtask)
+   - 1-3: Minor errors (small mistakes in result)
+   - 4-7: Moderate errors (partially incorrect results)
+   - 8-10: Serious errors (mostly incorrect results)
+   - 300: Invalid format or nonsensical result
+
+Example response format:
+{
+    "analysis": "Brief explanation of the result's correctness",
+    "score": 0
+}
