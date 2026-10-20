@@ -6,11 +6,12 @@
 
 | Model | Context Window | Description |
 |-------|---------------|-------------|
-| MiniMax-M3 | 1M tokens | Current flagship model |
-| MiniMax-M2.7 | 204K tokens | Earlier flagship model |
-| MiniMax-M2.7-highspeed | 1M tokens | High-speed variant of M2.7 |
-| MiniMax-M2.5 | 204K tokens | Previous generation model |
-| MiniMax-M2.5-highspeed | 204K tokens | High-speed variant of M2.5 |
+| MiniMax-M3.1-Flash | 1M tokens | Default model |
+| MiniMax-M3 | 1M tokens | Alternative model |
+
+These are the current model choices. Explicit `model_id` values, including saved
+legacy or custom IDs, and the `MINIMAX_MODEL_ID` environment override remain
+unchanged. See the [MiniMax model documentation](https://platform.minimax.io/docs/guides/models-intro.md).
 
 ## Setup
 
@@ -28,7 +29,7 @@ Create a YAML config file (e.g., `configs/llms/minimax.yml`):
 
 ```yaml
 name: MiniMaxLLM
-model_id: MiniMax-M3
+model_id: MiniMax-M3.1-Flash
 api_key: ${env| MINIMAX_API_KEY}
 endpoint: https://api.minimax.io/v1
 temperature: 0
@@ -42,7 +43,7 @@ Use `https://api.minimaxi.com/v1` as the endpoint for the China region.
 from omagent_core.models.llms.minimax_llm import MiniMaxLLM
 
 llm = MiniMaxLLM(
-    model_id="MiniMax-M3",
+    model_id="MiniMax-M3.1-Flash",
     api_key="your_api_key",
     temperature=0,
 )
@@ -67,7 +68,7 @@ class MyAgent(BaseLLMBackend):
     )
     llm: MiniMaxLLM = {
         "name": "MiniMaxLLM",
-        "model_id": "MiniMax-M3",
+        "model_id": "MiniMax-M3.1-Flash",
         "api_key": "your_api_key",
     }
     output_parser: StrParser = StrParser()
@@ -77,7 +78,7 @@ class MyAgent(BaseLLMBackend):
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `model_id` | str | `MiniMax-M3` | The model to use |
+| `model_id` | str | `MiniMax-M3.1-Flash` | The model to use; respects `$MINIMAX_MODEL_ID` |
 | `api_key` | str | `$MINIMAX_API_KEY` | Your MiniMax API key |
 | `endpoint` | str | `https://api.minimax.io/v1` | API endpoint URL |
 | `temperature` | float | `0.7` | Sampling temperature (0-1.0) |
@@ -88,6 +89,7 @@ class MyAgent(BaseLLMBackend):
 
 ## Notes
 
-- Temperature is automatically clamped to the [0, 1.0] range.
-- The MiniMax API is OpenAI-compatible, so it works seamlessly with the OpenAI SDK.
+- Temperature is automatically clamped to the [0, 1.0] range. The current models ignore `temperature` and `top_p`, using 1 and 0.95 respectively.
+- The provider leaves thinking controls unset: both current models default to adaptive thinking, and Flash defaults to `max` effort. Thinking tokens count toward `max_tokens`; increase this budget if generation stops before producing an answer.
+- The MiniMax API is OpenAI-compatible; see the [SDK request contract](https://platform.minimax.io/docs/api-reference/text-openai-api.md).
 - Think tags (`<think>...</think>`) in model responses are automatically stripped.

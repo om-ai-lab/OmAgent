@@ -28,7 +28,7 @@ OmAgent is python library for building multimodal language agents with ease. We 
  - Native multimodal interaction support include VLM models, real-time API, computer vision models, mobile connection and etc.   
  - A suite of state-of-the-art unimodal and multimodal agent algorithms that goes beyond simple LLM reasoning, e.g. ReAct, CoT, SC-Cot etc.   
  - Supports local deployment of models. You can deploy your own models locally by using Ollama[Ollama](./docs/concepts/models/Ollama.md) or [LocalAI](./examples/video_understanding/docs/local-ai.md).
- - Supports multiple cloud LLM providers including OpenAI, Azure OpenAI, and [MiniMax](./docs/concepts/models/MiniMax.md) (MiniMax-M3 and MiniMax-M2.7, with context windows up to 1M tokens).
+ - Supports multiple cloud LLM providers including OpenAI, Azure OpenAI, and [MiniMax](./docs/concepts/models/MiniMax.md) (MiniMax-M3.1-Flash by default and MiniMax-M3, with 1M-token context windows).
  - Fully distributed architecture, supports custom scaling. Also supports Lite mode, eliminating the need for middleware deployment.
 
 

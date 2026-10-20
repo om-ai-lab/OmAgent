@@ -21,13 +21,11 @@ Current Datetime: {}
 Region: {}
 Operating System: {}"""
 
-# MiniMax supported models and their context window sizes
+# Current MiniMax models and their context window sizes, default first.
+# Explicit model IDs remain unrestricted for saved and custom configurations.
 MINIMAX_MODELS = {
-    "MiniMax-M3": 1000000,          # 1M context
-    "MiniMax-M2.7": 204800,         # 204K context
-    "MiniMax-M2.7-highspeed": 1048576,  # 1M context
-    "MiniMax-M2.5": 204800,         # 204K context
-    "MiniMax-M2.5-highspeed": 204800,   # 204K context
+    "MiniMax-M3.1-Flash": 1000000,
+    "MiniMax-M3": 1000000,
 }
 
 MINIMAX_API_BASE = "https://api.minimax.io/v1"
@@ -38,18 +36,18 @@ class MiniMaxLLM(BaseLLM):
     """MiniMax LLM provider using OpenAI-compatible API.
 
     MiniMax provides large language models accessible via an OpenAI-compatible
-    API endpoint. Supported models include MiniMax-M3, MiniMax-M2.7,
-    MiniMax-M2.7-highspeed, MiniMax-M2.5, and MiniMax-M2.5-highspeed.
+    API endpoint. Current models are MiniMax-M3.1-Flash (default) and MiniMax-M3.
+    Explicit saved or custom model IDs are passed through unchanged.
 
     Configuration example (YAML):
         name: MiniMaxLLM
-        model_id: MiniMax-M3
+        model_id: MiniMax-M3.1-Flash
         api_key: ${env| MINIMAX_API_KEY}
         temperature: 0
     """
 
     model_id: str = Field(
-        default=os.getenv("MINIMAX_MODEL_ID", "MiniMax-M3"),
+        default=os.getenv("MINIMAX_MODEL_ID", "MiniMax-M3.1-Flash"),
         description="The model id of MiniMax LLM",
     )
     api_key: str = Field(

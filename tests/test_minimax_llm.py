@@ -33,7 +33,7 @@ class TestMiniMaxLLMConfig(unittest.TestCase):
     def test_default_config(self, mock_async, mock_sync):
         """Test default configuration values."""
         llm = MiniMaxLLM(api_key="test-key-123")
-        self.assertEqual(llm.model_id, "MiniMax-M3")
+        self.assertEqual(llm.model_id, "MiniMax-M3.1-Flash")
         self.assertEqual(llm.endpoint, MINIMAX_API_BASE)
         self.assertAlmostEqual(llm.temperature, 0.7)
         self.assertEqual(llm.max_tokens, 2048)
@@ -200,8 +200,9 @@ class TestMessageConversion(unittest.TestCase):
         self.assertEqual(result[0]["role"], Role.SYSTEM)
         self.assertEqual(result[1]["role"], Role.USER)
 
-    def test_default_sys_prompt(self):
-        """Test default system prompt is prepended."""
+    @patch.object(MiniMaxLLM, "_get_location", return_value="unknown")
+    def test_default_sys_prompt(self, mock_location):
+        """Test default system prompt is prepended without network access."""
         llm = self.__class__._create_llm(use_default_sys_prompt=True)
         messages = [Message.user("Hi")]
         result = llm._msg2req(messages)
@@ -326,20 +327,13 @@ class TestModelConstants(unittest.TestCase):
     """Test model constants and metadata."""
 
     def test_minimax_models_defined(self):
-        """Test that all MiniMax models are defined."""
-        self.assertIn("MiniMax-M3", MINIMAX_MODELS)
-        self.assertIn("MiniMax-M2.7", MINIMAX_MODELS)
-        self.assertIn("MiniMax-M2.7-highspeed", MINIMAX_MODELS)
-        self.assertIn("MiniMax-M2.5", MINIMAX_MODELS)
-        self.assertIn("MiniMax-M2.5-highspeed", MINIMAX_MODELS)
+        """Only current models are offered, with the default first."""
+        self.assertEqual(list(MINIMAX_MODELS), ["MiniMax-M3.1-Flash", "MiniMax-M3"])
 
     def test_model_context_sizes(self):
         """Test model context window sizes."""
+        self.assertEqual(MINIMAX_MODELS["MiniMax-M3.1-Flash"], 1000000)
         self.assertEqual(MINIMAX_MODELS["MiniMax-M3"], 1000000)
-        self.assertEqual(MINIMAX_MODELS["MiniMax-M2.7"], 204800)
-        self.assertEqual(MINIMAX_MODELS["MiniMax-M2.7-highspeed"], 1048576)
-        self.assertEqual(MINIMAX_MODELS["MiniMax-M2.5"], 204800)
-        self.assertEqual(MINIMAX_MODELS["MiniMax-M2.5-highspeed"], 204800)
 
     def test_api_base_url(self):
         """Test MiniMax API base URL."""
